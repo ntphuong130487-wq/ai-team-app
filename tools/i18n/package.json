@@ -1,0 +1,7 @@
+{
+  "name": "aiteam-i18n-tools",
+  "private": true,
+  "description": "Extract UI strings from index.html and check locale coverage",
+  "scripts": { "check": "node check.js" },
+  "devDependencies": { "acorn": "^8.19.0", "acorn-walk": "^8.3.5" }
+}
