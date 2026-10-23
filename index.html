@@ -3,12 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Team — Phòng Điều Phối AI v1.5</title>
+  <title>AI Team — Phòng Điều Phối AI v1.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
     body { font-family: 'Inter', sans-serif; background-color: #f4f1ea; color: #1c1917; }
     .mono { font-family: 'JetBrains Mono', monospace; }
+    .md-render h1, .md-render h2 { font-weight: 700; font-size: 1em; margin: .9em 0 .35em; color: #78350f; text-transform: uppercase; letter-spacing: .03em; }
+    .md-render h3, .md-render h4 { font-weight: 700; margin: .7em 0 .3em; }
+    .md-render p { margin: .35em 0; }
+    .md-render ul { list-style: disc; padding-left: 1.3em; margin: .3em 0; }
+    .md-render ol { list-style: decimal; padding-left: 1.3em; margin: .3em 0; }
+    .md-render table { border-collapse: collapse; margin: .5em 0; width: 100%; font-size: .95em; display: block; overflow-x: auto; }
+    .md-render th, .md-render td { border: 1px solid #d6d3d1; padding: .3em .5em; text-align: left; vertical-align: top; }
+    .md-render th { background: #f5f5f4; }
+    .md-render code { background: #f5f5f4; padding: 0 .25em; border-radius: 3px; }
+    .md-render blockquote { border-left: 3px solid #d6d3d1; padding-left: .7em; color: #57534e; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #e7e2d8; }
     ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 3px; }
@@ -19,7 +29,7 @@
   <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 lg:sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.5</span>
+        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.6</span>
         <div>
           <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI</h1>
           <p class="text-xs text-stone-400">Bảng điều phối 1 chạm • Chế độ Nhanh/Chuẩn/Đầy đủ • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
@@ -29,7 +39,6 @@
         <button onclick="openNewRoomModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded transition">+ Tạo Room thật</button>
         <button onclick="triggerImportBackup()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-200 text-xs font-semibold rounded transition">Nhập Backup (1 hoặc Tất cả)</button>
         <button onclick="loadDemoRoom()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-amber-500/60 text-amber-300 text-xs font-semibold rounded transition">+ Nạp Room Demo (Thử nghiệm)</button>
-        <button onclick="runBuiltInSelfTestsModal()" id="btnSelfTest" class="px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-800 border border-emerald-600 text-emerald-200 text-xs font-semibold rounded transition">Chạy Auto-Tests</button>
         <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportBackupFile(event)" />
       </div>
     </div>
@@ -38,7 +47,7 @@
   <!-- STORAGE NOTICE BANNER -->
   <div class="bg-stone-200 border-b border-stone-300 px-4 py-1.5 text-[11px] text-stone-700 flex flex-wrap items-center justify-between gap-2">
     <div>
-      <strong>Lưu ý vận hành:</strong> Dữ liệu lưu cục bộ trên trình duyệt/thiết bị này (<code>localStorage</code>), dùng chung dung lượng với các ứng dụng khác cùng tên miền <code>ntphuong130487-wq.github.io</code>, chưa đồng bộ đa thiết bị. Hãy xuất JSON Backup định kỳ.
+      <strong>Lưu ý:</strong> Dữ liệu chỉ lưu trên trình duyệt của máy này, chưa đồng bộ sang máy khác. Hãy bấm "Sao lưu tất cả" định kỳ.
     </div>
     <div id="storageQuotaInfo" class="mono text-[11px] text-stone-600">Dung lượng: Đang tính...</div>
   </div>
@@ -49,30 +58,30 @@
   <!-- MAIN WORKSPACE -->
   <div class="max-w-7xl w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
     <!-- SIDEBAR: EXECUTIVE DASHBOARD & ROOM LIST -->
-    <aside class="lg:col-span-3 space-y-4">
+    <aside class="order-2 lg:order-1 lg:col-span-3 space-y-4">
       <!-- DASHBOARD SUMMARY -->
       <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-stone-700">Dashboard Điều Hành</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-stone-700">Nhìn nhanh danh mục hồ sơ</h2>
           <span class="text-[10px] text-stone-500">Dữ liệu thật</span>
         </div>
         <div id="execDashboardStats" class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đang thực hiện</span><strong id="statActive" class="text-sm font-bold text-amber-800">0</strong></div>
-          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Chờ Leader/Dir</span><strong id="statReview" class="text-sm font-bold text-blue-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Chờ rà soát / duyệt</span><strong id="statReview" class="text-sm font-bold text-blue-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Task chờ tiền nhiệm</span><strong id="statBlocked" class="text-sm font-bold text-orange-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đang Rework</span><strong id="statRework" class="text-sm font-bold text-red-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Chờ QA Độc lập</span><strong id="statWaitQA" class="text-sm font-bold text-purple-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Escalated (chờ quyết định)</span><strong id="statEscalated" class="text-sm font-bold text-red-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Quá hạn</span><strong id="statOverdue" class="text-sm font-bold text-red-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đóng — Không đạt</span><strong id="statClosed" class="text-sm font-bold text-stone-800">0</strong></div>
-          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Completed (đã niêm phong)</span><strong id="statCompleted" class="text-sm font-bold text-emerald-800">0</strong></div>
-          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Completed chưa xác thực</span><strong id="statUnverified" class="text-sm font-bold text-red-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đã chốt (niêm phong)</span><strong id="statCompleted" class="text-sm font-bold text-emerald-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đã chốt — chưa xác thực</span><strong id="statUnverified" class="text-sm font-bold text-red-800">0</strong></div>
         </div>
       </div>
 
       <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
         <div class="flex items-center justify-between mb-2">
-          <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600">Danh sách Room (<span id="roomCount">0</span>/100)</h2>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600">Danh sách hồ sơ (<span id="roomCount">0</span>/100)</h2>
           <button onclick="exportAllRooms()" class="px-2 py-1 text-[11px] text-amber-800 hover:underline font-semibold">Sao lưu tất cả</button>
         </div>
         <div id="roomList" class="space-y-2 max-h-[340px] overflow-y-auto pr-1"></div>
@@ -80,14 +89,19 @@
 
       <!-- PROVIDER CATALOG -->
       <div class="hidden lg:block bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
-        <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">Danh mục AI Consumer (Zero-API)</h2>
+        <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">Mở nhanh các AI</h2>
         <p class="text-[11px] text-stone-500 mb-2">Sao chép Prompt & dán phản hồi thủ công. Hệ thống không tự xác thực model thật từ văn bản dán.</p>
         <div id="providerCatalogList" class="space-y-2 text-xs"></div>
       </div>
     </aside>
 
     <!-- MAIN ROOM VIEW -->
-    <main class="lg:col-span-9 space-y-4" id="roomWorkspace">
+    <main class="order-1 lg:order-2 lg:col-span-9 space-y-4" id="roomWorkspace">
+      <!-- Chọn hồ sơ nhanh trên mobile -->
+      <div class="lg:hidden">
+        <label for="mobileRoomSelect" class="sr-only">Chọn hồ sơ</label>
+        <select id="mobileRoomSelect" onchange="if(this.value) selectRoom(this.value)" class="w-full border border-stone-300 rounded p-2 text-xs bg-white font-semibold"></select>
+      </div>
       <!-- Empty state (QA-03: Không tự nạp Demo khi chưa chọn) -->
       <div id="emptyRoomState" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-10 text-center shadow-sm">
         <h2 class="text-lg font-bold text-stone-800 mb-2">Chưa có hoặc chưa chọn Hồ sơ điều phối (Room)</h2>
@@ -154,11 +168,11 @@
           <!-- Instruction & Context -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3 pt-3 border-t border-stone-200 text-xs">
             <div class="bg-stone-100/80 p-3 rounded border border-stone-200">
-              <div class="font-bold text-stone-700 uppercase mb-1">Chỉ đạo gốc (Instruction)</div>
+              <div class="font-bold text-stone-700 uppercase mb-1">Chỉ đạo</div>
               <div id="roomInstruction" class="text-stone-800 whitespace-pre-wrap max-h-36 overflow-y-auto"></div>
             </div>
             <div class="bg-stone-100/80 p-3 rounded border border-stone-200">
-              <div class="font-bold text-stone-700 uppercase mb-1">Bối cảnh & Ràng buộc (Context)</div>
+              <div class="font-bold text-stone-700 uppercase mb-1">Bối cảnh & dữ liệu nguồn</div>
               <div id="roomContext" class="text-stone-800 whitespace-pre-wrap max-h-36 overflow-y-auto"></div>
             </div>
           </div>
@@ -186,12 +200,25 @@
           </details>
         </div>
 
+        <!-- THẺ KẾT QUẢ HỒ SƠ (v1.6) -->
+        <div id="resultCard" class="hidden bg-white border-2 border-emerald-600 rounded-lg p-4 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 id="resultCardTitle" class="text-xs font-bold uppercase tracking-wider text-emerald-900">Kết quả hồ sơ</h3>
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="openPrintableReport()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded">Xem & In báo cáo (lưu PDF)</button>
+              <button onclick="exportCurrentRoomMarkdown()" class="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded">Tải Markdown</button>
+            </div>
+          </div>
+          <div id="resultCardBody" class="md-render text-sm text-stone-900"></div>
+          <div id="resultCardDN" class="text-xs"></div>
+        </div>
+
         <!-- Objective & Criteria (if planned) -->
         <div id="planSummaryCard" class="hidden bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
           <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Kế hoạch & Tiêu chí nghiệm thu (Claude Director)</h3>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Kế hoạch & tiêu chí nghiệm thu</h3>
             <div class="flex items-center gap-2 text-xs">
-              <span class="font-semibold text-stone-600">Leader AI:</span>
+              <span id="leaderSelectLabel" class="font-semibold text-stone-600">Leader AI:</span>
               <select id="leaderSelect" aria-label="Leader AI" onchange="handleChangeLeader(this.value)" class="border border-stone-300 rounded px-2 py-0.5 text-xs bg-white font-semibold"></select>
               <span class="text-stone-500">Giới hạn vòng (1–10):</span>
               <input type="number" id="maxRoundsInput" aria-label="Giới hạn số vòng" min="1" max="10" onchange="handleChangeMaxRounds(this.value)" class="w-14 border border-stone-300 rounded px-1.5 py-0.5 text-xs bg-white font-semibold" />
@@ -203,7 +230,7 @@
               <div class="font-bold text-stone-700 mb-1">Tiêu chí nghiệm thu (Criteria):</div>
               <ol id="planCriteriaList" class="list-decimal list-inside space-y-1 text-stone-800"></ol>
             </div>
-            <div>
+            <div id="leaderReasonBox">
               <div class="font-bold text-stone-700 mb-1">Lý do chọn Leader:</div>
               <p id="planLeaderReason" class="text-stone-700 italic"></p>
             </div>
@@ -217,7 +244,7 @@
             <!-- TASKS PANEL -->
             <div id="tasksPanel" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
               <div class="flex items-center justify-between mb-3">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Danh sách Task Worker (1–8 Tasks • Kiểm soát DAG)</h3>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Các task và kết quả</h3>
                 <span id="taskProgressSummary" class="text-xs font-semibold text-stone-600"></span>
               </div>
               <div id="taskListContainer" class="space-y-3"></div>
@@ -227,7 +254,7 @@
             <div id="leaderPanel" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
               <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                 <div>
-                  <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-900">Lớp Review 1 — Leader AI</span>
+                  <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-blue-100 text-blue-900">Leader rà soát & tổng hợp (nhập thủ công)</span>
                   <h3 class="text-sm font-bold text-stone-900 mt-1">Tổng hợp & Rà soát đầu ra Worker</h3>
                 </div>
                 <div class="flex gap-1.5">
@@ -260,8 +287,8 @@
             <div id="directorPanel" class="bg-[#262320] text-stone-100 border border-stone-700 rounded-lg p-4 shadow-md">
               <div class="flex items-center justify-between border-b border-stone-700 pb-2.5 mb-3">
                 <div>
-                  <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-600 text-white rounded">Claude Pro — Director</span>
-                  <h3 class="text-sm font-bold mt-1">Giao thức JSON Nghiêm ngặt (Protocol v1)</h3>
+                  <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-600 text-white rounded">Claude — Director</span>
+                  <h3 class="text-sm font-bold mt-1">Nhập quyết định của Director (thủ công)</h3>
                 </div>
                 <button onclick="openProviderSite('claude')" class="px-2.5 py-1 bg-stone-700 hover:bg-stone-600 text-amber-300 text-xs font-semibold rounded">Mở Claude.ai ↗</button>
               </div>
@@ -275,12 +302,12 @@
 
               <div class="space-y-2 text-xs">
                 <div class="flex items-center justify-between">
-                  <label for="directorRawInput" class="font-semibold text-stone-300">Dán phản hồi từ Claude Pro (Strict Schema):</label>
+                  <label for="directorRawInput" class="font-semibold text-stone-300">Dán phản hồi của Claude (có khối JSON):</label>
                   <button id="btnFillSampleEnvelope" onclick="fillSampleClaudeEnvelope()" class="hidden text-[11px] text-amber-400 hover:underline">[Demo Mode] Điền JSON mẫu</button>
                 </div>
                 <textarea id="directorRawInput" rows="7" oninput="saveDraft('director_json', this.value)" placeholder='Dán nguyên văn phản hồi chứa ĐÚNG 1 khối JSON {"protocolVersion":1, "roomId":"...", "roomVersion":..., "round":..., "stage":"plan|review", "decision":{...}}' class="w-full mono text-[11px] bg-stone-900 border border-stone-700 text-emerald-300 rounded p-2.5"></textarea>
                 <div id="directorValidationError" class="hidden bg-red-950/90 border border-red-600 text-red-200 p-2.5 rounded text-[11px] whitespace-pre-wrap"></div>
-                <button id="btnApplyDirector" onclick="applyClaudeDirectorDecision()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-stone-700 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Xác thực Strict Schema & Áp dụng Quyết định</button>
+                <button id="btnApplyDirector" onclick="applyClaudeDirectorDecision()" class="w-full py-2 bg-amber-600 hover:bg-amber-500 disabled:bg-stone-700 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Kiểm tra & áp dụng quyết định của Director</button>
               </div>
             </div>
 
@@ -288,8 +315,8 @@
             <div id="independentQAPanel" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm space-y-3">
               <div class="flex items-center justify-between border-b border-stone-200 pb-2">
                 <div>
-                  <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-900">Lớp Kiểm Soát Độc Lập — Independent QA</span>
-                  <h3 class="text-sm font-bold text-stone-900 mt-1">Thẩm định Độc lập trước Nghiệm thu</h3>
+                  <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-900">Thẩm định độc lập (QA)</span>
+                  <h3 class="text-sm font-bold text-stone-900 mt-1">Kiểm tra chéo trước khi chốt hồ sơ</h3>
                 </div>
                 <span id="qaStatusBadge" class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-stone-200 text-stone-700">PENDING</span>
               </div>
@@ -335,40 +362,40 @@
 
             <!-- FINAL SUBMIT & STRUCTURED DECISION NOTE (QA-08) -->
             <div id="submitGatePanel" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm space-y-2.5">
-              <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Chốt Hồ sơ — Decision Note & Submit</span>
-              <h3 class="text-sm font-bold text-stone-900">Final Deliverable & Decision Note</h3>
-              <div class="text-[11px] font-bold text-stone-600">Final Deliverable (Từ Director PASS):</div>
-              <div id="finalResultPreview" class="text-xs bg-stone-100 border border-stone-200 rounded p-2.5 max-h-40 overflow-y-auto whitespace-pre-wrap text-stone-800">Chưa có Final Result được duyệt từ Claude Director.</div>
+              <span class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">Chốt hồ sơ (cổng duyệt 2)</span>
+              <h3 class="text-sm font-bold text-stone-900">Cơ sở quyết định & chốt hồ sơ</h3>
+              <div class="text-[11px] font-bold text-stone-600">Kết quả đã được Director duyệt (xem đầy đủ ở thẻ Kết quả hồ sơ):</div>
+              <div id="finalResultPreview" class="md-render text-xs bg-stone-100 border border-stone-200 rounded p-2.5 max-h-40 overflow-y-auto text-stone-800">Chưa có Final Result được duyệt từ Claude Director.</div>
 
               <!-- Structured Decision Note -->
               <div id="dnPrefillNote" class="hidden">Director đã soạn sẵn Decision Note bên dưới — hãy rà soát, chỉnh nếu cần, rồi bấm Chốt hồ sơ.</div>
               <div class="space-y-2 text-xs pt-1 border-t border-stone-200">
                 <div>
-                  <label for="dnRationale" class="font-bold text-stone-700 block mb-0.5">1. Lý do lựa chọn phương án cuối (Rationale) *</label>
+                  <label for="dnRationale" class="font-bold text-stone-700 block mb-0.5">1. Lý do lựa chọn phương án cuối *</label>
                   <textarea id="dnRationale" rows="2" oninput="saveDraft('dn_rationale', this.value)" placeholder="Vì sao chọn phương án này?" class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
                 <div>
-                  <label for="dnRejected" class="font-bold text-stone-700 block mb-0.5">2. Các phương án bị loại đáng kể (Rejected Alternatives) *</label>
+                  <label for="dnRejected" class="font-bold text-stone-700 block mb-0.5">2. Các phương án đã cân nhắc nhưng loại *</label>
                   <textarea id="dnRejected" rows="2" oninput="saveDraft('dn_rejected', this.value)" placeholder="Các phương án đã xem xét nhưng loại bỏ (ghi rõ để có thể mở lại khi cần)..." class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label for="dnMinority" class="font-bold text-stone-700 block mb-0.5">3. Ý kiến thiểu số (Minority View)</label>
+                    <label for="dnMinority" class="font-bold text-stone-700 block mb-0.5">3. Ý kiến khác biệt</label>
                     <input id="dnMinority" type="text" oninput="saveDraft('dn_minority', this.value)" placeholder="Ý kiến khác biệt (nếu có)..." class="w-full border border-stone-300 rounded p-1.5 bg-white" />
                   </div>
                   <div>
-                    <label for="dnEdits" class="font-bold text-stone-700 block mb-0.5">4. Chỉnh sửa trọng yếu (Key Edits)</label>
+                    <label for="dnEdits" class="font-bold text-stone-700 block mb-0.5">4. Chỉnh sửa trọng yếu</label>
                     <input id="dnEdits" type="text" oninput="saveDraft('dn_edits', this.value)" placeholder="Các điều chỉnh lớn qua các vòng..." class="w-full border border-stone-300 rounded p-1.5 bg-white" />
                   </div>
                 </div>
                 <div>
-                  <label for="dnUncertainties" class="font-bold text-stone-700 block mb-0.5">5. Điểm chưa chắc chắn / Cần xác nhận thêm (Uncertainties) *</label>
+                  <label for="dnUncertainties" class="font-bold text-stone-700 block mb-0.5">5. Điểm chưa chắc chắn / cần xác nhận *</label>
                   <textarea id="dnUncertainties" rows="2" oninput="saveDraft('dn_uncertainties', this.value)" placeholder="Những giả định hoặc dữ liệu chưa có trong nguồn cung cấp..." class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
               </div>
 
               <div class="flex flex-wrap gap-2 pt-2">
-                <button onclick="handleFinalSubmitRoom()" id="btnFinalSubmit" class="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Xác nhận Submit — Khóa Hồ sơ (Completed)</button>
+                <button onclick="handleFinalSubmitRoom()" id="btnFinalSubmit" class="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Chốt hồ sơ — khóa & niêm phong</button>
                 <button onclick="reopenRejectedAlternativeModal()" id="btnReopenAlt" class="hidden px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition">Mở vòng rà soát mới</button>
               </div>
               <button onclick="handleCloseRejected()" id="btnCloseRejected" class="hidden w-full py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded border border-stone-400">Đóng hồ sơ — Không đạt (kết thúc, khóa hồ sơ)</button>
@@ -376,7 +403,7 @@
 
             <!-- AUDIT LOG & REVIEW HISTORY -->
             <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
-              <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700 mb-2">Nhật ký Kiểm toán & Lịch sử Review (<span id="auditCount">0</span>)</h3>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700 mb-2">Nhật ký kiểm toán (<span id="auditCount">0</span>)</h3>
               <div id="auditLogList" class="space-y-2 max-h-60 overflow-y-auto text-xs pr-1"></div>
             </div>
           </div>
@@ -384,6 +411,11 @@
       </div>
     </main>
   </div>
+
+  <footer class="max-w-7xl w-full mx-auto px-4 pb-6 text-[11px] text-stone-500 flex flex-wrap items-center justify-between gap-2">
+    <span id="storageQuotaFooter"></span>
+    <button onclick="runBuiltInSelfTestsModal()" id="btnSelfTest" class="px-2 py-1 underline hover:text-stone-800">Chạy Auto-Tests (kiểm tra hệ thống)</button>
+  </footer>
 
   <!-- MODAL: CREATE NEW ROOM -->
   <div id="newRoomModal" role="dialog" aria-modal="true" aria-labelledby="newRoomModalTitle" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -399,11 +431,11 @@
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="newRoomCategory" class="font-bold text-stone-700 block mb-1">Phân loại (Category ≤100)</label>
+            <label for="newRoomCategory" class="font-bold text-stone-700 block mb-1">Nhóm hồ sơ</label>
             <input id="newRoomCategory" type="text" maxlength="100" value="Tham vấn Quản trị & Rủi ro" class="w-full border border-stone-300 rounded p-2 bg-white" />
           </div>
-          <div>
-            <label for="newRoomLeader" class="font-bold text-stone-700 block mb-1">Leader AI ưu tiên</label>
+          <div id="newRoomLeaderBox">
+            <label for="newRoomLeader" class="font-bold text-stone-700 block mb-1">Leader AI (chỉ ở chế độ Đầy đủ)</label>
             <select id="newRoomLeader" class="w-full border border-stone-300 rounded p-2 bg-white">
               <option value="gemini">Gemini Pro</option>
               <option value="chatgpt">ChatGPT Plus</option>
@@ -455,7 +487,7 @@
         <div id="dlpWarningBox" class="hidden bg-amber-100 border border-amber-400 text-amber-900 p-2 rounded text-[11px]"></div>
         <div class="flex justify-end gap-2 pt-2">
           <button onclick="closeNewRoomModal()" class="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold rounded">Hủy</button>
-          <button onclick="createRoomSubmit()" id="btnCreateRoomSubmit" class="px-4 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tạo Room & Sinh Prompt Plan</button>
+          <button onclick="createRoomSubmit()" id="btnCreateRoomSubmit" class="px-4 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tạo hồ sơ & gửi Claude lập kế hoạch</button>
         </div>
       </div>
     </div>
@@ -518,7 +550,7 @@ const RESTRICTED_PROVIDERS_BY_CLASS = { public: [], internal: [], confidential: 
 const NON_INDEPENDENT_QA_SOURCES = [/claude/i]; // Director là Claude → QA bằng Claude không độc lập
 const MIN_QA_TEXT = 30, MIN_RATIONALE = 30, MIN_DN_SHORT = 10, MIN_CLOSE_REASON = 30;
 const DELETED_LOG_KEY = 'AITEAM_DELETED_ROOMS_LOG_V1.4';
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 
 // v1.5 — Chế độ xử lý theo mức rủi ro. Leader chỉ có ở chế độ Đầy đủ; QA độc lập bắt buộc ở Chuẩn và Đầy đủ.
 const MODES = {
@@ -597,7 +629,7 @@ function showBanner(msg, isError = false) {
   if (!el) return;
   if (bannerTimer) clearTimeout(bannerTimer);
   el.setAttribute('role', isError ? 'alert' : 'status');
-  el.innerHTML = `<span>${escapeHtml(msg)}</span><button onclick="hideBanner()" aria-label="Đóng thông báo" class="ml-3 px-1.5 font-bold opacity-80 hover:opacity-100">✕</button>`;
+  el.innerHTML = `<span>${escapeHtml(humanizeCodes(msg))}</span><button onclick="hideBanner()" aria-label="Đóng thông báo" class="ml-3 px-1.5 font-bold opacity-80 hover:opacity-100">✕</button>`;
   el.className = `${isError ? 'bg-red-800' : 'bg-emerald-800'} text-white fixed bottom-4 left-4 right-4 lg:left-auto lg:max-w-xl z-[60] px-4 py-3 text-xs font-semibold rounded-lg shadow-2xl flex items-start justify-between whitespace-pre-wrap`;
   bannerTimer = setTimeout(hideBanner, isError ? 10000 : 5000);
 }
@@ -1369,6 +1401,10 @@ function engineApplyDirectorDecision(room, rawText) {
       room.reviews.push(reviewRecord);
       room.finalResult = d.finalResult.trim();
       room.directorDecisionNoteDraft = d.decisionNote ? { ...d.decisionNote, round: room.round } : null;
+      const fmtGaps = finalResultFormatGaps(room.finalResult);
+      if (fmtGaps.length) {
+        room.messages.push({ id: uuidv4(), sender: 'Kiểm tra cấu trúc báo cáo', content: `Kết quả Director PASS chưa theo cấu trúc chuẩn — thiếu mục: ${fmtGaps.join(', ')}. Có thể yêu cầu Claude bổ sung trước khi chốt.`, createdAt: nowISO() });
+      }
       room.status = 'approved';
       room.version += 1;
       room.updatedAt = nowISO();
@@ -1851,59 +1887,295 @@ function engineEditRoomInfo(room, payload) {
 }
 
 // ============================================================================
-// 7. FULL MARKDOWN EXPORT (Khôi phục đầy đủ lịch sử hồ sơ + thông tin kiểm soát v1.4)
-// ============================================================================
+// v1.6 — Nhãn tiếng Việt cho trạng thái
+const STATUS_LABEL = {
+  planning: 'Lập kế hoạch', working: 'Đang thực hiện', rework: 'Đang làm lại', leader_review: 'Leader rà soát',
+  director_review: 'Director duyệt cuối', approved: 'Chờ thẩm định & chốt', escalated: 'Chờ quyết định',
+  completed: 'Đã chốt', closed_rejected: 'Đóng — Không đạt'
+};
+const TASK_STATUS_LABEL = { waiting: 'Chờ gửi', doing: 'Đã gửi — chờ kết quả', submitted: 'Đã có kết quả', rework: 'Cần làm lại', skipped: 'Ngoại lệ (nhập tay)' };
+const VERDICT_LABEL = { pass: 'ĐẠT', rework: 'YÊU CẦU LÀM LẠI', submitted: 'Đã nộp', fail: 'KHÔNG ĐẠT', needs_verification: 'CHỜ XÁC NHẬN (HOLD)' };
+function statusLabel(s) { return STATUS_LABEL[s] || s; }
+// Thay mã trạng thái kỹ thuật trong câu thông báo/nhật ký bằng nhãn tiếng Việt (chỉ khi hiển thị)
+function humanizeCodes(text) {
+  return String(text ?? '').replace(/\b(PLANNING|WORKING|LEADER_REVIEW|DIRECTOR_REVIEW|REWORK|APPROVED|ESCALATED|COMPLETED|CLOSED_REJECTED)\b/g, m => (STATUS_LABEL[m.toLowerCase()] || m).toUpperCase());
+}
+
+// Bộ hiển thị Markdown tối giản, an toàn: escape toàn bộ trước, chỉ sinh các thẻ cố định
+function escMd(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+function mdInline(raw) {
+  let s = escMd(raw);
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[\s(])\*([^*\s][^*]*?)\*(?=[\s).,;:!?]|$)/g, '$1<em>$2</em>');
+  return s;
+}
+function splitRow(line) {
+  let t = line.trim();
+  if (t.startsWith('|')) t = t.slice(1);
+  if (t.endsWith('|')) t = t.slice(0, -1);
+  return t.split('|').map(c => c.trim());
+}
+function renderMarkdownSafe(md) {
+  const lines = String(md ?? '').replace(/\r/g, '').split('\n');
+  const out = [];
+  const isBlockStart = l => /^\s*(#{1,6}\s|[-*+]\s|\d+[.)]\s|>|```|\|)/.test(l) || /^\s*-{3,}\s*$/.test(l);
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+    if (!line.trim()) { i++; continue; }
+    if (/^\s*```/.test(line)) {
+      const buf = []; i++;
+      while (i < lines.length && !/^\s*```/.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      out.push(`<pre><code>${escMd(buf.join('\n'))}</code></pre>`);
+      continue;
+    }
+    const hm = line.match(/^\s*(#{1,6})\s+(.*)$/);
+    if (hm) { const lv = Math.min(hm[1].length, 4); out.push(`<h${lv}>${mdInline(hm[2])}</h${lv}>`); i++; continue; }
+    if (/^\s*-{3,}\s*$/.test(line)) { out.push('<hr>'); i++; continue; }
+    if (/^\s*\|/.test(line) && i + 1 < lines.length && /^\s*\|?\s*:?-{2,}/.test(lines[i + 1])) {
+      const head = splitRow(line); i += 2;
+      const rows = [];
+      while (i < lines.length && /^\s*\|/.test(lines[i])) rows.push(splitRow(lines[i++]));
+      out.push(`<table><thead><tr>${head.map(c => `<th>${mdInline(c)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${head.map((_, k) => `<td>${mdInline(r[k] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody></table>`);
+      continue;
+    }
+    if (/^\s*[-*+]\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*[-*+]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*[-*+]\s+/, ''));
+      out.push(`<ul>${items.map(t => `<li>${mdInline(t)}</li>`).join('')}</ul>`);
+      continue;
+    }
+    if (/^\s*\d+[.)]\s+/.test(line)) {
+      const items = [];
+      while (i < lines.length && /^\s*\d+[.)]\s+/.test(lines[i])) items.push(lines[i++].replace(/^\s*\d+[.)]\s+/, ''));
+      out.push(`<ol>${items.map(t => `<li>${mdInline(t)}</li>`).join('')}</ol>`);
+      continue;
+    }
+    if (/^\s*>/.test(line)) {
+      const buf = [];
+      while (i < lines.length && /^\s*>/.test(lines[i])) buf.push(lines[i++].replace(/^\s*>\s?/, ''));
+      out.push(`<blockquote>${buf.map(mdInline).join('<br>')}</blockquote>`);
+      continue;
+    }
+    const buf = [];
+    while (i < lines.length && lines[i].trim() && !isBlockStart(lines[i])) buf.push(lines[i++]);
+    if (!buf.length) { buf.push(lines[i++]); }
+    out.push(`<p>${buf.map(mdInline).join('<br>')}</p>`);
+  }
+  return out.join('\n');
+}
+
+// Hạ cấp tiêu đề của nội dung nhúng để không phá cấu trúc báo cáo
+function demoteHeadings(md, add = 2) {
+  return String(md ?? '').split('\n').map(l => l.replace(/^(\s*)(#{1,6})(\s)/, (_, sp, h, s2) => sp + '#'.repeat(Math.min(6, h.length + add)) + s2)).join('\n');
+}
+function oneLine(s) { return String(s ?? '').replace(/\s*\n\s*/g, ' · ').replace(/\|/g, '/').trim(); }
+
+const FINAL_RESULT_REQUIRED_HEADINGS = ['Điểm chính cần nắm', 'Kế hoạch hành động', 'Điểm cần xác nhận'];
+function finalResultFormatGaps(text) {
+  const t = String(text || '');
+  return FINAL_RESULT_REQUIRED_HEADINGS.filter(hd => !new RegExp('^\\s*#{1,6}\\s*' + hd, 'im').test(t));
+}
+
+// 7. BÁO CÁO KẾT QUẢ HỒ SƠ (v1.6 — kết luận trước, bằng chứng sau, thông tin kỹ thuật ở phụ lục)
 function generateFullMarkdownReport(room) {
-  const dn = room.decisionNote;
-  const qaList = room.qaRecords || [];
-  const integrity = isImmutable(room) ? (room.integrityFlag ? `CẢNH BÁO: ${room.integrityFlag}` : `Đã niêm phong (SHA-256: \`${room.sealHash}\`, ${fmtTime(room.sealedAt)})`) : 'Chưa khóa';
-  const lines = [
-    `# HỒ SƠ ĐIỀU PHỐI AI TEAM: ${room.title}`,
-    `- **Room ID:** \`${room.id}\` | **Version:** ${room.version} | **Trạng thái:** \`${room.status.toUpperCase()}\` | **Chế độ:** ${room.isDemo ? 'DEMO' : 'NGHIỆP VỤ THẬT'}`,
-    `- **Chế độ xử lý:** ${MODES[room.mode]?.label || room.mode} | **Phân loại dữ liệu:** ${DATA_CLASSES[room.dataClass]?.label || room.dataClass} | **Owner:** ${room.owner || '(chưa gán)'} | **Hạn:** ${room.dueDate || '(chưa đặt)'} | **Cấp quyết định:** ${room.decisionMaker || '(chưa xác định)'}`,
-    `- **Round:** ${room.round}/${room.maxRounds} | **Leader AI:** ${PROVIDERS[room.leader]?.name || room.leader}`,
-    `- **Tạo lúc:** ${fmtTime(room.createdAt)} | **Cập nhật:** ${fmtTime(room.updatedAt)} | **Khóa hồ sơ:** ${room.submittedAt ? fmtTime(room.submittedAt) : '(Chưa khóa)'} (giờ Việt Nam)`,
-    `- **Toàn vẹn hồ sơ:** ${integrity}`,
-    room.supersedesRoomId ? `- **Kế thừa từ hồ sơ:** \`${room.supersedesRoomId}\`` : '',
-    room.supersededByRoomId ? `- **Đã có hồ sơ kế thừa:** \`${room.supersededByRoomId}\`` : '',
-    room.closeReason ? `- **Lý do đóng — Không đạt:** ${room.closeReason}` : '',
-    `- **Cảnh báo Provenance:** Các phản hồi được dán thủ công (Manual Paste), hệ thống không tự xác thực tài khoản/model thật.`,
-    `\n## 1. Chỉ đạo gốc & Bối cảnh (Instruction & Context)`,
-    `### 1.1. Chỉ đạo gốc (Instruction)\n${room.instruction}`,
-    `### 1.2. Bối cảnh (Context)\n${room.context || '*(Không có bối cảnh bổ sung)*'}`,
-    `\n## 2. Kế hoạch & Tiêu chí nghiệm thu (Director Plan)`,
-    `- **Mục tiêu (Objective):** ${room.objective || '*(Chưa lập kế hoạch)*'}`,
-    `- **Lý do chọn Leader:** ${room.leaderReason || '*(Chưa có)*'}`,
-    `- **Tiêu chí nghiệm thu (Criteria):**\n${(room.criteria || []).map((c, i) => `  ${i + 1}. ${c}`).join('\n') || '  *(Chưa có)*'}`,
-    `\n## 3. Kết quả thực thi của Worker & Lịch sử Phản hồi (Tasks & Response Versions)`,
-    ...(room.assignments || []).map((t, i) => {
-      const respHistory = (t.responses || []).map((resp, rIdx) => `  - *[Phiên bản #${rIdx + 1} | Vòng ${resp.round} | Provider thực hiện: ${resp.providerId}${resp.isException ? ' | NGOẠI LỆ do chủ dự án nhập' : ''}${resp.inheritedFrom ? ' | kế thừa từ ' + resp.inheritedFrom : ''} | ${fmtTime(resp.createdAt)}]:*\n    ${String(resp.content).replace(/\n/g, '\n    ')}`).join('\n');
-      return `### Task #${i + 1}: ${t.title}\n- **UUID:** \`${t.id}\` | **Provider hiện tại:** ${t.providerId} | **Trạng thái:** \`${t.status}\` | **Dependencies:** ${JSON.stringify(t.dependencies)}\n- **Hướng dẫn:** ${t.instructions}\n- **Tiêu chí Task:** ${t.acceptance}\n- **Đầu ra hiện hành (Current Output):**\n${t.output || '*(Chưa có đầu ra)*'}\n- **Lịch sử các bản phản hồi (Response History):**\n${respHistory || '  *(Chưa có lịch sử)*'}`;
-    }),
-    `\n## 4. Lịch sử Review 2 Lớp (Leader & Claude Director)`,
-    ...((room.reviews && room.reviews.length > 0) ? room.reviews.map(r => `### [${r.level.toUpperCase()}] Vòng ${r.round} — Verdict: \`${r.verdict}\` (${r.source || 'manual'} | ${fmtTime(r.createdAt)})\n- **Target IDs:** ${JSON.stringify(r.targetIds || [])}\n- **Nội dung đánh giá:**\n${r.content}\n${r.deliverable ? `\n- **Bản tổng hợp / Deliverable:**\n${r.deliverable}` : ''}`) : ['*(Chưa có lịch sử Review)*']),
-    `\n## 5. Hồ sơ Thẩm định Độc lập (Independent QA Records)`,
-    ...(qaList.length > 0 ? qaList.map(q => `### [QA Vòng ${q.round}] Nguồn: ${q.source} — Kết luận: \`${q.verdict.toUpperCase()}\` (${fmtTime(q.createdAt)})\n- **Bằng chứng đối chiếu:** ${q.evidence}\n- **Phát hiện QA:** ${q.findings}${q.resolvesHoldId ? `\n- **Giải tỏa HOLD \`${q.resolvesHoldId}\`:** ${q.resolutionNote}` : ''}`) : ['*(Chưa có bản ghi Independent QA)*']),
-    `\n## 6. Decision Note & Lịch sử Quyết định`,
-    dn ? [
-      `- **Lý do lựa chọn phương án cuối (Rationale):** ${dn.rationale}`,
-      `- **Các phương án bị loại đáng kể (Rejected Alternatives):** ${dn.rejectedAlternatives}`,
-      `- **Ý kiến thiểu số (Minority View):** ${dn.minorityView}`,
-      `- **Các chỉnh sửa trọng yếu (Key Edits):** ${dn.keyEdits}`,
-      `- **Những điểm chưa chắc chắn còn tồn tại (Uncertainties):** ${dn.uncertainties}`
-    ].join('\n') : '*(Chưa có Decision Note)*',
-    ...(room.decisionHistory && room.decisionHistory.length > 1 ? [`\n### Lịch sử các lần chốt Decision Note trước đó (${room.decisionHistory.length} bản ghi):`, ...room.decisionHistory.map((h, idx) => `- **Lần #${idx + 1} (Vòng ${h.round} | ${fmtTime(h.createdAt)}):** Lý do: ${h.rationale} | Phương án loại: ${h.rejectedAlternatives}`)] : []),
-    ...((room.finalResultHistory || []).length ? [`\n### Final Result các vòng trước (đã lưu trữ khi mở vòng mới):`, ...room.finalResultHistory.map(h => `- **Vòng ${h.round} (${fmtTime(h.archivedAt)}) — Lý do mở lại: ${h.reason}**\n${h.finalResult}`)] : []),
-    `\n## 7. Sản phẩm Chốt Cuối Cùng (Final Deliverable)\n${room.finalResult || '*(Chưa chốt)*'}`,
-    `\n## 8. Nhật ký Kiểm toán Toàn trình (Full Audit Trail)`,
-    ...((room.messages || []).map(m => `- **[${fmtTime(m.createdAt)}] ${m.sender}:** ${m.content}`))
-  ].filter(x => x !== '');
-  return lines.join('\n\n');
+  const dn = room.decisionNote || (room.directorDecisionNoteDraft && room.directorDecisionNoteDraft.round === room.round ? room.directorDecisionNoteDraft : null);
+  const finalDirector = [...(room.reviews || [])].reverse().find(r => r.level === 'director' && r.verdict === 'pass' && r.round === room.round);
+  const qaRound = qaRecordsOfRound(room, room.round);
+  const qaLatest = qaRound[qaRound.length - 1];
+  const leaderRound = [...(room.reviews || [])].reverse().find(r => r.level === 'leader' && r.round === room.round);
+  const locked = isImmutable(room);
+  const gaps = room.finalResult ? finalResultFormatGaps(room.finalResult) : [];
+  const L = [];
+  L.push(`# ${room.title}`);
+  if (!locked) L.push(`> **BẢN NHÁP** — hồ sơ chưa chốt (trạng thái: ${statusLabel(room.status)}). Nội dung có thể còn thay đổi.`);
+  if (room.isDemo) L.push(`> **HỒ SƠ DEMO** — dữ liệu thử nghiệm, không dùng làm căn cứ quyết định.`);
+  if (room.integrityFlag) L.push(`> **CẢNH BÁO TOÀN VẸN:** ${room.integrityFlag === 'seal_mismatch' ? 'nội dung không khớp niêm phong — có thể đã bị sửa ngoài ứng dụng' : 'hồ sơ nhập từ bên ngoài, không đủ điều kiện nghiệm thu'}.`);
+  L.push('');
+  L.push('| Nhìn nhanh | |');
+  L.push('|---|---|');
+  L.push(`| Trạng thái | ${statusLabel(room.status)}${room.status === 'closed_rejected' ? ' — ' + oneLine(room.closeReason) : ''} |`);
+  L.push(`| Cấp quyết định | ${oneLine(room.decisionMaker) || 'Chưa xác định'} |`);
+  L.push(`| Owner | ${oneLine(room.owner) || 'Chưa gán'} |`);
+  L.push(`| Hạn hoàn tất | ${room.dueDate || 'Chưa đặt'} |`);
+  L.push(`| Ngày chốt | ${room.submittedAt ? fmtTime(room.submittedAt) : 'Chưa chốt'} |`);
+  L.push(`| Chế độ xử lý / Phân loại dữ liệu | ${MODES[room.mode]?.label || room.mode} / ${DATA_CLASSES[room.dataClass]?.label || room.dataClass} |`);
+  L.push('');
+
+  L.push('## 1. Kết luận & đề xuất quyết định');
+  if (room.finalResult) {
+    L.push(demoteHeadings(room.finalResult, 2));
+    if (gaps.length) L.push(`\n> Lưu ý: kết quả chưa theo cấu trúc chuẩn — thiếu mục: ${gaps.join(', ')}.`);
+  } else {
+    const archived = (room.finalResultHistory || []).slice(-1)[0];
+    L.push(archived ? `Chưa có kết quả của vòng hiện tại. Kết quả vòng ${archived.round} đã được lưu ở Phụ lục C.` : 'Chưa có kết quả được Director duyệt.');
+  }
+  L.push('');
+
+  L.push('## 2. Cơ sở quyết định');
+  if (dn) {
+    L.push(`- **Lý do lựa chọn phương án cuối:** ${dn.rationale || 'Không có'}`);
+    L.push(`- **Các phương án đã cân nhắc nhưng loại:** ${dn.rejectedAlternatives || 'Không có'}`);
+    L.push(`- **Ý kiến khác biệt:** ${dn.minorityView || 'Không có'}`);
+    L.push(`- **Chỉnh sửa trọng yếu:** ${dn.keyEdits || 'Không có'}`);
+    L.push(`- **Điểm chưa chắc chắn / cần xác nhận:** ${dn.uncertainties || 'Không có'}`);
+    if (!room.decisionNote) L.push('\n> Đây là bản do Director soạn sẵn, chủ dự án chưa xác nhận.');
+  } else {
+    L.push('Chưa có.');
+  }
+  L.push('');
+
+  L.push('## 3. Kiểm soát chất lượng');
+  L.push('| Lớp kiểm soát | Kết quả | Nguồn | Thời điểm |');
+  L.push('|---|---|---|---|');
+  if (leaderRound) L.push(`| Leader rà soát (vòng ${leaderRound.round}) | Đã nộp | ${PROVIDERS[room.leader]?.name || room.leader} | ${fmtTime(leaderRound.createdAt)} |`);
+  L.push(finalDirector ? `| Director duyệt cuối (vòng ${finalDirector.round}) | ${VERDICT_LABEL.pass} | Claude (Director) | ${fmtTime(finalDirector.createdAt)} |` : '| Director duyệt cuối | Chưa có | — | — |');
+  if (roomRequiresQA(room) || qaLatest) {
+    L.push(qaLatest ? `| Thẩm định độc lập (vòng ${qaLatest.round}) | ${VERDICT_LABEL[qaLatest.verdict] || qaLatest.verdict} | ${oneLine(qaLatest.source)} | ${fmtTime(qaLatest.createdAt)} |` : '| Thẩm định độc lập | Chưa có | — | — |');
+  } else {
+    L.push('| Thẩm định độc lập | Không bắt buộc (chế độ Nhanh) | — | — |');
+  }
+  L.push(`| Chủ dự án chốt hồ sơ | ${room.status === 'completed' ? 'Đã chốt' : room.status === 'closed_rejected' ? 'Đóng — Không đạt' : 'Chưa chốt'} | ${oneLine(room.owner) || '—'} | ${room.submittedAt ? fmtTime(room.submittedAt) : '—'} |`);
+  L.push(`| Niêm phong hồ sơ | ${locked ? (room.integrityFlag ? 'CẢNH BÁO' : 'Đã niêm phong') : 'Chưa khóa'} | SHA-256 | ${room.sealedAt ? fmtTime(room.sealedAt) : '—'} |`);
+  if (finalDirector) { L.push('\n### Đánh giá theo tiêu chí (Director)'); L.push(demoteHeadings(finalDirector.content, 3)); }
+  if (qaLatest) {
+    L.push('\n### Thẩm định độc lập');
+    L.push(`- **Bằng chứng đã đối chiếu:** ${qaLatest.evidence}`);
+    L.push(`- **Phát hiện:** ${qaLatest.findings}`);
+    if (qaLatest.resolvesHoldId) L.push(`- **Giải tỏa HOLD:** ${qaLatest.resolutionNote}`);
+  }
+  L.push('');
+
+  L.push('## 4. Yêu cầu & phạm vi');
+  L.push(`- **Chỉ đạo:** ${room.instruction}`);
+  L.push(`- **Mục tiêu:** ${room.objective || 'Chưa lập kế hoạch'}`);
+  L.push('- **Tiêu chí nghiệm thu:**');
+  L.push((room.criteria || []).length ? room.criteria.map((c, i) => `  ${i + 1}. ${c}`).join('\n') : '  Chưa có');
+  L.push('\n### Bối cảnh & dữ liệu nguồn');
+  L.push(room.context ? demoteHeadings(room.context, 3) : 'Không có bối cảnh bổ sung.');
+  L.push('');
+
+  L.push('## Phụ lục A. Kết quả từng task');
+  if (!(room.assignments || []).length) L.push('Chưa có task.');
+  (room.assignments || []).forEach((t, i) => {
+    const deps = t.dependencies.map(d => room.assignments.findIndex(a => a.id === d) + 1).filter(n => n > 0);
+    const resp = t.responses || [];
+    const lastProv = resp.length ? resp[resp.length - 1].providerId : t.providerId;
+    L.push(`### Task ${i + 1}: ${t.title}`);
+    L.push(`- **AI thực hiện:** ${PROVIDERS[lastProv]?.name || lastProv}${t.status === 'skipped' ? ' — **NGOẠI LỆ: nội dung do chủ dự án nhập thay AI**' : ''} | **Trạng thái:** ${TASK_STATUS_LABEL[t.status] || t.status}${deps.length ? ` | **Sau task:** ${deps.join(', ')}` : ''}`);
+    L.push(`- **Yêu cầu:** ${t.instructions}`);
+    L.push(`- **Tiêu chí:** ${t.acceptance}`);
+    L.push('');
+    L.push(t.output ? demoteHeadings(t.output, 3) : 'Chưa có đầu ra.');
+    const older = resp.slice(0, -1).filter(r => r.content !== t.output);
+    if (older.length) {
+      L.push(`\n**Các phiên bản trước (${older.length}):**`);
+      older.forEach((r, k) => L.push(`\n> Phiên bản ${k + 1} — vòng ${r.round}, ${PROVIDERS[r.providerId]?.name || r.providerId}, ${fmtTime(r.createdAt)}\n>\n${String(r.content).split('\n').map(x => '> ' + x).join('\n')}`));
+    }
+    L.push('');
+  });
+
+  L.push('## Phụ lục B. Lịch sử rà soát');
+  const revs = room.reviews || [];
+  if (!revs.length && !(room.qaRecords || []).length) L.push('Chưa có.');
+  revs.forEach(r => {
+    L.push(`### ${r.level === 'leader' ? 'Leader' : 'Director'} — vòng ${r.round} — ${VERDICT_LABEL[r.verdict] || r.verdict} (${fmtTime(r.createdAt)})`);
+    L.push(demoteHeadings(r.content, 3));
+    if (r.targetIds && r.targetIds.length) L.push(`\n- **Task yêu cầu làm lại:** ${r.targetIds.map(id => { const k = room.assignments.findIndex(a => a.id === id); return k >= 0 ? `Task ${k + 1}` : id; }).join(', ')}`);
+    if (r.deliverable && r.deliverable.trim() !== String(room.finalResult || '').trim()) L.push(`\n**Bản tổng hợp kèm theo:**\n\n${demoteHeadings(r.deliverable, 3)}`);
+    L.push('');
+  });
+  (room.qaRecords || []).forEach(q => {
+    L.push(`### Thẩm định độc lập — vòng ${q.round} — ${VERDICT_LABEL[q.verdict] || q.verdict} (${fmtTime(q.createdAt)})`);
+    L.push(`- **Nguồn:** ${q.source}`);
+    L.push(`- **Bằng chứng:** ${q.evidence}`);
+    L.push(`- **Phát hiện:** ${q.findings}`);
+    if (q.resolvesHoldId) L.push(`- **Giải tỏa HOLD:** ${q.resolutionNote}`);
+    L.push('');
+  });
+
+  if ((room.decisionHistory || []).length > 1 || (room.finalResultHistory || []).length) {
+    L.push('## Phụ lục C. Kết quả & quyết định các vòng trước');
+    (room.finalResultHistory || []).forEach(h => { L.push(`### Kết quả vòng ${h.round} (lưu lúc ${fmtTime(h.archivedAt)}) — lý do mở lại: ${oneLine(h.reason)}`); L.push(demoteHeadings(h.finalResult, 3)); L.push(''); });
+    (room.decisionHistory || []).slice(0, -1).forEach((h, k) => L.push(`- **Lần chốt ${k + 1} (vòng ${h.round}, ${fmtTime(h.createdAt)}):** ${h.rationale}`));
+    L.push('');
+  }
+
+  L.push('## Phụ lục D. Nhật ký kiểm toán');
+  (room.messages || []).forEach(m => L.push(`- **${fmtTime(m.createdAt)} — ${m.sender}:** ${humanizeCodes(m.content)}`));
+  L.push('');
+
+  L.push('## Phụ lục E. Thông tin kỹ thuật');
+  L.push(`- **Mã hồ sơ:** \`${room.id}\` | **Phiên bản dữ liệu:** ${room.version} | **Vòng:** ${room.round}/${room.maxRounds}`);
+  L.push(`- **Niêm phong SHA-256:** ${room.sealHash ? '`' + room.sealHash + '`' : 'Chưa niêm phong'}`);
+  if (room.supersedesRoomId) L.push(`- **Kế thừa từ hồ sơ:** \`${room.supersedesRoomId}\``);
+  if (room.supersededByRoomId) L.push(`- **Đã có hồ sơ kế thừa:** \`${room.supersededByRoomId}\``);
+  L.push('- **Nguồn gốc nội dung:** phản hồi AI được dán thủ công từ các dịch vụ AI; ứng dụng không tự xác thực tài khoản hay model đã tạo ra nội dung.');
+  L.push(`- **Xuất lúc:** ${fmtTime(nowISO())} (giờ Việt Nam) — AI Team v${APP_VERSION}`);
+  return L.join('\n');
+}
+
+function generateReportHTML(room) {
+  const body = renderMarkdownSafe(generateFullMarkdownReport(room));
+  return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escMd(room.title)}</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #1c1917; max-width: 860px; margin: 24px auto; padding: 0 20px; font-size: 13.5px; line-height: 1.5; background: #fff; }
+  h1 { font-size: 20px; margin: 0 0 8px; } h2 { font-size: 15px; margin: 22px 0 6px; padding-bottom: 4px; border-bottom: 2px solid #b45309; color: #78350f; }
+  h3 { font-size: 13.5px; margin: 14px 0 4px; } h4 { font-size: 13px; margin: 10px 0 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; } th, td { border: 1px solid #d6d3d1; padding: 4px 7px; text-align: left; vertical-align: top; } th { background: #f5f5f4; }
+  blockquote { margin: 8px 0; padding: 6px 10px; background: #fffbeb; border-left: 3px solid #d97706; } ul, ol { padding-left: 20px; margin: 4px 0; }
+  code { background: #f5f5f4; padding: 0 3px; border-radius: 3px; font-size: 12px; word-break: break-all; } pre { background: #f5f5f4; padding: 8px; overflow-x: auto; }
+  .toolbar { position: sticky; top: 0; background: #fff; padding: 8px 0; border-bottom: 1px solid #e7e5e4; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
+  .toolbar button { background: #047857; color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; font-weight: 600; cursor: pointer; }
+  @media print { .toolbar { display: none; } body { margin: 0; max-width: none; } h2 { break-after: avoid; } tr, blockquote { break-inside: avoid; } @page { size: A4; margin: 16mm 14mm; } }
+</style></head><body>
+<div class="toolbar"><button onclick="window.print()">In / Lưu PDF</button><span style="color:#78716c">Chọn "Lưu dưới dạng PDF" trong hộp thoại in để có file PDF.</span></div>
+<article>${body}</article></body></html>`;
+}
+
+function openPrintableReport() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  const html = generateReportHTML(room);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  if (!w) downloadBlob(html, 'text/html;charset=utf-8', `bao-cao-${room.id.slice(0, 8)}.html`);
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
 }
 
 // ============================================================================
 // 8. PROMPT GENERATORS (v1.4 — đầy đủ bối cảnh, tiêu chí và quy tắc quyết định)
 // ============================================================================
+// v1.6 — Cấu trúc chuẩn của bản chốt (dùng cho Director, Leader và QA đối chiếu)
+const FINAL_RESULT_TEMPLATE = `## Điểm chính cần nắm
+- Kết luận: <1–2 câu>. Đề xuất quyết định: <Phê duyệt / Phê duyệt có điều kiện / Không phê duyệt / Bổ sung hồ sơ> — nếu hồ sơ không phải đề xuất phê duyệt, nêu kết luận chính.
+- <3–5 ý trọng yếu người ra quyết định cần biết>
+
+## Dữ kiện chính
+| Dữ kiện | Nguồn trong hồ sơ |
+|---|---|
+
+## Rủi ro trọng yếu
+| Rủi ro | Mức | Tác động | Owner |
+|---|---|---|---|
+(ghi "Không áp dụng" nếu hồ sơ không có nội dung rủi ro)
+
+## Điều kiện & khuyến nghị
+- <điều kiện kèm theo quyết định, khuyến nghị cụ thể>
+
+## Kế hoạch hành động
+| Thời hạn | Hành động | Owner | Kết quả cần đạt |
+|---|---|---|---|
+| 7 ngày | | | |
+| 30 ngày | | | |
+| 90 ngày | | | |
+
+## Điểm cần xác nhận
+- <giả định, dữ liệu còn thiếu — ghi "chưa có dữ liệu trong nguồn cung cấp" khi thiếu; ghi "Không có" nếu không còn>`;
+
 const PROMPT_PRINCIPLES = `NGUYÊN TẮC BẮT BUỘC:
 1. Phân biệt rõ: Dữ kiện (có trong nguồn) → Nhận định → Rủi ro → Tác động → Khuyến nghị → Hành động.
 2. Không tự tạo số liệu, sự kiện, văn bản pháp lý hoặc nguồn. Thiếu thông tin thì ghi "chưa có dữ liệu trong nguồn cung cấp" hoặc "cần xác nhận".
@@ -2042,7 +2314,9 @@ ${workerSection}
 - Task nào cần làm lại (nêu UUID) và vì sao.
 
 ## DELIVERABLE
-Bản tổng hợp hoàn chỉnh, mở đầu bằng kết luận/khuyến nghị, có owner và hành động cụ thể khi phù hợp. Không đưa vào nội dung không có căn cứ.`;
+Bản tổng hợp hoàn chỉnh theo đúng cấu trúc dưới đây (giữ nguyên các tiêu đề như mẫu, không thêm "Tóm tắt điều hành"). Không đưa vào nội dung không có căn cứ.
+
+${FINAL_RESULT_TEMPLATE}`;
 }
 
 function generateDirectorReviewPrompt(room) {
@@ -2083,7 +2357,7 @@ Deliverable:
 ${latestLeader?.deliverable || '(Leader không nộp deliverable)'}
 ` : ''}
 === QUY TẮC QUYẾT ĐỊNH ===
-1. "pass" CHỈ KHI mọi tiêu chí C1..Cn đều Đạt và có căn cứ trong nguồn; khi đó targetIds = [], finalResult là bản chốt hoàn chỉnh, và decisionNote ghi lý do quyết định (chủ dự án sẽ rà soát trước khi khóa hồ sơ).
+1. "pass" CHỈ KHI mọi tiêu chí C1..Cn đều Đạt và có căn cứ trong nguồn; khi đó targetIds = [], finalResult là bản chốt hoàn chỉnh THEO CẤU TRÚC BẮT BUỘC ở cuối prompt (Markdown, đặt trong chuỗi JSON), và decisionNote ghi lý do quyết định (chủ dự án sẽ rà soát trước khi khóa hồ sơ).
 2. "rework" khi có bất kỳ tiêu chí Không đạt/Chưa đủ căn cứ:
    - Lỗi nằm ở đầu ra task → targetIds = danh sách UUID task cần làm lại (lấy đúng UUID ở trên).${hasLeader ? '\n   - Lỗi nằm ở bản tổng hợp của Leader → targetIds = [].' : '\n   - Chế độ này không có Leader nên targetIds KHÔNG được rỗng.'}
    - finalResult phải là chuỗi rỗng "" và không gửi decisionNote.
@@ -2098,7 +2372,11 @@ ${JSON.stringify(samplePass, null, 2)}
 Mẫu REWORK:
 \`\`\`json
 ${JSON.stringify(sampleRework, null, 2)}
-\`\`\``;
+\`\`\`
+
+=== CẤU TRÚC BẮT BUỘC CỦA finalResult (khi PASS) ===
+Viết cho người ra quyết định (${room.decisionMaker || 'Ban điều hành'}): ngắn, có kết luận, owner và thời hạn; không dùng tiêu đề "Tóm tắt điều hành".
+${FINAL_RESULT_TEMPLATE}`;
 }
 
 function generateIndependentQAPrompt(room) {
@@ -2119,7 +2397,8 @@ ${room.finalResult || '(Chưa có)'}
 1. Liệt kê từng số liệu/khẳng định quan trọng trong Final Deliverable và căn cứ tương ứng trong nguồn; đánh dấu rõ mục KHÔNG truy được nguồn.
 2. Đánh giá lần lượt từng tiêu chí C1..Cn: Đạt / Không đạt / Chưa đủ căn cứ.
 3. Nêu rủi ro còn tồn đọng hoặc điểm cần xác nhận với người có thẩm quyền.
-4. Kết luận một dòng: PASS (đạt) / FAIL (không đạt) / HOLD (chờ xác nhận thêm), kèm lý do.
+4. Kiểm tra Final Deliverable có đủ các mục chuẩn: Điểm chính cần nắm, Dữ kiện chính, Rủi ro trọng yếu, Điều kiện & khuyến nghị, Kế hoạch hành động (có owner, thời hạn), Điểm cần xác nhận — nêu rõ mục nào thiếu.
+5. Kết luận một dòng: PASS (đạt) / FAIL (không đạt) / HOLD (chờ xác nhận thêm), kèm lý do.
 
 Định dạng trả về:
 ## BẰNG CHỨNG ĐÃ ĐỐI CHIẾU
@@ -2313,7 +2592,10 @@ function engineApplyIngest(room, c) {
   if (c.kind === 'director') {
     const res = engineApplyDirectorDecision(room, c.text);
     if (res.stage === 'plan') return `Đã áp dụng kế hoạch: ${room.assignments.length} task, chế độ ${MODES[room.mode].label}.`;
-    if (res.status === 'approved') return roomRequiresQA(room) ? 'Director PASS → chờ thẩm định độc lập.' : 'Director PASS → chờ chủ dự án chốt hồ sơ.';
+    if (res.status === 'approved') {
+      const gaps = finalResultFormatGaps(room.finalResult);
+      return (roomRequiresQA(room) ? 'Director PASS → chờ thẩm định độc lập.' : 'Director PASS → chờ chủ dự án chốt hồ sơ.') + (gaps.length ? ` Lưu ý: kết quả thiếu mục ${gaps.join(', ')}.` : '');
+    }
     if (res.status === 'escalated') return 'Director yêu cầu Rework ở vòng cuối → ESCALATED, chờ quyết định.';
     return `Director yêu cầu Rework → Round ${room.round}.`;
   }
@@ -2496,7 +2778,8 @@ function handleFinalSubmitRoom() {
     if (!confirm('Xác nhận khóa hồ sơ ở trạng thái COMPLETED? Sau khi khóa, hồ sơ được niêm phong và không thể chỉnh sửa.')) return;
     engineFinalSubmitRoom(room, payload);
     ['dn_rationale', 'dn_rejected', 'dn_minority', 'dn_edits', 'dn_uncertainties'].forEach(clearDraft);
-    persistAndRender('Hồ sơ đã hoàn tất nghiệm thu, khóa và niêm phong ở trạng thái COMPLETED!');
+    persistAndRender('Hồ sơ đã chốt, khóa và niêm phong. Xem kết quả và in báo cáo ở thẻ phía trên.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -2538,6 +2821,7 @@ function handleCloseRejected() {
   try {
     engineCloseRejected(room, reason);
     persistAndRender('Đã đóng hồ sơ ở trạng thái KHÔNG ĐẠT (đã niêm phong).');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -2968,6 +3252,7 @@ function syncModeHint() {
   const sel = document.getElementById('newRoomMode');
   if (dc === 'confidential') sel.value = 'full';
   [...sel.options].forEach(o => { o.disabled = dc === 'confidential' && o.value !== 'full'; });
+  document.getElementById('newRoomLeaderBox').classList.toggle('hidden', sel.value !== 'full');
   document.getElementById('newRoomModeHint').textContent = (dc === 'confidential' ? 'Hồ sơ MẬT luôn chạy chế độ Đầy đủ. ' : '') + (MODES[sel.value]?.note || '');
 }
 function showRoomModal() {
@@ -2979,7 +3264,7 @@ function openNewRoomModal() {
   editingRoomId = null;
   setRoomModalFields(null);
   document.getElementById('newRoomModalTitle').textContent = 'Khởi tạo Room Nghiệp Vụ Mới';
-  document.getElementById('btnCreateRoomSubmit').textContent = 'Tạo Room & Sinh Prompt Plan';
+  document.getElementById('btnCreateRoomSubmit').textContent = 'Tạo hồ sơ & gửi Claude lập kế hoạch';
   showRoomModal();
 }
 function openEditRoomModal() {
@@ -3162,6 +3447,10 @@ function renderProviderCatalog() {
 
 function renderRoomList() {
   document.getElementById('roomCount').textContent = rooms.length;
+  const ms = document.getElementById('mobileRoomSelect');
+  if (ms) ms.innerHTML = rooms.length
+    ? rooms.map(r => `<option value="${escapeHtml(r.id)}" ${r.id === currentRoomId ? 'selected' : ''}>${escapeHtml('[' + statusLabel(r.status) + '] ' + r.title)}</option>`).join('')
+    : '<option value="">Chưa có hồ sơ</option>';
   const listEl = document.getElementById('roomList');
   if (rooms.length === 0) {
     listEl.innerHTML = `<div class="text-xs text-stone-500 italic py-4 text-center">Chưa có Room nào.</div>`;
@@ -3173,7 +3462,7 @@ function renderRoomList() {
       <div role="button" tabindex="0" onclick="selectRoom('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRoom('${safeId}')}" class="p-2.5 rounded border cursor-pointer transition ${r.id === currentRoomId ? 'bg-amber-50 border-amber-600 shadow-sm' : 'bg-white border-stone-200 hover:border-stone-400'}">
         <div class="flex items-center justify-between gap-1 mb-1">
           <div class="flex flex-wrap items-center gap-1">
-            <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${STATUS_BADGE[r.status] || 'bg-stone-200 text-stone-800'}">${escapeHtml(r.status)}</span>
+            <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${STATUS_BADGE[r.status] || 'bg-stone-200 text-stone-800'}">${escapeHtml(statusLabel(r.status))}</span>
             ${r.isDemo ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-amber-600 text-white">DEMO</span>` : ''}
             ${r.dataClass === 'confidential' ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-red-700 text-white">MẬT</span>` : ''}
             ${r.integrityFlag ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-red-100 text-red-800">CHƯA XÁC THỰC</span>` : ''}
@@ -3206,7 +3495,7 @@ function renderActiveRoom() {
   document.getElementById('btnFillSampleEnvelope').className = room.isDemo ? 'text-[11px] text-amber-400 hover:underline' : 'hidden';
 
   const badge = document.getElementById('roomStatusBadge');
-  badge.textContent = room.status.toUpperCase();
+  badge.textContent = statusLabel(room.status);
   badge.className = `px-2 py-0.5 text-xs font-bold uppercase rounded ${STATUS_BADGE[room.status] || 'bg-stone-200 text-stone-800'}`;
   document.getElementById('roomModeBadge').textContent = 'Chế độ: ' + (MODES[room.mode]?.label || room.mode);
   document.getElementById('roomModeBadge').title = MODES[room.mode]?.note || '';
@@ -3221,7 +3510,8 @@ function renderActiveRoom() {
   } else {
     ib.className = 'hidden';
   }
-  document.getElementById('roomMetaInfo').textContent = `ID: ${room.id} | Ver: ${room.version} | Round: ${room.round}/${room.maxRounds} | ${room.category}`;
+  document.getElementById('roomMetaInfo').textContent = `${room.category} • Vòng ${room.round}/${room.maxRounds} • Mã ${room.id.slice(0, 8)}`;
+  document.getElementById('roomMetaInfo').title = `Mã đầy đủ: ${room.id} | Phiên bản dữ liệu: ${room.version}`;
   document.getElementById('roomTitle').textContent = room.title;
   document.getElementById('roomAccountability').textContent = `Owner: ${room.owner || '(chưa gán)'} • Hạn: ${room.dueDate || '(chưa đặt)'}${isOverdue(room) ? ' — QUÁ HẠN' : ''} • Cấp quyết định: ${room.decisionMaker || '(chưa xác định)'}`;
   document.getElementById('roomInstruction').textContent = room.instruction;
@@ -3256,7 +3546,7 @@ function renderActiveRoom() {
     ...(roomHasLeader(room) ? [{ key: 'leader_review', label: 'Leader' }] : []),
     { key: 'director_review', label: 'Director' },
     { key: 'approved', label: roomRequiresQA(room) ? 'QA Độc lập' : 'Chủ dự án chốt' },
-    { key: 'completed', label: room.status === 'closed_rejected' ? 'Đóng — Không đạt' : 'Completed' }
+    { key: 'completed', label: room.status === 'closed_rejected' ? 'Đóng — Không đạt' : 'Đã chốt' }
   ];
   const steps = stepDefs.map((s, i) => ({ ...s, label: `${i + 1}. ${s.label}` }));
   const curKey = room.status === 'rework' ? 'working' : room.status === 'escalated' ? 'director_review' : room.status === 'closed_rejected' ? 'completed' : room.status;
@@ -3275,7 +3565,6 @@ function renderActiveRoom() {
     if (el) el.classList.toggle('ring-amber-500', (STAGE_PANEL[room.status] || []).includes(id));
   });
 
-  document.getElementById('leaderPanel').classList.toggle('hidden', !roomHasLeader(room));
   renderOrchestrator(room);
 
   // Plan summary
@@ -3317,13 +3606,13 @@ function renderActiveRoom() {
         <div class="border border-stone-300 rounded-lg p-3 bg-white space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded ${t.status === 'rework' ? 'bg-red-100 text-red-900' : taskDone ? 'bg-emerald-100 text-emerald-900' : 'bg-stone-200'}">${escapeHtml(t.status)}</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded ${t.status === 'rework' ? 'bg-red-100 text-red-900' : taskDone ? 'bg-emerald-100 text-emerald-900' : 'bg-stone-200'}">${escapeHtml(TASK_STATUS_LABEL[t.status] || t.status)}</span>
               <select aria-label="Provider của Task ${idx + 1}" onchange="handleTaskChangeProviderUI('${safeTaskId}', this.value)" ${!canChangeProvider ? 'disabled' : ''} class="text-[11px] font-semibold px-1.5 py-0.5 rounded border border-stone-300 bg-white">${providerOptions}</select>
               <span class="mono text-[11px] text-stone-400">ID: ${escapeHtml(t.id.slice(0, 8))}</span>
             </div>
             <div class="flex gap-1.5">
-              <button onclick="copyWorkerPrompt('${safeTaskId}', ${idx})" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-2 py-1 bg-stone-800 disabled:bg-stone-300 text-white text-[11px] font-semibold rounded">1. Copy Prompt</button>
-              <button onclick="openProviderSite('${escapeJsString(t.providerId)}')" class="px-2 py-1 bg-stone-200 text-stone-800 text-[11px] font-semibold rounded">2. Mở Web ↗</button>
+              <button onclick="copyWorkerPrompt('${safeTaskId}', ${idx})" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-2 py-1 bg-stone-800 disabled:bg-stone-300 text-white text-[11px] font-semibold rounded">Copy prompt</button>
+              <button onclick="openProviderSite('${escapeJsString(t.providerId)}')" class="px-2 py-1 bg-stone-200 text-stone-800 text-[11px] font-semibold rounded">Mở AI ↗</button>
             </div>
           </div>
           <div class="text-xs font-bold text-stone-900">Task #${idx + 1}: ${escapeHtml(t.title)}</div>
@@ -3336,7 +3625,7 @@ function renderActiveRoom() {
             <span class="text-[11px] text-stone-500">Lịch sử phản hồi: ${t.responses?.length || 0} bản</span>
             <div class="flex gap-1.5">
               <button onclick="handleTaskExceptionBypassUI('${safeTaskId}')" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 disabled:opacity-40 text-stone-800 text-[11px] font-semibold rounded" title="Dùng khi Worker không phản hồi: nội dung ô kết quả được ghi nhận là đầu ra thay thế do chủ dự án nhập">Ngoại lệ / Thay thế</button>
-              <button onclick="submitWorkerResponse('${safeTaskId}')" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-3 py-1 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-300 text-white text-xs font-bold rounded">3. Lưu Output Worker</button>
+              <button onclick="submitWorkerResponse('${safeTaskId}')" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-3 py-1 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-300 text-white text-xs font-bold rounded">Lưu kết quả</button>
             </div>
           </div>
         </div>
@@ -3388,7 +3677,18 @@ function renderActiveRoom() {
   renderQAHoldFields();
 
   // Final Submit & Decision Note Controls
-  document.getElementById('finalResultPreview').textContent = room.finalResult || 'Chưa có Final Result.';
+  document.getElementById('finalResultPreview').innerHTML = room.finalResult ? renderMarkdownSafe(room.finalResult) : '<p>Chưa có kết quả được Director duyệt.</p>';
+  renderResultCard(room);
+  // Chỉ hiện khung thủ công liên quan bước hiện tại
+  const show = (id, on) => document.getElementById(id).classList.toggle('hidden', !on);
+  show('directorPanel', room.status === 'planning' || room.status === 'director_review');
+  show('leaderPanel', roomHasLeader(room) && room.status === 'leader_review');
+  show('independentQAPanel', room.status === 'approved');
+  show('submitGatePanel', room.status === 'approved');
+  show('tasksPanel', (room.assignments || []).length > 0);
+  document.getElementById('leaderSelect').classList.toggle('hidden', !roomHasLeader(room));
+  document.getElementById('leaderSelectLabel').classList.toggle('hidden', !roomHasLeader(room));
+  document.getElementById('leaderReasonBox').classList.toggle('hidden', !roomHasLeader(room));
   const dn = room.decisionNote || (room.directorDecisionNoteDraft && room.directorDecisionNoteDraft.round === room.round ? room.directorDecisionNoteDraft : null);
   document.getElementById('dnRationale').value = getDraft('dn_rationale') || (dn?.rationale || '');
   document.getElementById('dnRejected').value = getDraft('dn_rejected') || (dn?.rejectedAlternatives || '');
@@ -3409,8 +3709,8 @@ function renderActiveRoom() {
 
   // Audit Log
   const logs = [
-    ...(room.qaRecords || []).map(q => ({ time: q.createdAt, title: `Independent QA [${q.source}] • Vòng ${q.round} • ${q.verdict.toUpperCase()}`, body: `Evidence: ${q.evidence} | Findings: ${q.findings}${q.resolutionNote ? ' | Xử lý HOLD: ' + q.resolutionNote : ''}` })),
-    ...(room.reviews || []).map(rv => ({ time: rv.createdAt, title: `Review [${rv.level.toUpperCase()}] • Vòng ${rv.round} • Verdict: ${rv.verdict}`, body: rv.content })),
+    ...(room.qaRecords || []).map(q => ({ time: q.createdAt, title: `Thẩm định độc lập [${q.source}] • Vòng ${q.round} • ${VERDICT_LABEL[q.verdict] || q.verdict}`, body: `Evidence: ${q.evidence} | Findings: ${q.findings}${q.resolutionNote ? ' | Xử lý HOLD: ' + q.resolutionNote : ''}` })),
+    ...(room.reviews || []).map(rv => ({ time: rv.createdAt, title: `${rv.level === 'leader' ? 'Leader' : 'Director'} • Vòng ${rv.round} • ${VERDICT_LABEL[rv.verdict] || rv.verdict}`, body: rv.content })),
     ...(room.messages || []).map(m => ({ time: m.createdAt, title: m.sender, body: m.content }))
   ].sort((a, b) => (b.time || '').localeCompare(a.time || ''));
 
@@ -3418,12 +3718,34 @@ function renderActiveRoom() {
   document.getElementById('auditLogList').innerHTML = logs.map(l => `
     <div class="p-2 bg-white border border-stone-200 rounded">
       <div class="font-bold text-[11px] text-amber-900 mb-1">${escapeHtml(l.title)} <span class="mono text-stone-500 font-normal">(${escapeHtml(fmtTime(l.time))})</span></div>
-      <div class="text-stone-700 whitespace-pre-wrap">${escapeHtml(l.body)}</div>
+      <div class="text-stone-700 whitespace-pre-wrap">${escapeHtml(humanizeCodes(l.body))}</div>
     </div>
   `).join('');
 }
 
+function renderResultCard(room) {
+  const card = document.getElementById('resultCard');
+  const hasResult = Boolean(room.finalResult) || room.status === 'closed_rejected';
+  card.classList.toggle('hidden', !hasResult);
+  if (!hasResult) return;
+  const locked = isImmutable(room);
+  document.getElementById('resultCardTitle').textContent = room.status === 'completed' ? `Kết quả hồ sơ — đã chốt ${fmtTime(room.submittedAt)}`
+    : room.status === 'closed_rejected' ? 'Hồ sơ đã đóng — Không đạt' : 'Kết quả dự thảo — chờ thẩm định & chốt';
+  card.className = `bg-white border-2 ${locked ? (room.status === 'completed' ? 'border-emerald-600' : 'border-stone-500') : 'border-amber-400'} rounded-lg p-4 shadow-sm space-y-3`;
+  const gaps = room.finalResult ? finalResultFormatGaps(room.finalResult) : [];
+  document.getElementById('resultCardBody').innerHTML = (room.status === 'closed_rejected' ? `<p><strong>Lý do đóng:</strong> ${escapeHtml(room.closeReason)}</p>` : '')
+    + (room.finalResult ? renderMarkdownSafe(room.finalResult) : '')
+    + (gaps.length ? `<p class="text-xs text-amber-800 font-semibold">Lưu ý: kết quả chưa theo cấu trúc chuẩn — thiếu mục ${escapeHtml(gaps.join(', '))}.</p>` : '');
+  const dn = room.decisionNote;
+  document.getElementById('resultCardDN').innerHTML = dn ? `<div class="border-t border-stone-200 pt-2 space-y-1">
+    <div class="font-bold text-stone-700 uppercase text-[11px]">Cơ sở quyết định</div>
+    <div><strong>Lý do lựa chọn:</strong> ${escapeHtml(dn.rationale)}</div>
+    <div><strong>Phương án đã loại:</strong> ${escapeHtml(dn.rejectedAlternatives)}</div>
+    <div><strong>Điểm chưa chắc chắn:</strong> ${escapeHtml(dn.uncertainties)}</div></div>` : '';
+}
+
 function renderOrchestrator(room) {
+  document.getElementById('orchestratorPanel').classList.toggle('hidden', isImmutable(room));
   const actions = computeNextActions(room);
   const sendIdx = actions.map((a, i) => a.kind === 'send' ? i : -1).filter(i => i >= 0);
   const head = actions[0];
@@ -3455,7 +3777,7 @@ function renderAll() {
 }
 
 // ============================================================================
-// 13. BUILT-IN AUTOMATED TESTS (AT-01..AT-20 gốc + AT-21..AT-44 v1.4 + AT-45..AT-60 v1.5)
+// 13. BUILT-IN AUTOMATED TESTS (AT-01..AT-20 gốc + AT-21..AT-44 v1.4 + AT-45..AT-60 v1.5 + AT-61..AT-63 v1.6)
 // ============================================================================
 function runAutomatedTestSuite() {
   const results = [];
@@ -3705,11 +4027,11 @@ function runAutomatedTestSuite() {
   assertPass(() => {
     const r = makeMockDirectorReviewRoom();
     const md = generateFullMarkdownReport(r);
-    const requiredSections = ['Chỉ đạo gốc', 'Bối cảnh', 'Kế hoạch & Tiêu chí', 'Kết quả thực thi của Worker', 'Lịch sử Review 2 Lớp', 'Independent QA', 'Decision Note', 'Final Deliverable', 'Nhật ký Kiểm toán'];
+    const requiredSections = ['Kết luận & đề xuất quyết định', 'Cơ sở quyết định', 'Kiểm soát chất lượng', 'Yêu cầu & phạm vi', 'Bối cảnh', 'Kết quả từng task', 'Lịch sử rà soát', 'Nhật ký kiểm toán', 'Thông tin kỹ thuật'];
     for (const sec of requiredSections) {
       if (!md.includes(sec)) throw new Error(`Thiếu mục "${sec}" trong bản xuất Markdown.`);
     }
-    return 'Markdown xuất đầy đủ các phần cốt lõi (Instruction, Context, Plan, Tasks, Reviews, QA, Decision Note, Audit Trail).';
+    return 'Báo cáo có đủ các phần: Kết luận, Cơ sở quyết định, Kiểm soát chất lượng, Yêu cầu, Phụ lục task/rà soát/nhật ký/kỹ thuật.';
   }, 'AT-18', 'Export Markdown -> Preserve full case history');
 
   // TC-19: XSS through imported data -> No execution
@@ -4064,6 +4386,41 @@ function runAutomatedTestSuite() {
     if (!/Chế độ xử lý của hồ sơ: Chuẩn/.test(generateDirectorPlanPrompt(normalizeRoomRecord({ id: 'room-pp-01', mode: 'standard', title: 'x', instruction: 'Chỉ đạo hợp lệ' })))) throw new Error('Prompt kế hoạch không nêu chế độ.');
     return 'Nộp thủ công bỏ dòng đánh dấu; chặn dán nhầm task; prompt kế hoạch nêu chế độ.';
   }, 'AT-60', 'Nộp thủ công an toàn với dòng đánh dấu');
+
+  assertPass(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    const fr = '## Điểm chính cần nắm\n- Kết luận: phê duyệt có điều kiện\n## Kế hoạch hành động\n| Thời hạn | Hành động | Owner | Kết quả cần đạt |\n|---|---|---|---|\n| 7 ngày | Bổ sung bảo lãnh | Mua hàng | Có bảo lãnh |\n## Điểm cần xác nhận\n- Không có';
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'pass', content: 'C1: Đạt', targetIds: [], finalResult: fr, decisionNote: dnPayload } }));
+    const md = generateFullMarkdownReport(r);
+    const pos = s => md.indexOf(s);
+    if (!(pos('## 1. Kết luận') < pos('## 2. Cơ sở quyết định') && pos('## 2. Cơ sở') < pos('## 3. Kiểm soát') && pos('## 3. Kiểm soát') < pos('## Phụ lục A'))) throw new Error('Thứ tự mục sai.');
+    const head = md.slice(0, pos('## Phụ lục A'));
+    if (head.includes(r.assignments[0].id)) throw new Error('Phần chính còn mã UUID kỹ thuật.');
+    if (md.split('Bổ sung bảo lãnh').length !== 2) throw new Error('Kết quả chốt bị in lặp.');
+    if (/^## Điểm chính cần nắm/m.test(md) || !/^#### Điểm chính cần nắm/m.test(md)) throw new Error('Tiêu đề nội dung nhúng chưa được hạ cấp.');
+    if (!/BẢN NHÁP/.test(md)) throw new Error('Hồ sơ chưa chốt phải ghi BẢN NHÁP.');
+    if (/\b(COMPLETED|DIRECTOR_REVIEW|APPROVED)\b/.test(md)) throw new Error('Còn mã trạng thái tiếng Anh trong báo cáo.');
+    return 'Kết luận trước, phụ lục sau; không UUID ở phần chính; không lặp; tiêu đề nhúng hạ cấp; ghi BẢN NHÁP.';
+  }, 'AT-61', 'Báo cáo kết quả theo cấu trúc ra quyết định');
+
+  assertPass(() => {
+    const html = renderMarkdownSafe('## Tiêu đề\n| A | B |\n|---|---|\n| <img src=x onerror=alert(1)> | **đậm** |\n- mục 1\n- mục 2\n<script>alert(1)<\/script>');
+    if (/<img|<script/i.test(html)) throw new Error('Bộ hiển thị Markdown không chặn mã độc.');
+    if (!/<table>/.test(html) || !/<strong>đậm<\/strong>/.test(html) || !/<ul><li>mục 1<\/li>/.test(html) || !/<h2>Tiêu đề<\/h2>/.test(html)) throw new Error('Hiển thị bảng/danh sách/đậm sai: ' + html.slice(0, 200));
+    return 'Hiển thị bảng, danh sách, chữ đậm; chặn thẻ HTML độc hại.';
+  }, 'AT-62', 'Hiển thị Markdown an toàn (bảng, danh sách, chống XSS)');
+
+  assertPass(() => {
+    const gaps = finalResultFormatGaps('Chỉ có một đoạn văn không theo cấu trúc');
+    if (gaps.length !== 3) throw new Error('Không phát hiện thiếu mục chuẩn.');
+    const r = makeModeRoom('fast'); finishWorkers(r);
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'pass', content: 'Đạt', targetIds: [], finalResult: 'Đoạn văn tự do' } }));
+    if (!r.messages.some(m => /chưa theo cấu trúc chuẩn/.test(m.content))) throw new Error('Không ghi cảnh báo cấu trúc vào nhật ký.');
+    if (!/CẤU TRÚC BẮT BUỘC CỦA finalResult/.test(generateDirectorReviewPrompt(makeModeRoom('standard')))) throw new Error('Prompt Director thiếu khung cấu trúc.');
+    if (humanizeCodes('Chuyển sang COMPLETED') !== 'Chuyển sang ĐÃ CHỐT') throw new Error('Không đổi mã trạng thái sang tiếng Việt.');
+    return 'Cảnh báo kết quả thiếu mục chuẩn; prompt Director có khung; nhãn trạng thái tiếng Việt.';
+  }, 'AT-63', 'Khung cấu trúc bản chốt & nhãn tiếng Việt');
 
   return results;
 }
