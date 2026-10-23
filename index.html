@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Team — Phòng Điều Phối AI v1.7</title>
+  <title>AI Team — Phòng Điều Phối AI v1.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -19,6 +19,12 @@
     .md-render th { background: #f5f5f4; }
     .md-render code { background: #f5f5f4; padding: 0 .25em; border-radius: 3px; }
     .md-render blockquote { border-left: 3px solid #d6d3d1; padding-left: .7em; color: #57534e; }
+    .guide h1 { font-size: 17px; font-weight: 700; margin: 0 0 6px; }
+    .guide h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #78350f; margin: 12px 0 4px; border-bottom: 1px solid #e7e5e4; padding-bottom: 2px; }
+    .guide ul { list-style: disc; padding-left: 1.2em; } .guide ol { list-style: decimal; padding-left: 1.3em; } .guide li { margin: 2px 0; }
+    .guide table { border-collapse: collapse; width: 100%; margin: 4px 0; } .guide th, .guide td { border: 1px solid #d6d3d1; padding: 4px 7px; vertical-align: top; text-align: left; }
+    .guide th { background: #f5f5f4; width: 130px; white-space: nowrap; } .guide .lead { margin: 0 0 4px; } .guide .note { font-size: 12px; color: #57534e; margin: 4px 0 0; }
+    .guide .foot { margin-top: 10px; font-size: 12px; color: #57534e; border-top: 1px solid #e7e5e4; padding-top: 6px; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: #e7e2d8; }
     ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 3px; }
@@ -29,7 +35,7 @@
   <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 lg:sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.7</span>
+        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.8</span>
         <div>
           <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI</h1>
           <p class="text-xs text-stone-400">Bảng điều phối 1 chạm • Chế độ Nhanh/Chuẩn/Đầy đủ • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
@@ -39,6 +45,7 @@
         <button onclick="openNewRoomModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded transition">+ Tạo Room thật</button>
         <button onclick="triggerImportBackup()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-200 text-xs font-semibold rounded transition">Nhập Backup (1 hoặc Tất cả)</button>
         <button onclick="loadDemoRoom()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-amber-500/60 text-amber-300 text-xs font-semibold rounded transition">+ Nạp Room Demo (Thử nghiệm)</button>
+        <button onclick="openGuide()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-200 text-xs font-semibold rounded transition">Hướng dẫn sử dụng</button>
         <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportBackupFile(event)" />
       </div>
     </div>
@@ -105,7 +112,7 @@
       <!-- Empty state (QA-03: Không tự nạp Demo khi chưa chọn) -->
       <div id="emptyRoomState" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-10 text-center shadow-sm">
         <h2 class="text-lg font-bold text-stone-800 mb-2">Chưa có hoặc chưa chọn Hồ sơ điều phối (Room)</h2>
-        <p class="text-sm text-stone-600 max-w-xl mx-auto mb-5">Hệ thống tuân thủ nguyên tắc tách biệt dữ liệu thật và Demo. Hãy chủ động tạo Room nghiệp vụ mới, nhập file JSON Backup hoặc nạp Room Demo nếu muốn thử nghiệm.</p>
+        <p class="text-sm text-stone-600 max-w-xl mx-auto mb-5">Hệ thống tuân thủ nguyên tắc tách biệt dữ liệu thật và Demo. Hãy chủ động tạo Room nghiệp vụ mới, nhập file JSON Backup hoặc nạp Room Demo nếu muốn thử nghiệm. Lần đầu dùng? <button onclick="openGuide()" class="underline font-semibold text-amber-800">Đọc hướng dẫn 1 trang</button>.</p>
         <div class="flex flex-wrap justify-center gap-3">
           <button onclick="openNewRoomModal()" class="px-4 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-semibold rounded">+ Tạo Room Nghiệp Vụ Mới</button>
           <button onclick="triggerImportBackup()" class="px-4 py-2 bg-stone-800 hover:bg-stone-700 text-white text-xs font-semibold rounded">Nhập JSON Backup</button>
@@ -521,6 +528,62 @@
     </div>
   </div>
 
+  <!-- MODAL: HƯỚNG DẪN SỬ DỤNG (v1.8) -->
+  <div id="guideModal" role="dialog" aria-modal="true" aria-labelledby="guideTitle" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#fbf9f5] border border-stone-400 rounded-lg max-w-3xl w-full shadow-xl max-h-[92vh] overflow-y-auto">
+      <div class="sticky top-0 bg-[#fbf9f5] flex items-center justify-between border-b border-stone-200 px-5 py-3">
+        <h3 id="guideTitle" class="text-base font-bold text-stone-900">Hướng dẫn sử dụng</h3>
+        <div class="flex gap-2">
+          <button onclick="printGuide()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white text-xs font-semibold rounded">In / Lưu PDF</button>
+          <button onclick="closeGuide()" aria-label="Đóng hướng dẫn" class="px-2 py-1 text-stone-500 hover:text-stone-800 text-sm font-bold">✕</button>
+        </div>
+      </div>
+      <div id="guideContent" class="guide px-5 py-4 text-[13px] text-stone-800 leading-relaxed">
+        <h1>Phòng Điều Phối Đa Tác Tử AI — Hướng dẫn sử dụng</h1>
+        <p class="lead">Ứng dụng điều phối nhiều AI (Claude, ChatGPT, Gemini…) cùng xử lý một hồ sơ: Claude lập kế hoạch và duyệt cuối, các AI khác thực hiện và thẩm định chéo, người dùng duyệt ở 2 cổng. Kết quả AI là <strong>dự thảo tham khảo</strong> — người dùng chịu trách nhiệm kiểm tra trước khi sử dụng.</p>
+
+        <h2>1. Trước khi dùng</h2>
+        <ul>
+          <li>Cần tài khoản riêng: Claude (bắt buộc, vai trò Director) và ít nhất một trong ChatGPT / Gemini.</li>
+          <li>Ứng dụng không có máy chủ lưu dữ liệu: hồ sơ chỉ nằm trên trình duyệt của máy đang dùng. Không thấy hồ sơ của người khác, người khác không thấy hồ sơ của mình.</li>
+          <li>Dùng trình duyệt Chrome hoặc Edge trên máy tính; không dùng chế độ ẩn danh (đóng cửa sổ là mất dữ liệu).</li>
+        </ul>
+
+        <h2>2. Quy tắc dữ liệu — bắt buộc</h2>
+        <table>
+          <tr><th>Được dùng</th><td>Thông tin <strong>Công khai</strong> và <strong>Nội bộ</strong> thông thường: quy trình, chính sách đã ban hành, tài liệu tham khảo, số liệu đã công bố.</td></tr>
+          <tr><th>Không dán vào</th><td>Thông tin <strong>Mật</strong>: chiến lược, giá và điều khoản đàm phán, hợp đồng chưa ký, số liệu tài chính chưa công bố, lương, dữ liệu cá nhân (CCCD, số tài khoản, số điện thoại). Ẩn danh hoặc lược bỏ trước khi dán.</td></tr>
+          <tr><th>Luôn tuân thủ</th><td>Quy định sử dụng AI và bảo mật thông tin hiện hành của công ty. Chưa rõ thì hỏi đầu mối trước khi dùng. Tự kiểm tra cài đặt dữ liệu của tài khoản AI cá nhân.</td></tr>
+        </table>
+        <p class="note">Ứng dụng cảnh báo khi phát hiện CCCD, số tài khoản, email, dấu "MẬT"… — đây chỉ là công cụ hỗ trợ, không thay cho việc tự rà soát.</p>
+
+        <h2>3. Năm bước xử lý một hồ sơ</h2>
+        <ol>
+          <li><strong>Tạo hồ sơ</strong> — chọn Loại sản phẩm, Chế độ xử lý, Phân loại dữ liệu; ghi rõ chỉ đạo và dán dữ liệu nguồn. Prompt cho Claude được copy sẵn.</li>
+          <li><strong>Duyệt kế hoạch (cổng 1)</strong> — dán prompt vào Claude, copy câu trả lời, nhấn Ctrl+V vào <em>Hộp nhận kết quả</em>, đọc tóm tắt và bấm đồng ý.</li>
+          <li><strong>Làm theo Bảng điều phối</strong> — mỗi bước: dán prompt vào AI được chỉ định → copy câu trả lời → Ctrl+V vào Hộp nhận kết quả. Prompt bước kế tiếp tự được copy.</li>
+          <li><strong>Thẩm định độc lập</strong> — gửi cho ChatGPT hoặc Gemini (không dùng Claude). Kết luận FAIL khóa vòng hiện tại.</li>
+          <li><strong>Chốt hồ sơ (cổng 2)</strong> — rà soát Cơ sở kết luận do Director soạn sẵn, bấm Chốt; dùng <em>Xem &amp; In báo cáo</em> để lưu PDF.</li>
+        </ol>
+
+        <h2>4. Chọn nhanh</h2>
+        <table>
+          <tr><th>Loại sản phẩm</th><td>Tham vấn quyết định (tờ trình, hợp đồng, đầu tư) · Báo cáo đánh giá (kiểm soát, quy trình, tuân thủ) · Tổng hợp nghiên cứu (nhiều nguồn, có trích dẫn) · Khác</td></tr>
+          <tr><th>Chế độ xử lý</th><td><strong>Nhanh</strong>: việc nội bộ, rủi ro thấp · <strong>Chuẩn</strong> (mặc định): có thẩm định độc lập · <strong>Đầy đủ</strong>: thêm lớp Leader — dùng cho hồ sơ quan trọng</td></tr>
+        </table>
+
+        <h2>5. Lưu ý vận hành</h2>
+        <ul>
+          <li>Bấm <strong>Sao lưu tất cả</strong> hằng tuần và trước khi xóa dữ liệu trình duyệt; đổi máy thì dùng Xuất JSON → Nhập Backup.</li>
+          <li>Hồ sơ đã chốt được niêm phong, không sửa được; cần xem xét lại thì tạo Room kế thừa.</li>
+          <li>Room Demo chỉ để thử, không dùng làm căn cứ.</li>
+          <li>Kiểm tra kỹ số liệu, trích dẫn và nguồn trong kết quả AI trước khi trình hoặc gửi đi.</li>
+        </ul>
+        <p class="foot">Đầu mối hỗ trợ: Phòng Quản lý rủi ro, Quy trình &amp; Tuân thủ (RPC).</p>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: AUTOMATED TEST SUITE RUNNER -->
   <div id="selfTestModal" role="dialog" aria-modal="true" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-[#1c1917] text-stone-100 border border-stone-700 rounded-lg max-w-3xl w-full p-5 shadow-xl space-y-3 text-xs">
@@ -560,7 +623,7 @@ const RESTRICTED_PROVIDERS_BY_CLASS = { public: [], internal: [], confidential: 
 const NON_INDEPENDENT_QA_SOURCES = [/claude/i]; // Director là Claude → QA bằng Claude không độc lập
 const MIN_QA_TEXT = 30, MIN_RATIONALE = 30, MIN_DN_SHORT = 10, MIN_CLOSE_REASON = 30;
 const DELETED_LOG_KEY = 'AITEAM_DELETED_ROOMS_LOG_V1.4';
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 
 // v1.5 — Chế độ xử lý theo mức rủi ro. Leader chỉ có ở chế độ Đầy đủ; QA độc lập bắt buộc ở Chuẩn và Đầy đủ.
 const MODES = {
@@ -3535,7 +3598,8 @@ function loadDemoRoom() {
 if (typeof document !== 'undefined' && document.addEventListener) {
   document.addEventListener('keydown', (ev) => {
     if (ev.key !== 'Escape') return;
-    if (!document.getElementById('newRoomModal').classList.contains('hidden')) closeNewRoomModal();
+    if (!document.getElementById('guideModal').classList.contains('hidden')) closeGuide();
+    else if (!document.getElementById('newRoomModal').classList.contains('hidden')) closeNewRoomModal();
     else if (!document.getElementById('importPreviewModal').classList.contains('hidden')) closeImportPreviewModal();
     else if (!document.getElementById('selfTestModal').classList.contains('hidden')) document.getElementById('selfTestModal').classList.add('hidden');
   });
@@ -4641,6 +4705,41 @@ function runBuiltInSelfTestsModal() {
 // ============================================================================
 migrateAndLoadStorage();
 renderAll();
+// v1.8 — Hướng dẫn sử dụng: tự mở ở lần truy cập đầu tiên (người nhận link), in được 1 trang A4
+const GUIDE_SEEN_KEY = 'AITEAM_GUIDE_SEEN_V1';
+let guideReturnFocus = null;
+function openGuide() {
+  guideReturnFocus = document.activeElement;
+  document.getElementById('guideModal').classList.remove('hidden');
+  setTimeout(() => document.querySelector('#guideModal button[aria-label="Đóng hướng dẫn"]').focus(), 0);
+}
+function closeGuide() {
+  document.getElementById('guideModal').classList.add('hidden');
+  try { localStorage.setItem(GUIDE_SEEN_KEY, nowISO()); } catch (e) {}
+  if (guideReturnFocus && guideReturnFocus.focus) guideReturnFocus.focus();
+}
+function guideStandaloneHTML() {
+  const css = [...document.querySelectorAll('style')].map(s => s.textContent).join('\n').split('\n').filter(l => l.includes('.guide')).join('\n');
+  return `<!doctype html><html lang="vi"><head><meta charset="utf-8"><title>Hướng dẫn sử dụng — Phòng Điều Phối Đa Tác Tử AI</title><style>
+body { font-family: -apple-system, 'Segoe UI', Roboto, Arial, sans-serif; color: #1c1917; max-width: 820px; margin: 18px auto; padding: 0 18px; font-size: 12.5px; line-height: 1.45; }
+${css}
+.toolbar { margin-bottom: 10px; } .toolbar button { background: #047857; color: #fff; border: 0; border-radius: 6px; padding: 6px 12px; font-weight: 600; cursor: pointer; }
+@media print { .toolbar { display: none; } body { margin: 0; max-width: none; } @page { size: A4; margin: 12mm 13mm; } }
+</style></head><body><div class="toolbar"><button onclick="window.print()">In / Lưu PDF</button></div><div class="guide">${document.getElementById('guideContent').innerHTML}</div></body></html>`;
+}
+function printGuide() {
+  const html = guideStandaloneHTML();
+  const url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  const w = window.open(url, '_blank');
+  if (!w) downloadBlob(html, 'text/html;charset=utf-8', 'huong-dan-su-dung-ai-team.html');
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+}
+(function firstVisitGuide() {
+  let seen = null;
+  try { seen = localStorage.getItem(GUIDE_SEEN_KEY); } catch (e) {}
+  if (!seen && rooms.length === 0) openGuide();
+})();
+
 (function initIngestBox() {
   const inp = document.getElementById('ingestInput');
   if (!inp) return;
