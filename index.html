@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Team — Phòng Điều Phối AI v1.4</title>
+  <title>AI Team — Phòng Điều Phối AI v1.5</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -19,10 +19,10 @@
   <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 lg:sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.4</span>
+        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.5</span>
         <div>
           <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI</h1>
-          <p class="text-xs text-stone-400">Director → Leader → Worker • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
+          <p class="text-xs text-stone-400">Bảng điều phối 1 chạm • Chế độ Nhanh/Chuẩn/Đầy đủ • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
@@ -116,6 +116,7 @@
               <div class="flex flex-wrap items-center gap-2 mb-1">
                 <span id="roomStatusBadge" class="px-2 py-0.5 text-xs font-bold uppercase rounded bg-amber-100 text-amber-900">PLANNING</span>
                 <span id="roomDemoBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-600 text-white">DEMO MODE</span>
+                <span id="roomModeBadge" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-stone-800 text-white"></span>
                 <span id="roomDataClassBadge" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-stone-200 text-stone-800"></span>
                 <span id="roomIntegrityBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded"></span>
                 <span class="mono text-xs text-stone-500" id="roomMetaInfo"></span>
@@ -161,6 +162,28 @@
               <div id="roomContext" class="text-stone-800 whitespace-pre-wrap max-h-36 overflow-y-auto"></div>
             </div>
           </div>
+        </div>
+
+        <!-- BẢNG ĐIỀU PHỐI (v1.5) -->
+        <div id="orchestratorPanel" class="bg-white border-2 border-amber-600 rounded-lg p-4 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-900">Bảng điều phối — Bước tiếp theo</h3>
+            <span id="orchestratorStep" class="text-[11px] font-semibold text-stone-600"></span>
+          </div>
+          <div id="nextActionText" class="text-sm font-semibold text-stone-900"></div>
+          <div id="nextActionButtons" class="flex flex-wrap gap-2"></div>
+          <div id="ingestBox" class="space-y-1.5">
+            <label for="ingestInput" class="text-xs font-bold text-stone-700 block">Hộp nhận kết quả — dán nguyên văn phản hồi của AI vào đây (hệ thống tự nhận diện và xử lý ngay khi dán)</label>
+            <textarea id="ingestInput" rows="4" placeholder="Ctrl+V phản hồi của Claude / Worker / Leader / QA vào đây..." class="w-full mono text-[11px] border border-stone-300 rounded p-2 bg-stone-50"></textarea>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span id="ingestHint" class="text-[11px] text-stone-500">Sau khi nhận xong, prompt của bước kế tiếp được tự động copy sẵn.</span>
+              <button onclick="handleIngestClick()" id="btnIngest" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-300 text-white text-xs font-bold rounded">Nhận kết quả</button>
+            </div>
+          </div>
+          <details class="text-[11px] text-stone-600">
+            <summary class="cursor-pointer font-semibold">Thao tác thủ công từng bước (các khung bên dưới)</summary>
+            <p class="mt-1">Các khung Task / Leader / Director / QA bên dưới vẫn dùng được khi cần sửa tay hoặc xử lý ngoại lệ.</p>
+          </details>
         </div>
 
         <!-- Objective & Criteria (if planned) -->
@@ -271,6 +294,7 @@
                 <span id="qaStatusBadge" class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-stone-200 text-stone-700">PENDING</span>
               </div>
               <p class="text-[11px] text-stone-600">Director PASS không đồng nghĩa với Independent QA PASS. QA <strong>FAIL</strong> chặn vĩnh viễn vòng hiện tại (phải mở vòng mới hoặc đóng hồ sơ). QA <strong>HOLD</strong> chỉ được giải tỏa bằng một bản PASS có ghi chú xử lý.</p>
+              <p id="qaModeNote" class="text-[11px] font-semibold text-amber-800"></p>
               <button onclick="copyQAPrompt()" id="btnCopyQAPrompt" class="w-full py-1.5 bg-purple-100 hover:bg-purple-200 disabled:opacity-40 text-purple-900 text-xs font-bold rounded border border-purple-300">Copy Prompt QA độc lập (gửi Gemini/ChatGPT)</button>
 
               <div class="space-y-2 text-xs">
@@ -317,6 +341,7 @@
               <div id="finalResultPreview" class="text-xs bg-stone-100 border border-stone-200 rounded p-2.5 max-h-40 overflow-y-auto whitespace-pre-wrap text-stone-800">Chưa có Final Result được duyệt từ Claude Director.</div>
 
               <!-- Structured Decision Note -->
+              <div id="dnPrefillNote" class="hidden">Director đã soạn sẵn Decision Note bên dưới — hãy rà soát, chỉnh nếu cần, rồi bấm Chốt hồ sơ.</div>
               <div class="space-y-2 text-xs pt-1 border-t border-stone-200">
                 <div>
                   <label for="dnRationale" class="font-bold text-stone-700 block mb-0.5">1. Lý do lựa chọn phương án cuối (Rationale) *</label>
@@ -389,9 +414,18 @@
           </div>
         </div>
         <div class="grid grid-cols-2 gap-3">
+          <div class="col-span-2">
+            <label for="newRoomMode" class="font-bold text-stone-700 block mb-1">Chế độ xử lý *</label>
+            <select id="newRoomMode" onchange="syncModeHint()" class="w-full border border-stone-300 rounded p-2 bg-white">
+              <option value="standard">Chuẩn (mặc định) — Director tự tổng hợp + QA độc lập</option>
+              <option value="fast">Nhanh — nội bộ, rủi ro thấp, không QA độc lập</option>
+              <option value="full">Đầy đủ — có Leader + QA độc lập (hồ sơ Mật, trình CEO/HĐQT)</option>
+            </select>
+            <p id="newRoomModeHint" class="text-[11px] text-stone-500 mt-1"></p>
+          </div>
           <div>
             <label for="newRoomDataClass" class="font-bold text-stone-700 block mb-1">Phân loại dữ liệu *</label>
-            <select id="newRoomDataClass" class="w-full border border-stone-300 rounded p-2 bg-white">
+            <select id="newRoomDataClass" onchange="syncModeHint()" class="w-full border border-stone-300 rounded p-2 bg-white">
               <option value="internal">Nội bộ (Internal)</option>
               <option value="confidential">Mật (Confidential) — chặn AI bản Free</option>
               <option value="public">Công khai (Public)</option>
@@ -484,7 +518,21 @@ const RESTRICTED_PROVIDERS_BY_CLASS = { public: [], internal: [], confidential: 
 const NON_INDEPENDENT_QA_SOURCES = [/claude/i]; // Director là Claude → QA bằng Claude không độc lập
 const MIN_QA_TEXT = 30, MIN_RATIONALE = 30, MIN_DN_SHORT = 10, MIN_CLOSE_REASON = 30;
 const DELETED_LOG_KEY = 'AITEAM_DELETED_ROOMS_LOG_V1.4';
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
+
+// v1.5 — Chế độ xử lý theo mức rủi ro. Leader chỉ có ở chế độ Đầy đủ; QA độc lập bắt buộc ở Chuẩn và Đầy đủ.
+const MODES = {
+  fast: { label: 'Nhanh', hasLeader: false, requiresQA: false, note: 'Nội bộ, rủi ro thấp — Director lập kế hoạch, Worker, Director tổng hợp & duyệt' },
+  standard: { label: 'Chuẩn', hasLeader: false, requiresQA: true, note: 'Mặc định — thêm QA độc lập; Director tự tổng hợp (không có Leader)' },
+  full: { label: 'Đầy đủ', hasLeader: true, requiresQA: true, note: 'Hồ sơ Mật, trình CEO/HĐQT — đủ 5 lớp gồm Leader' }
+};
+function resolveMode(mode, dataClass) {
+  if (dataClass === 'confidential') return 'full'; // Hồ sơ Mật luôn chạy chế độ Đầy đủ
+  return Object.keys(MODES).includes(mode) ? mode : 'full';
+}
+function roomHasLeader(room) { return MODES[room?.mode]?.hasLeader !== false; }
+function roomRequiresQA(room) { return MODES[room?.mode]?.requiresQA !== false; }
+function stageAfterWorkers(room) { return roomHasLeader(room) ? 'leader_review' : 'director_review'; }
 
 function isImmutable(room) { return IMMUTABLE_STATUSES.includes(room?.status); }
 function restrictedProvidersFor(room) { return RESTRICTED_PROVIDERS_BY_CLASS[room?.dataClass] || []; }
@@ -610,7 +658,7 @@ function sha256Hex(str) {
 // Nội dung được niêm phong (không gồm supersededByRoomId, integrityFlag)
 function computeSealHash(room) {
   const snapshot = {
-    id: room.id, status: room.status, finalResult: room.finalResult || '', closeReason: room.closeReason || '',
+    id: room.id, status: room.status, mode: room.mode, dataClass: room.dataClass, finalResult: room.finalResult || '', closeReason: room.closeReason || '',
     reviews: room.reviews || [], qaRecords: room.qaRecords || [], decisionNote: room.decisionNote || null,
     outputs: (room.assignments || []).map(a => [a.id, a.providerId, a.status, a.output]),
     submittedAt: room.submittedAt || null
@@ -629,8 +677,10 @@ function checkImmutableInvariants(room) {
   if (room.status !== 'completed') return true;
   const dir = [...(room.reviews || [])].reverse().find(r => r.level === 'director' && r.round === room.round);
   const qa = [...(room.qaRecords || [])].reverse().find(q => q.round === room.round);
-  return !!(dir && dir.verdict === 'pass' && dir.source === 'manual-claude' && String(room.finalResult || '').trim()
-    && qa && qa.verdict === 'pass' && room.decisionNote && room.decisionNote.qaRecordId === qa.id);
+  const baseOk = !!(dir && dir.verdict === 'pass' && dir.source === 'manual-claude' && String(room.finalResult || '').trim() && room.decisionNote);
+  if (!baseOk) return false;
+  if (MODES[room.mode]?.requiresQA === false && !room.decisionNote.qaRecordId) return true;
+  return !!(qa && qa.verdict === 'pass' && room.decisionNote.qaRecordId === qa.id);
 }
 
 // Trả về cờ toàn vẹn: '' (hợp lệ) | 'seal_mismatch' | 'unverified_import'
@@ -693,6 +743,10 @@ function normalizeRoomRecord(r) {
     finalResultHistory: Array.isArray(r.finalResultHistory) ? r.finalResultHistory : [],
     pendingDirectorDecision: r.pendingDirectorDecision && typeof r.pendingDirectorDecision === 'object' ? r.pendingDirectorDecision : null,
     closeReason: String(r.closeReason || ''),
+    mode: resolveMode(r.mode, Object.keys(DATA_CLASSES).includes(r.dataClass) ? r.dataClass : 'internal'),
+    directorDecisionNoteDraft: r.directorDecisionNoteDraft && typeof r.directorDecisionNoteDraft === 'object' ? r.directorDecisionNoteDraft : null,
+    dlpAcks: Array.isArray(r.dlpAcks) ? r.dlpAcks.map(String).slice(-50) : [],
+    qaProvider: VALID_PROVIDERS.includes(r.qaProvider) ? r.qaProvider : null,
     qaPromptCopiedAt: r.qaPromptCopiedAt || null,
     objective: String(r.objective || ''),
     criteria: Array.isArray(r.criteria) ? r.criteria.map(String) : [],
@@ -990,7 +1044,8 @@ function parseAndValidateDirectorEnvelope(rawText, room) {
           throw new Error(`Stage binding lỗi: Room đang ở trạng thái "${room.status}", không phải "director_review".`);
         }
         const d = parsed.decision;
-        validateStrictKeys(d, ['verdict', 'content', 'targetIds', 'finalResult'], 'decision (review)');
+        const hasDN = d && typeof d === 'object' && !Array.isArray(d) && Object.prototype.hasOwnProperty.call(d, 'decisionNote');
+        validateStrictKeys(d, hasDN ? ['verdict', 'content', 'targetIds', 'finalResult', 'decisionNote'] : ['verdict', 'content', 'targetIds', 'finalResult'], 'decision (review)');
 
         if (d.verdict !== 'pass' && d.verdict !== 'rework') {
           throw new Error('verdict chỉ nhận "pass" hoặc "rework".');
@@ -1022,6 +1077,12 @@ function parseAndValidateDirectorEnvelope(rawText, room) {
           if (d.finalResult.trim().length === 0) {
             throw new Error('Semantic Rule: Khi verdict="pass", finalResult bắt buộc không được rỗng.');
           }
+          if (hasDN && d.decisionNote !== null) {
+            validateStrictKeys(d.decisionNote, ['rationale', 'rejectedAlternatives', 'minorityView', 'keyEdits', 'uncertainties'], 'decisionNote');
+            for (const [k, val] of Object.entries(d.decisionNote)) {
+              if (typeof val !== 'string' || val.length > 4000) throw new Error(`decisionNote.${k} phải là chuỗi ≤ 4.000 ký tự.`);
+            }
+          }
           // QA-03: Chặn dùng quyết định mẫu (Demo PASS) trong Room thật
           if (!room.isDemo && /(\[DEMO_SAMPLE_PASS\]|Demo Pass hợp lệ|NGHIỆM THU \(DEMO\))/i.test(d.content + ' ' + d.finalResult)) {
             throw new Error('Demo Isolation Guard: Không cho phép sử dụng nội dung PASS mẫu (Demo) cho Room nghiệp vụ thật.');
@@ -1029,6 +1090,12 @@ function parseAndValidateDirectorEnvelope(rawText, room) {
         } else {
           if (d.finalResult.trim().length !== 0) {
             throw new Error('Semantic Rule: Khi verdict="rework", finalResult bắt buộc phải là chuỗi rỗng "".');
+          }
+          if (hasDN && d.decisionNote !== null) {
+            throw new Error('Semantic Rule: Khi verdict="rework", không gửi decisionNote (hoặc để null).');
+          }
+          if (!roomHasLeader(room) && d.targetIds.length === 0) {
+            throw new Error(`Semantic Rule: Chế độ ${MODES[room.mode].label} không có Leader — verdict="rework" phải chỉ định targetIds (UUID task cần làm lại).`);
           }
         }
       } else {
@@ -1135,6 +1202,9 @@ function validateImportedRoom(src) {
 
   validateDependencyGraphNoCycle(src.assignments);
 
+  if (src.mode !== undefined && !Object.keys(MODES).includes(src.mode)) {
+    throw new Error(`Chế độ xử lý "${src.mode}" không hợp lệ.`);
+  }
   if (src.dataClass !== undefined && !Object.keys(DATA_CLASSES).includes(src.dataClass)) {
     throw new Error(`Phân loại dữ liệu "${src.dataClass}" không hợp lệ.`);
   }
@@ -1201,6 +1271,7 @@ function assertNotCompleted(room, actionName) {
 // Áp dụng yêu cầu Rework của Director (dùng chung cho luồng thường và luồng Escalate)
 function applyDirectorRework(room, targetIds, content) {
   room.finalResult = '';
+  room.directorDecisionNoteDraft = null;
   room.round += 1;
   if (targetIds.length === 0) {
     room.status = 'leader_review';
@@ -1272,7 +1343,7 @@ function engineApplyDirectorDecision(room, rawText) {
     // stage === 'review'
     // Kiểm tra phải có Leader review ở vòng hiện tại và đủ worker output
     const hasCurrentLeaderReview = room.reviews.some(r => r.level === 'leader' && r.round === room.round);
-    if (!hasCurrentLeaderReview) {
+    if (roomHasLeader(room) && !hasCurrentLeaderReview) {
       throw new Error('State Guard Reject: Chưa có bản rà soát của Leader AI cho vòng hiện tại.');
     }
     const allWorkersDone = room.assignments.length > 0 && room.assignments.every(a => (a.status === 'submitted' || a.status === 'skipped') && a.output.trim().length > 0);
@@ -1297,6 +1368,7 @@ function engineApplyDirectorDecision(room, rawText) {
     if (d.verdict === 'pass') {
       room.reviews.push(reviewRecord);
       room.finalResult = d.finalResult.trim();
+      room.directorDecisionNoteDraft = d.decisionNote ? { ...d.decisionNote, round: room.round } : null;
       room.status = 'approved';
       room.version += 1;
       room.updatedAt = nowISO();
@@ -1335,7 +1407,14 @@ function engineSubmitWorkerResponse(room, taskId, content) {
   if (!areDependenciesReady(room, task)) {
     throw new Error('Dependency Guard Reject: Task phụ thuộc (tiền nhiệm) chưa hoàn thành.');
   }
-  const trimmed = String(content || '').trim();
+  let trimmed = String(content || '').trim();
+  const blocks = /<<<\s*TASK/.test(trimmed) ? parseTaskBlocks(trimmed) : [];
+  if (blocks.length) {
+    const own = blocks.find(b => b.markerId === taskMarkerId(task));
+    if (!own) throw new Error(`Nội dung dán thuộc task khác (mã ${blocks.map(b => b.markerId).join(', ')}), không phải task "${task.title}". Hãy dán vào Hộp nhận kết quả.`);
+    if (blocks.length > 1) throw new Error('Nội dung dán chứa kết quả của nhiều task — hãy dán vào Hộp nhận kết quả để hệ thống tự tách.');
+    trimmed = own.content.trim();
+  }
   if (!trimmed) throw new Error('Phản hồi Worker không được rỗng.');
   if (trimmed.length > 30000) throw new Error('Phản hồi Worker vượt quá 30.000 ký tự.');
 
@@ -1351,11 +1430,11 @@ function engineSubmitWorkerResponse(room, taskId, content) {
 
   const allDone = room.assignments.length > 0 && room.assignments.every(a => (a.status === 'submitted' || a.status === 'skipped') && a.output.trim().length > 0);
   if (allDone) {
-    room.status = 'leader_review';
+    room.status = stageAfterWorkers(room);
     room.messages.push({
       id: uuidv4(),
       sender: 'System Engine',
-      content: `Tất cả ${room.assignments.length} tasks đã có đầu ra ở vòng ${room.round}. Tự động chuyển sang LEADER_REVIEW.`,
+      content: `Tất cả ${room.assignments.length} tasks đã có đầu ra ở vòng ${room.round}. Tự động chuyển sang ${room.status.toUpperCase()}.`,
       createdAt: nowISO()
     });
   }
@@ -1416,7 +1495,7 @@ function engineSkipBlockedOrUnresponsiveTask(room, taskId, fallbackSummary) {
 
   const allDone = room.assignments.length > 0 && room.assignments.every(a => (a.status === 'submitted' || a.status === 'skipped') && a.output.trim().length > 0);
   if (allDone) {
-    room.status = 'leader_review';
+    room.status = stageAfterWorkers(room);
   }
   room.version += 1;
   room.updatedAt = nowISO();
@@ -1431,6 +1510,9 @@ function engineSkipBlockedOrUnresponsiveTask(room, taskId, fallbackSummary) {
 function engineSubmitLeaderReview(room, content, deliverable) {
   assertNotCompleted(room, 'Submit Leader Review');
   checkHistoryLimits(room);
+  if (!roomHasLeader(room)) {
+    throw new Error(`State Guard Reject: Chế độ ${MODES[room.mode].label} không có lớp Leader.`);
+  }
   if (room.status !== 'leader_review') {
     throw new Error(`State Guard Reject: Chỉ được nộp Leader Review khi Room ở trạng thái "leader_review" (hiện tại: "${room.status}").`);
   }
@@ -1565,7 +1647,8 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
 
   const roundRecs = qaRecordsOfRound(room, room.round);
   const latestQA = roundRecs[roundRecs.length - 1];
-  if (!latestQA) {
+  const qaRequired = roomRequiresQA(room);
+  if (!latestQA && qaRequired) {
     throw new Error('Independent QA Guard Reject: Chưa có hồ sơ thẩm định Independent QA cho vòng hiện tại. Director PASS không thay thế được Independent QA.');
   }
   if (roundRecs.some(q => q.verdict === 'fail')) {
@@ -1574,10 +1657,10 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
   if (unresolvedHolds(room, room.round).length > 0) {
     throw new Error('Independent QA Guard Reject: Còn QA HOLD chưa được giải tỏa ở vòng hiện tại.');
   }
-  if (latestQA.verdict !== 'pass') {
+  if (latestQA && latestQA.verdict !== 'pass') {
     throw new Error(`Independent QA Guard Reject: Kết luận QA hiện tại là "${latestQA.verdict.toUpperCase()}". Hồ sơ bị chặn chuyển sang Completed.`);
   }
-  if (!isIndependentQASource(latestQA.source)) {
+  if (latestQA && !isIndependentQASource(latestQA.source)) {
     throw new Error('Independent QA Guard Reject: Nguồn QA không độc lập với Director.');
   }
 
@@ -1595,7 +1678,8 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
     minorityView: minorityView || 'Không có',
     keyEdits: keyEdits || 'Không có',
     uncertainties,
-    qaRecordId: latestQA.id,
+    qaRecordId: latestQA ? latestQA.id : null,
+    mode: room.mode,
     createdAt: nowISO()
   };
 
@@ -1609,7 +1693,9 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
   room.messages.push({
     id: uuidv4(),
     sender: 'System Governance Gate',
-    content: `Hồ sơ đã vượt qua Director PASS + Independent QA PASS (${latestQA.source}) và lưu Decision Note đầy đủ. Chuyển sang COMPLETED và niêm phong.`,
+    content: latestQA
+      ? `Hồ sơ đã vượt qua Director PASS + Independent QA PASS (${latestQA.source}) và lưu Decision Note đầy đủ. Chuyển sang COMPLETED và niêm phong.`
+      : `Hồ sơ chế độ ${MODES[room.mode].label}: Director PASS + Decision Note của chủ dự án (không yêu cầu QA độc lập). Chuyển sang COMPLETED và niêm phong.`,
     createdAt: nowISO()
   });
   sealRoom(room);
@@ -1694,15 +1780,16 @@ function engineReopenRejectedAlternative(room, reopenReason) {
   if (!Array.isArray(room.finalResultHistory)) room.finalResultHistory = [];
   if (room.finalResult) room.finalResultHistory.push({ round: room.round, finalResult: room.finalResult, archivedAt: nowISO(), reason });
   room.finalResult = '';
+  room.directorDecisionNoteDraft = null;
   room.round += 1;
-  room.status = 'leader_review';
+  room.status = stageAfterWorkers(room);
   room.submittedAt = null;
   room.version += 1;
   room.updatedAt = nowISO();
   room.messages.push({
     id: uuidv4(),
     sender: 'Owner Decision Reopen',
-    content: `Chủ dự án mở vòng rà soát mới (Round ${room.round}). Final Result vòng trước được lưu vào lịch sử. Lý do: ${reason}`,
+    content: `Chủ dự án mở vòng rà soát mới (Round ${room.round}, chuyển ${room.status.toUpperCase()}). Final Result vòng trước được lưu vào lịch sử. Lý do: ${reason}`,
     createdAt: nowISO()
   });
 }
@@ -1717,7 +1804,7 @@ function engineCreateSuccessorRoom(source) {
     id: uuidv4(), version: 1, title: `[Kế thừa] ${source.title}`.slice(0, 160), category: source.category,
     instruction: source.instruction, context: source.context, dataClass: source.dataClass,
     owner: source.owner, dueDate: '', decisionMaker: source.decisionMaker,
-    status: allHaveOutput ? 'leader_review' : 'planning', isDemo: source.isDemo,
+    status: allHaveOutput ? (MODES[source.mode]?.hasLeader === false ? 'director_review' : 'leader_review') : 'planning', isDemo: source.isDemo, mode: source.mode,
     objective: source.objective, criteria: [...(source.criteria || [])], leader: source.leader, leaderReason: source.leaderReason,
     assignments: allHaveOutput ? source.assignments.map(a => ({
       ...a, id: idMap.get(a.id), dependencies: a.dependencies.map(d => idMap.get(d)).filter(Boolean),
@@ -1751,6 +1838,7 @@ function engineEditRoomInfo(room, payload) {
   set('title', title, 'Tiêu đề'); set('instruction', instruction, 'Chỉ đạo'); set('context', context, 'Bối cảnh');
   set('category', String(payload.category || room.category).trim().slice(0, 100), 'Phân loại');
   set('dataClass', dataClass, 'Phân loại dữ liệu');
+  set('mode', resolveMode(payload.mode || room.mode, dataClass), 'Chế độ xử lý');
   set('owner', String(payload.owner || '').trim().slice(0, 100), 'Owner');
   set('dueDate', /^\d{4}-\d{2}-\d{2}$/.test(payload.dueDate || '') ? payload.dueDate : '', 'Hạn');
   set('decisionMaker', String(payload.decisionMaker || '').trim().slice(0, 100), 'Cấp quyết định');
@@ -1772,7 +1860,7 @@ function generateFullMarkdownReport(room) {
   const lines = [
     `# HỒ SƠ ĐIỀU PHỐI AI TEAM: ${room.title}`,
     `- **Room ID:** \`${room.id}\` | **Version:** ${room.version} | **Trạng thái:** \`${room.status.toUpperCase()}\` | **Chế độ:** ${room.isDemo ? 'DEMO' : 'NGHIỆP VỤ THẬT'}`,
-    `- **Phân loại dữ liệu:** ${DATA_CLASSES[room.dataClass]?.label || room.dataClass} | **Owner:** ${room.owner || '(chưa gán)'} | **Hạn:** ${room.dueDate || '(chưa đặt)'} | **Cấp quyết định:** ${room.decisionMaker || '(chưa xác định)'}`,
+    `- **Chế độ xử lý:** ${MODES[room.mode]?.label || room.mode} | **Phân loại dữ liệu:** ${DATA_CLASSES[room.dataClass]?.label || room.dataClass} | **Owner:** ${room.owner || '(chưa gán)'} | **Hạn:** ${room.dueDate || '(chưa đặt)'} | **Cấp quyết định:** ${room.decisionMaker || '(chưa xác định)'}`,
     `- **Round:** ${room.round}/${room.maxRounds} | **Leader AI:** ${PROVIDERS[room.leader]?.name || room.leader}`,
     `- **Tạo lúc:** ${fmtTime(room.createdAt)} | **Cập nhật:** ${fmtTime(room.updatedAt)} | **Khóa hồ sơ:** ${room.submittedAt ? fmtTime(room.submittedAt) : '(Chưa khóa)'} (giờ Việt Nam)`,
     `- **Toàn vẹn hồ sơ:** ${integrity}`,
@@ -1859,6 +1947,8 @@ function generateDirectorPlanPrompt(room) {
 ${PROMPT_PRINCIPLES}
 
 QUY TẮC LẬP KẾ HOẠCH:
+- Chế độ xử lý của hồ sơ: ${MODES[room.mode]?.label} — ${MODES[room.mode]?.note}.${room.mode === 'fast' ? ' Ưu tiên 1–3 task.' : ''}${!roomHasLeader(room) ? ' Không có lớp Leader: bạn sẽ tự tổng hợp ở bước duyệt cuối (leaderId vẫn bắt buộc theo schema, dùng làm AI dự phòng).' : ''}
+- Ưu tiên giao các task không phụ thuộc nhau cho cùng một AI khi hợp lý — hệ thống sẽ gộp thành 1 prompt để giảm thao tác.
 - 1–8 task, mỗi task một đầu ra rõ ràng; 1–12 tiêu chí nghiệm thu cấp Room, mỗi tiêu chí kiểm chứng được.
 - providerId hợp lệ cho Room này: ${allowed.join(', ')}${restrictedProvidersFor(room).length ? ` (KHÔNG dùng ${restrictedProvidersFor(room).join(', ')} do Room phân loại ${DATA_CLASSES[room.dataClass].label})` : ''}.
 - Ưu tiên chọn Leader khác Claude để bảo đảm tính độc lập của 2 lớp review.
@@ -1875,23 +1965,34 @@ ${JSON.stringify(sampleEnvelope, null, 2)}
 \`\`\``;
 }
 
-function generateWorkerPrompt(room, task, index) {
-  const depOutputs = task.dependencies.map(depId => {
+function taskMarkerId(task) { return String(task.id).replace(/[^a-zA-Z0-9]/g, '').slice(0, 8); }
+
+// v1.5 — Prompt Worker gộp nhiều task cùng một AI; mỗi đầu ra nằm trong cặp dấu <<<TASK:id>>> để hệ thống tự nhận
+function generateWorkerBatchPrompt(room, tasks) {
+  const list = tasks.map(t => ({ t, idx: room.assignments.findIndex(a => a.id === t.id) }));
+  const depIds = [...new Set(tasks.flatMap(t => t.dependencies))].filter(id => !tasks.some(t => t.id === id));
+  const depOutputs = depIds.map(depId => {
     const depTask = room.assignments.find(a => a.id === depId);
     return depTask ? `--- Đầu ra từ Task tiền nhiệm [${depTask.title}] (${depTask.providerId}${depTask.status === 'skipped' ? ', NGOẠI LỆ do chủ dự án nhập' : ''}) ---\n${depTask.output}` : '';
-  }).join('\n\n');
-  const isRework = task.status === 'rework' || Boolean(task.feedback);
-  const lastResp = [...(task.responses || [])].reverse().find(r => r.content);
-  const reworkBlock = isRework ? `
-=== ĐÂY LÀ VÒNG LÀM LẠI (Round ${room.round}) ===
-- Yêu cầu sửa từ Director:
-${task.feedback || '(Không có ghi chú)'}
+  }).filter(Boolean).join('\n\n');
+  const providerName = PROVIDERS[tasks[0]?.providerId]?.name || tasks[0]?.providerId;
+
+  const taskBlocks = list.map(({ t, idx }) => {
+    const isRework = t.status === 'rework' || Boolean(t.feedback);
+    const lastResp = [...(t.responses || [])].reverse().find(r => r.content);
+    return `--- TASK #${idx + 1}: ${t.title} (mã ${taskMarkerId(t)}) ---
+- Hướng dẫn: ${t.instructions}
+- Tiêu chí nghiệm thu task: ${t.acceptance}${isRework ? `
+- ĐÂY LÀ VÒNG LÀM LẠI (Round ${room.round}). Yêu cầu sửa từ Director:
+${t.feedback || '(Không có ghi chú)'}
 - Đầu ra lần trước của task này:
 ${lastResp ? lastResp.content : '(Không có)'}
-Hãy sửa đúng các điểm Director nêu, giữ phần đã đạt, và liệt kê ngắn những gì đã thay đổi.
-` : '';
+- Sửa đúng các điểm Director nêu, giữ phần đã đạt, liệt kê ngắn những gì đã thay đổi.` : ''}`;
+  }).join('\n\n');
 
-  return `Bạn là Worker AI (${PROVIDERS[task.providerId]?.name || task.providerId}) thực hiện Task #${index + 1} trong hồ sơ "${room.title}" (Round ${room.round}).
+  const markers = list.map(({ t, idx }) => `<<<TASK:${taskMarkerId(t)}>>>\n(đầu ra Task #${idx + 1})\n<<<END TASK:${taskMarkerId(t)}>>>`).join('\n\n');
+
+  return `Bạn là Worker AI (${providerName}) thực hiện ${tasks.length} task trong hồ sơ "${room.title}" (Round ${room.round}).
 
 ${PROMPT_PRINCIPLES}
 
@@ -1901,14 +2002,18 @@ ${PROMPT_PRINCIPLES}
 ${criteriaBlock(room)}
 ${roomSourceBlock(room)}
 ${depOutputs ? '\n=== ĐẦU RA TỪ TASK TIỀN NHIỆM ===\n' + depOutputs + '\n' : ''}
-=== NHIỆM VỤ TASK #${index + 1}: ${task.title} ===
-- Hướng dẫn: ${task.instructions}
-- Tiêu chí nghiệm thu task: ${task.acceptance}
-${reworkBlock}
-=== ĐỊNH DẠNG ĐẦU RA ===
-1. Kết luận chính (3–5 dòng).
-2. Nội dung chi tiết (ưu tiên bảng khi có nhiều mục).
-3. Giả định và điểm cần xác nhận (ghi rõ phần nào không có trong nguồn).`;
+=== NHIỆM VỤ ===
+${taskBlocks}
+
+=== ĐỊNH DẠNG ĐẦU RA (BẮT BUỘC) ===
+Với mỗi task: 1. Kết luận chính (3–5 dòng). 2. Nội dung chi tiết (ưu tiên bảng khi có nhiều mục). 3. Giả định và điểm cần xác nhận (ghi rõ phần nào không có trong nguồn).
+Đặt đầu ra của TỪNG task trọn trong cặp dòng đánh dấu dưới đây, giữ nguyên từng ký tự của dòng đánh dấu, không thêm gì ngoài các khối này:
+
+${markers}`;
+}
+
+function generateWorkerPrompt(room, task, index) {
+  return generateWorkerBatchPrompt(room, [task]);
 }
 
 function generateLeaderPrompt(room) {
@@ -1941,21 +2046,27 @@ Bản tổng hợp hoàn chỉnh, mở đầu bằng kết luận/khuyến ngh�
 }
 
 function generateDirectorReviewPrompt(room) {
-  const latestLeader = [...room.reviews].reverse().find(r => r.level === 'leader' && r.round === room.round) || [...room.reviews].reverse().find(r => r.level === 'leader');
+  const hasLeader = roomHasLeader(room);
+  const latestLeader = hasLeader ? ([...room.reviews].reverse().find(r => r.level === 'leader' && r.round === room.round) || [...room.reviews].reverse().find(r => r.level === 'leader')) : null;
   const tasksSummary = room.assignments.map((t, i) => `- Task #${i + 1} | UUID: "${t.id}" | ${t.title} | Provider: ${t.providerId} | Trạng thái: ${t.status}${t.status === 'skipped' ? ' (NGOẠI LỆ — nội dung do chủ dự án nhập, không phải AI thực hiện)' : ''}
   Tiêu chí task: ${t.acceptance}
   Output:
 ${t.output}`).join('\n\n');
   const base = { protocolVersion: 1, roomId: room.id, roomVersion: room.version, round: room.round, stage: 'review' };
-  const samplePass = { ...base, decision: { verdict: 'pass', content: 'C1: Đạt — <căn cứ>. C2: Đạt — <căn cứ>. ...', targetIds: [], finalResult: '<Bản chốt cuối cùng hoàn chỉnh>' } };
+  const samplePass = { ...base, decision: { verdict: 'pass', content: 'C1: Đạt — <căn cứ>. C2: Đạt — <căn cứ>. ...', targetIds: [], finalResult: '<Bản chốt cuối cùng hoàn chỉnh>',
+    decisionNote: { rationale: '<Vì sao chọn phương án cuối — tối thiểu 30 ký tự>', rejectedAlternatives: '<Các phương án đã cân nhắc nhưng loại, hoặc "Không có">', minorityView: '<Ý kiến khác biệt giữa các AI, hoặc "">', keyEdits: '<Chỉnh sửa trọng yếu so với đầu ra Worker, hoặc "">', uncertainties: '<Điểm chưa chắc chắn / cần xác nhận, hoặc "Không có">' } } };
   const sampleRework = { ...base, decision: { verdict: 'rework', content: 'C1: Đạt. C2: Không đạt — <lý do và yêu cầu sửa cụ thể>.', targetIds: [room.assignments[0]?.id || '<UUID task cần làm lại>'], finalResult: '' } };
   const lastRound = room.round >= room.maxRounds;
-  return `Bạn là Claude Pro — DIRECTOR thực hiện LỚP REVIEW 2 (duyệt cuối) cho hồ sơ "${room.title}". Đánh giá độc lập, không mặc định đồng ý với Leader.
+  const modeLine = hasLeader
+    ? 'Chế độ Đầy đủ: Leader đã tổng hợp — bạn rà soát độc lập và có thể biên tập lại Deliverable của Leader thành bản chốt.'
+    : `Chế độ ${MODES[room.mode].label}: KHÔNG có Leader — bạn tự tổng hợp đầu ra các Worker thành bản chốt (finalResult).`;
+  return `Bạn là Claude Pro — DIRECTOR thực hiện duyệt cuối cho hồ sơ "${room.title}". Đánh giá độc lập, không mặc định đồng ý với Worker${hasLeader ? '/Leader' : ''}.
 
 ${PROMPT_PRINCIPLES}
 
 === THÔNG TIN RÀNG BUỘC ===
 - roomId: "${room.id}" | roomVersion: ${room.version} | round: ${room.round}/${room.maxRounds}
+- ${modeLine}
 ${lastRound ? '- LƯU Ý: Đây là vòng cuối theo giới hạn. Nếu chọn rework, hồ sơ sẽ chuyển ESCALATED để chủ dự án quyết định tăng vòng hoặc đóng không đạt.\n' : ''}
 === BỐI CẢNH HỒ SƠ ===
 - Mục tiêu: ${room.objective}
@@ -1965,18 +2076,17 @@ ${roomSourceBlock(room)}
 
 === ĐẦU RA WORKER ===
 ${tasksSummary}
-
+${hasLeader ? `
 === NHẬN XÉT & BẢN TỔNG HỢP CỦA LEADER (Round ${latestLeader?.round ?? room.round}) ===
 ${latestLeader?.content || '(Không có)'}
 Deliverable:
 ${latestLeader?.deliverable || '(Leader không nộp deliverable)'}
-
+` : ''}
 === QUY TẮC QUYẾT ĐỊNH ===
-1. "pass" CHỈ KHI mọi tiêu chí C1..Cn đều Đạt và có căn cứ trong nguồn; khi đó targetIds = [] và finalResult là bản chốt hoàn chỉnh (có thể biên tập lại từ Deliverable của Leader).
+1. "pass" CHỈ KHI mọi tiêu chí C1..Cn đều Đạt và có căn cứ trong nguồn; khi đó targetIds = [], finalResult là bản chốt hoàn chỉnh, và decisionNote ghi lý do quyết định (chủ dự án sẽ rà soát trước khi khóa hồ sơ).
 2. "rework" khi có bất kỳ tiêu chí Không đạt/Chưa đủ căn cứ:
-   - Lỗi nằm ở đầu ra task → targetIds = danh sách UUID task cần làm lại (lấy đúng UUID ở trên).
-   - Lỗi nằm ở bản tổng hợp của Leader → targetIds = [].
-   - finalResult phải là chuỗi rỗng "".
+   - Lỗi nằm ở đầu ra task → targetIds = danh sách UUID task cần làm lại (lấy đúng UUID ở trên).${hasLeader ? '\n   - Lỗi nằm ở bản tổng hợp của Leader → targetIds = [].' : '\n   - Chế độ này không có Leader nên targetIds KHÔNG được rỗng.'}
+   - finalResult phải là chuỗi rỗng "" và không gửi decisionNote.
 3. "content" phải đánh giá lần lượt từng tiêu chí (Đạt / Không đạt / Chưa đủ căn cứ + lý do) và yêu cầu sửa cụ thể nếu rework.
 4. Trả về ĐÚNG MỘT khối JSON, không thêm trường. Hai mẫu dưới đây chỉ minh họa cấu trúc — chọn một.
 
@@ -2026,6 +2136,200 @@ function splitLeaderResponse(text) {
   const review = t.slice(m1, m2).replace(/^\s*#{1,3}\s*NHẬN XÉT LEADER\s*$/im, '').trim();
   const deliverable = t.slice(m2).replace(/^\s*#{1,3}\s*DELIVERABLE\s*$/im, '').trim();
   return { review, deliverable };
+}
+
+// ============================================================================
+// 8B. v1.5 — BẢNG ĐIỀU PHỐI: BƯỚC TIẾP THEO & HỘP NHẬN KẾT QUẢ CHUNG
+// ============================================================================
+function taskIsOpen(t) { return t.status !== 'submitted' && t.status !== 'skipped'; }
+
+// Các task sẵn sàng gửi, gom theo AI (task không phụ thuộc nhau có thể gửi song song / gộp một prompt)
+function readyTaskGroups(room) {
+  if (room.status !== 'working' && room.status !== 'rework') return [];
+  const groups = new Map();
+  for (const t of room.assignments) {
+    if (!taskIsOpen(t) || !areDependenciesReady(room, t)) continue;
+    if (!groups.has(t.providerId)) groups.set(t.providerId, []);
+    groups.get(t.providerId).push(t);
+  }
+  return [...groups.entries()].map(([providerId, tasks]) => ({ providerId, tasks }));
+}
+
+function pickQAProvider(room) {
+  if (room.qaProvider && isIndependentQASource(PROVIDERS[room.qaProvider]?.name || '') && !restrictedProvidersFor(room).includes(room.qaProvider)) return room.qaProvider;
+  const prefs = room.leader === 'gemini' ? ['chatgpt', 'gemini'] : ['gemini', 'chatgpt'];
+  return prefs.find(p => !restrictedProvidersFor(room).includes(p)) || 'gemini';
+}
+function qaSourceLabel(providerId) {
+  return providerId === 'chatgpt' ? 'Cross-AI QA (ChatGPT Plus)' : 'Cross-AI QA (Gemini Pro)';
+}
+
+// Trả về danh sách hành động kế tiếp (hành động "send" có prompt để gửi cho AI)
+function computeNextActions(room) {
+  if (!room) return [];
+  const s = room.status;
+  if (isImmutable(room)) return [{ kind: 'none', label: s === 'completed' ? 'Hồ sơ đã nghiệm thu và khóa.' : 'Hồ sơ đã đóng — Không đạt.' }];
+  if (s === 'planning') return [{ kind: 'send', step: 'plan', providerId: 'claude', label: 'Gửi yêu cầu lập kế hoạch cho Claude (Director)', expect: 'JSON kế hoạch của Claude' }];
+  if (s === 'working' || s === 'rework') {
+    const groups = readyTaskGroups(room);
+    if (!groups.length) return [{ kind: 'wait', label: 'Đang chờ các task tiền nhiệm hoàn thành.' }];
+    return groups.map(g => ({ kind: 'send', step: 'workers', providerId: g.providerId, taskIds: g.tasks.map(t => t.id),
+      label: `Gửi ${g.tasks.length > 1 ? g.tasks.length + ' task' : 'Task #' + (room.assignments.findIndex(a => a.id === g.tasks[0].id) + 1)} cho ${PROVIDERS[g.providerId].name}`,
+      expect: `kết quả ${g.tasks.length} task từ ${PROVIDERS[g.providerId].name}` }));
+  }
+  if (s === 'leader_review') return [{ kind: 'send', step: 'leader', providerId: room.leader, label: `Gửi rà soát tổng hợp cho Leader (${PROVIDERS[room.leader].name})`, expect: 'phản hồi của Leader' }];
+  if (s === 'director_review') return [{ kind: 'send', step: 'director', providerId: 'claude', label: 'Gửi duyệt cuối cho Claude (Director)', expect: 'JSON quyết định của Claude' }];
+  if (s === 'escalated') return [{ kind: 'decide', label: 'Hồ sơ ESCALATED — quyết định tăng số vòng hoặc đóng không đạt (khung đỏ phía trên).' }];
+  if (s === 'approved') {
+    const recs = qaRecordsOfRound(room, room.round);
+    const hasFail = recs.some(q => q.verdict === 'fail');
+    const holds = unresolvedHolds(room, room.round);
+    const latest = recs[recs.length - 1];
+    if (hasFail) return [{ kind: 'decide', label: 'QA FAIL — mở vòng rà soát mới hoặc đóng hồ sơ không đạt.' }];
+    if (holds.length) return [{ kind: 'decide', label: 'QA HOLD — xác minh điểm treo rồi ghi nhận QA PASS kèm ghi chú xử lý (khung QA độc lập).' }];
+    if (roomRequiresQA(room) && !(latest && latest.verdict === 'pass')) {
+      const pid = pickQAProvider(room);
+      return [{ kind: 'send', step: 'qa', providerId: pid, label: `Gửi thẩm định độc lập cho ${PROVIDERS[pid].name}`, expect: 'kết luận QA độc lập' }];
+    }
+    return [{ kind: 'submit', label: room.isDemo ? 'Room Demo — không khóa thành hồ sơ thật.' : 'Rà soát Decision Note (Director đã soạn sẵn) và bấm Chốt hồ sơ.' }];
+  }
+  return [];
+}
+
+function buildPromptForAction(room, action) {
+  if (action.step === 'plan') return generateDirectorPlanPrompt(room);
+  if (action.step === 'workers') return generateWorkerBatchPrompt(room, action.taskIds.map(id => room.assignments.find(a => a.id === id)));
+  if (action.step === 'leader') return generateLeaderPrompt(room);
+  if (action.step === 'director') return generateDirectorReviewPrompt(room);
+  if (action.step === 'qa') return generateIndependentQAPrompt(room);
+  return '';
+}
+
+// Ghi nhận việc đã gửi (task chuyển "doing", lưu AI thẩm định) — thay đổi trạng thái room
+function engineMarkActionSent(room, action) {
+  if (action.step === 'workers') {
+    let changed = false;
+    for (const id of action.taskIds) {
+      const t = room.assignments.find(a => a.id === id);
+      if (t && (t.status === 'waiting' || t.status === 'rework')) { t.status = 'doing'; changed = true; }
+    }
+    if (changed) { room.version += 1; room.updatedAt = nowISO(); }
+  } else if (action.step === 'qa') {
+    room.qaProvider = action.providerId;
+    room.qaPromptCopiedAt = nowISO();
+  }
+}
+
+// Tách các khối <<<TASK:id>>> ... <<<END TASK:id>>> (thiếu dòng kết thúc thì lấy tới khối kế tiếp)
+function parseTaskBlocks(text) {
+  const t = String(text || '').replace(/\\</g, '<').replace(/\\>/g, '>');
+  const re = /<<<\s*TASK\s*:\s*([A-Za-z0-9]{4,12})\s*>>>/g;
+  const heads = [];
+  let m;
+  while ((m = re.exec(t))) heads.push({ id: m[1], start: m.index, bodyStart: m.index + m[0].length });
+  return heads.map((hd, i) => {
+    const end = i + 1 < heads.length ? heads[i + 1].start : t.length;
+    let body = t.slice(hd.bodyStart, end);
+    const endRe = new RegExp('<<<\\s*END\\s*TASK\\s*:\\s*' + hd.id + '\\s*>>>');
+    const em = body.match(endRe);
+    if (em) body = body.slice(0, em.index);
+    body = body.replace(/^\s*```[a-z]*\s*$/gim, '').trim();
+    return { markerId: hd.id, content: body };
+  });
+}
+
+function parseQAResponse(text) {
+  const t = String(text || '');
+  const vm = t.match(/KẾT\s*LUẬN\s*[:：]?\s*[*_`]*\s*(PASS|FAIL|HOLD)\b/i);
+  if (!vm) return null;
+  const verdict = { PASS: 'pass', FAIL: 'fail', HOLD: 'needs_verification' }[vm[1].toUpperCase()];
+  const sec = (from, to) => {
+    const a = t.search(from);
+    if (a === -1) return '';
+    const rest = t.slice(a).replace(from, '');
+    const b = to ? rest.search(to) : -1;
+    return (b === -1 ? rest : rest.slice(0, b)).trim();
+  };
+  const evidence = sec(/#{1,3}\s*BẰNG CHỨNG[^\n]*\n?/i, /#{1,3}\s*(PHÁT HIỆN|KẾT\s*LUẬN)/i);
+  const findings = [sec(/#{1,3}\s*PHÁT HIỆN[^\n]*\n?/i, /#{1,3}\s*KẾT\s*LUẬN/i), t.slice(vm.index + vm[0].length).trim()].filter(Boolean).join('\n');
+  return { verdict, evidence: evidence || t.trim(), findings: findings || t.trim() };
+}
+
+// Nhận diện nội dung dán vào hộp nhận kết quả theo trạng thái Room hiện tại (không thay đổi room)
+function classifyIngest(room, text) {
+  const raw = String(text || '').trim();
+  if (!raw) throw new Error('Hộp nhận kết quả đang trống.');
+  if (raw.length > 250000) throw new Error('Nội dung dán vượt quá 250.000 ký tự.');
+  const s = room.status;
+  if (isImmutable(room)) throw new Error('Hồ sơ đã khóa — không nhận thêm kết quả.');
+  const looksJSON = /"protocolVersion"\s*:/.test(raw);
+
+  if (s === 'planning' || s === 'director_review') {
+    if (!looksJSON) throw new Error(`Room đang ở ${s.toUpperCase()}: cần dán phản hồi của Claude có chứa khối JSON (protocolVersion).`);
+    return { kind: 'director', text: raw, stage: s === 'planning' ? 'plan' : 'review' };
+  }
+  if (looksJSON) throw new Error(`Đây là JSON của Director nhưng Room đang ở ${s.toUpperCase()} — không áp dụng được ở bước này.`);
+
+  if (s === 'working' || s === 'rework') {
+    const blocks = parseTaskBlocks(raw);
+    let items = [];
+    if (blocks.length) {
+      for (const b of blocks) {
+        const task = room.assignments.find(a => taskMarkerId(a) === b.markerId);
+        if (!task) throw new Error(`Không tìm thấy task có mã "${b.markerId}" trong Room này (có thể dán nhầm hồ sơ).`);
+        if (!b.content) throw new Error(`Khối kết quả của Task "${task.title}" đang trống.`);
+        if (items.some(x => x.taskId === task.id)) throw new Error(`Task "${task.title}" xuất hiện 2 lần trong nội dung dán.`);
+        items.push({ taskId: task.id, content: b.content });
+      }
+    } else {
+      const doing = room.assignments.filter(a => a.status === 'doing');
+      if (doing.length !== 1) throw new Error(doing.length === 0
+        ? 'Không thấy dòng đánh dấu <<<TASK:…>>> và chưa có task nào đã gửi. Hãy dán nguyên văn phản hồi của AI.'
+        : `Có ${doing.length} task đang chờ kết quả nhưng nội dung dán không có dòng đánh dấu <<<TASK:…>>> — không xác định được của task nào.`);
+      items = [{ taskId: doing[0].id, content: raw }];
+    }
+    for (const it of items) {
+      const task = room.assignments.find(a => a.id === it.taskId);
+      if (!taskIsOpen(task)) throw new Error(`Task "${task.title}" đã có đầu ra (${task.status}) — không ghi đè.`);
+      if (!areDependenciesReady(room, task)) throw new Error(`Task "${task.title}" còn chờ task tiền nhiệm.`);
+    }
+    return { kind: 'workers', items };
+  }
+  if (s === 'leader_review') {
+    const parts = splitLeaderResponse(raw);
+    return { kind: 'leader', review: parts ? parts.review : raw, deliverable: parts ? parts.deliverable : '', split: Boolean(parts) };
+  }
+  if (s === 'approved') {
+    const qa = parseQAResponse(raw);
+    if (!qa) throw new Error('Không tìm thấy dòng "KẾT LUẬN: PASS | FAIL | HOLD" trong phản hồi QA.');
+    return { kind: 'qa', ...qa, providerId: pickQAProvider(room), source: qaSourceLabel(pickQAProvider(room)) };
+  }
+  if (s === 'escalated') throw new Error('Hồ sơ ESCALATED — cần quyết định của chủ dự án, không nhận kết quả AI.');
+  throw new Error(`Trạng thái ${s} không nhận kết quả.`);
+}
+
+// Áp dụng kết quả đã nhận diện (thay đổi room). Trả về mô tả ngắn.
+function engineApplyIngest(room, c) {
+  if (c.kind === 'director') {
+    const res = engineApplyDirectorDecision(room, c.text);
+    if (res.stage === 'plan') return `Đã áp dụng kế hoạch: ${room.assignments.length} task, chế độ ${MODES[room.mode].label}.`;
+    if (res.status === 'approved') return roomRequiresQA(room) ? 'Director PASS → chờ thẩm định độc lập.' : 'Director PASS → chờ chủ dự án chốt hồ sơ.';
+    if (res.status === 'escalated') return 'Director yêu cầu Rework ở vòng cuối → ESCALATED, chờ quyết định.';
+    return `Director yêu cầu Rework → Round ${room.round}.`;
+  }
+  if (c.kind === 'workers') {
+    for (const it of c.items) engineSubmitWorkerResponse(room, it.taskId, it.content);
+    return `Đã nhận ${c.items.length} kết quả Worker${room.status === 'director_review' || room.status === 'leader_review' ? ' — đủ đầu ra, chuyển ' + room.status.toUpperCase() : ''}.`;
+  }
+  if (c.kind === 'leader') {
+    engineSubmitLeaderReview(room, c.review, c.deliverable);
+    return `Đã nhận rà soát của Leader${c.split ? '' : ' (không có tiêu đề tách — lưu toàn bộ là nhận xét)'} → DIRECTOR_REVIEW.`;
+  }
+  if (c.kind === 'qa') {
+    engineRecordIndependentQA(room, { source: c.source, verdict: c.verdict, evidence: c.evidence, findings: c.findings });
+    return `Đã ghi nhận QA độc lập: ${c.verdict.toUpperCase()} (${c.source}).`;
+  }
+  throw new Error('Loại kết quả không hỗ trợ.');
 }
 
 // ============================================================================
@@ -2413,21 +2717,141 @@ function copyText(txt, lbl) {
     .catch(err => { showBanner(`Không sao chép được ${lbl}: ${err.message || err}. Hãy bấm vào trang rồi thử lại.`, true); return false; });
 }
 
-// Kiểm soát dữ liệu đi ra ngoài: chặn provider bị cấm theo phân loại, cảnh báo DLP và ghi nhật ký (chỉ ghi loại phát hiện)
-function copyPromptWithDlp(room, text, label, providerId) {
+// Kiểm soát dữ liệu đi ra ngoài: chặn provider bị cấm theo phân loại, cảnh báo DLP và ghi nhật ký (chỉ ghi loại phát hiện).
+// v1.5: chỉ hỏi lại khi xuất hiện loại dữ liệu nhạy cảm MỚI cho cùng AI trong Room này (đã xác nhận thì không hỏi lại).
+function dlpSignature(providerId, findings) { return `${providerId || 'ext'}|${[...findings].sort().join(',')}`; }
+function dlpGate(room, text, label, providerId) {
   try {
     if (providerId) assertProviderAllowed(room, providerId, label);
-  } catch (e) { showBanner(e.message, true); return; }
+  } catch (e) { showBanner(e.message, true); return false; }
   const findings = scanSensitiveData(text);
+  if (!findings.length) return true;
+  const sig = dlpSignature(providerId, findings);
+  if ((room.dlpAcks || []).includes(sig)) return true;
   const target = PROVIDERS[providerId]?.name || 'AI bên ngoài';
-  if (findings.length) {
-    const ok = confirm(`CẢNH BÁO DLP — Prompt "${label}" gửi tới ${target} có dấu hiệu dữ liệu nhạy cảm:\n• ${findings.join('\n• ')}\n\nPhân loại Room: ${DATA_CLASSES[room.dataClass]?.label}. Hãy tự kiểm tra cài đặt dữ liệu của tài khoản AI trước khi dán.\nVẫn sao chép?`);
-    if (!ok) return;
-    room.messages.push({ id: uuidv4(), sender: 'DLP Outbound Control', content: `Chủ dự án xác nhận sao chép "${label}" tới ${target} dù có cảnh báo: ${findings.join('; ')}.`, createdAt: nowISO() });
-    room.updatedAt = nowISO();
-    saveRoomsToStorage();
+  const ok = confirm(`CẢNH BÁO DLP — Prompt "${label}" gửi tới ${target} có dấu hiệu dữ liệu nhạy cảm:\n• ${findings.join('\n• ')}\n\nPhân loại Room: ${DATA_CLASSES[room.dataClass]?.label}. Hãy tự kiểm tra cài đặt dữ liệu của tài khoản AI trước khi dán.\nĐồng ý gửi? (Sẽ không hỏi lại cho cùng loại dữ liệu và cùng AI trong Room này.)`);
+  if (!ok) return false;
+  if (!Array.isArray(room.dlpAcks)) room.dlpAcks = [];
+  room.dlpAcks.push(sig);
+  room.messages.push({ id: uuidv4(), sender: 'DLP Outbound Control', content: `Chủ dự án xác nhận gửi dữ liệu có cảnh báo tới ${target} (${label}): ${findings.join('; ')}.`, createdAt: nowISO() });
+  room.updatedAt = nowISO();
+  saveRoomsToStorage();
+  return true;
+}
+function copyPromptWithDlp(room, text, label, providerId) {
+  if (!dlpGate(room, text, label, providerId)) return Promise.resolve(false);
+  return copyText(text, label);
+}
+
+// v1.5 — Gửi 1 chạm: copy prompt + mở trang AI + ghi nhận đã gửi
+function sendNextAction(index, openSite = true) {
+  const room = getCurrentRoom();
+  if (!room) return;
+  const action = computeNextActions(room)[index];
+  if (!action || action.kind !== 'send') return;
+  const text = buildPromptForAction(room, action);
+  if (!dlpGate(room, text, action.label, action.providerId)) return;
+  engineMarkActionSent(room, action);
+  saveRoomsToStorage();
+  renderAll();
+  focusIngestBox();
+  copyText(text, `prompt "${action.label}"`).then(ok => {
+    if (ok && openSite) {
+      window.open(PROVIDERS[action.providerId]?.url || PROVIDERS.claude.url, '_blank', 'noopener,noreferrer');
+    }
+    if (ok) setIngestHint(`Đã copy prompt. Dán vào ${PROVIDERS[action.providerId]?.name}, sau đó copy câu trả lời và dán vào Hộp nhận kết quả (chờ: ${action.expect}).`);
+  });
+}
+
+// Sau khi nhận kết quả: tự copy sẵn prompt của bước kế tiếp đầu tiên (không mở trang để tránh mở nhiều tab)
+function autoCopyNextPrompt(room) {
+  const actions = computeNextActions(room);
+  const idx = actions.findIndex(a => a.kind === 'send');
+  if (idx === -1) return Promise.resolve(false);
+  const action = actions[idx];
+  const text = buildPromptForAction(room, action);
+  if (!dlpGate(room, text, action.label, action.providerId)) return Promise.resolve(false);
+  engineMarkActionSent(room, action);
+  saveRoomsToStorage();
+  renderAll();
+  return copyText(text, `prompt bước kế tiếp — ${action.label}`).then(ok => {
+    if (ok) setIngestHint(`Đã copy sẵn prompt: ${action.label}. Dán vào ${PROVIDERS[action.providerId]?.name} rồi dán câu trả lời vào đây.${actions.filter(a => a.kind === 'send').length > 1 ? ' Còn nhóm task khác — bấm nút Gửi tương ứng.' : ''}`);
+    return ok;
+  });
+}
+
+function focusIngestBox() {
+  const inp = document.getElementById('ingestInput');
+  if (inp && !document.getElementById('ingestBox').classList.contains('hidden')) inp.focus({ preventScroll: true });
+}
+function setIngestHint(msg, isError = false) {
+  const el = document.getElementById('ingestHint');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = `text-[11px] ${isError ? 'text-red-700 font-semibold' : 'text-emerald-800 font-semibold'}`;
+}
+
+// v1.5 — Hộp nhận kết quả chung
+function processIngest(text) {
+  const room = getCurrentRoom();
+  if (!room) return;
+  let c;
+  try {
+    c = classifyIngest(room, text);
+  } catch (e) {
+    setIngestHint(e.message, true);
+    showBanner(e.message, true);
+    return;
   }
-  copyText(text, label);
+  // Cổng duyệt 1: chủ dự án duyệt kế hoạch của Director trước khi áp dụng
+  if (c.kind === 'director' && c.stage === 'plan') {
+    let summary = '';
+    try {
+      const env = parseAndValidateDirectorEnvelope(c.text, room);
+      const d = env.decision;
+      summary = `Mục tiêu: ${d.objective}\n\nTiêu chí (${d.criteria.length}):\n${d.criteria.map((x, i) => `  C${i + 1}. ${x}`).join('\n')}\n\nTask (${d.tasks.length}):\n${d.tasks.map((t, i) => `  ${i + 1}. ${t.title} → ${PROVIDERS[t.providerId].name}${t.dependencies.length ? ' (sau task ' + t.dependencies.join(', ') + ')' : ''}`).join('\n')}`;
+    } catch (e) {
+      setIngestHint(e.message, true);
+      showBanner('Kế hoạch của Director bị từ chối: ' + e.message.split('\n').slice(0, 3).join(' '), true);
+      return;
+    }
+    if (!confirm(`DUYỆT KẾ HOẠCH (cổng 1)\n\n${summary}\n\nĐồng ý áp dụng kế hoạch này?`)) { setIngestHint('Chưa duyệt kế hoạch — có thể yêu cầu Claude chỉnh rồi dán lại.', true); return; }
+  }
+  if (c.kind === 'qa') {
+    const msg = `Ghi nhận QA độc lập từ ${c.source}: ${c.verdict === 'pass' ? 'PASS' : c.verdict === 'fail' ? 'FAIL (chặn vĩnh viễn vòng này)' : 'HOLD'}?`;
+    if (!confirm(msg)) return;
+  }
+  try {
+    const summary = engineApplyIngest(room, c);
+    document.getElementById('ingestInput').value = '';
+    clearDraft('ingest');
+    if (!saveRoomsToStorage()) return;
+    renderAll();
+    showBanner(summary);
+    setIngestHint(summary);
+    focusIngestBox();
+    autoCopyNextPrompt(room);
+  } catch (e) {
+    if (c.kind === 'qa') {
+      // Ví dụ: PASS khi còn HOLD → điền sẵn khung QA để chủ dự án bổ sung ghi chú xử lý
+      document.getElementById('qaSourceInput').value = c.source;
+      document.getElementById('qaVerdictInput').value = c.verdict;
+      document.getElementById('qaEvidenceInput').value = c.evidence.slice(0, 4000);
+      document.getElementById('qaFindingsInput').value = c.findings.slice(0, 4000);
+      renderQAHoldFields();
+    }
+    setIngestHint(e.message.split('\n').slice(0, 4).join(' '), true);
+    showBanner(e.message.split('\n').slice(0, 4).join(' '), true);
+  }
+}
+function handleIngestClick() { processIngest(document.getElementById('ingestInput').value); }
+function onIngestPaste(ev) {
+  const t = ev.clipboardData && ev.clipboardData.getData('text');
+  if (!t) return;
+  ev.preventDefault();
+  document.getElementById('ingestInput').value = t;
+  saveDraft('ingest', t);
+  processIngest(t);
 }
 
 function copyDirectorPrompt(stage) {
@@ -2459,6 +2883,7 @@ function copyQAPrompt() {
   const src = document.getElementById('qaSourceInput').value;
   const pid = /gemini/i.test(src) ? 'gemini' : /chatgpt/i.test(src) ? 'chatgpt' : null;
   room.qaPromptCopiedAt = nowISO();
+  if (pid) room.qaProvider = pid;
   saveRoomsToStorage();
   copyPromptWithDlp(room, generateIndependentQAPrompt(room), 'Prompt QA độc lập', pid);
 }
@@ -2528,6 +2953,8 @@ function setRoomModalFields(r) {
   document.getElementById('newRoomCategory').value = r?.category || 'Tham vấn Quản trị & Rủi ro';
   document.getElementById('newRoomLeader').value = r?.leader || 'gemini';
   document.getElementById('newRoomDataClass').value = r?.dataClass || 'internal';
+  document.getElementById('newRoomMode').value = r?.mode || 'standard';
+  syncModeHint();
   document.getElementById('newRoomOwner').value = r?.owner || '';
   document.getElementById('newRoomDueDate').value = r?.dueDate || '';
   document.getElementById('newRoomDecisionMaker').value = r?.decisionMaker || '';
@@ -2535,6 +2962,13 @@ function setRoomModalFields(r) {
   document.getElementById('newRoomContext').value = r?.context || '';
   document.getElementById('dlpWarningBox').classList.add('hidden');
   dlpAckSignature = '';
+}
+function syncModeHint() {
+  const dc = document.getElementById('newRoomDataClass').value;
+  const sel = document.getElementById('newRoomMode');
+  if (dc === 'confidential') sel.value = 'full';
+  [...sel.options].forEach(o => { o.disabled = dc === 'confidential' && o.value !== 'full'; });
+  document.getElementById('newRoomModeHint').textContent = (dc === 'confidential' ? 'Hồ sơ MẬT luôn chạy chế độ Đầy đủ. ' : '') + (MODES[sel.value]?.note || '');
 }
 function showRoomModal() {
   lastFocusBeforeModal = document.activeElement;
@@ -2568,7 +3002,7 @@ function createRoomSubmit() {
   const f = id => document.getElementById(id).value.trim();
   const payload = {
     title: f('newRoomTitle'), category: f('newRoomCategory'), leader: document.getElementById('newRoomLeader').value,
-    dataClass: document.getElementById('newRoomDataClass').value, owner: f('newRoomOwner'), dueDate: f('newRoomDueDate'),
+    dataClass: document.getElementById('newRoomDataClass').value, mode: document.getElementById('newRoomMode').value, owner: f('newRoomOwner'), dueDate: f('newRoomDueDate'),
     decisionMaker: f('newRoomDecisionMaker'), instruction: f('newRoomInstruction'), context: f('newRoomContext')
   };
   if (!editingRoomId && rooms.length >= 100) return showBanner('FR-ROOM-01: Đã đạt giới hạn tối đa 100 Room.', true);
@@ -2608,7 +3042,7 @@ function createRoomSubmit() {
   if (dlp.length) messages.push({ id: uuidv4(), sender: 'DLP Control', content: `Tạo Room với cảnh báo DLP đã được chủ dự án xác nhận: ${dlp.join('; ')}.`, createdAt: nowISO() });
   const newRoom = normalizeRoomRecord({
     id: uuidv4(), version: 1, title: payload.title, category: payload.category || 'Điều phối chung', instruction: payload.instruction, context: payload.context,
-    dataClass: payload.dataClass, owner: payload.owner, dueDate: payload.dueDate, decisionMaker: payload.decisionMaker,
+    dataClass: payload.dataClass, mode: payload.mode, owner: payload.owner, dueDate: payload.dueDate, decisionMaker: payload.decisionMaker,
     status: 'planning', isDemo: false, objective: '', criteria: [], leader: payload.leader, leaderReason: '', assignments: [],
     messages, reviews: [], qaRecords: [], decisionHistory: [], decisionNote: null, notifications: [], round: 1, maxRounds: 3, finalResult: '',
     createdAt: nowISO(), updatedAt: nowISO()
@@ -2616,7 +3050,10 @@ function createRoomSubmit() {
   rooms.unshift(newRoom);
   currentRoomId = newRoom.id;
   closeNewRoomModal();
-  persistAndRender('Đã tạo Room nghiệp vụ mới! Bước tiếp theo: Copy Prompt Kế Hoạch gửi Claude.');
+  if (persistAndRender('Đã tạo Room nghiệp vụ mới!')) {
+    focusIngestBox();
+    autoCopyNextPrompt(newRoom).then(ok => { if (ok) window.open(PROVIDERS.claude.url, '_blank', 'noopener,noreferrer'); });
+  }
 }
 
 function deleteCurrentRoom() {
@@ -2648,6 +3085,7 @@ function loadDemoRoom() {
     id: uuidv4(), version: 2, title: '[DEMO / MẪU] Thẩm định Rủi ro Quy trình Mua sắm',
     category: 'Demo & Thử nghiệm',
     isDemo: true,
+    mode: 'standard',
     instruction: 'Đánh giá tờ trình lựa chọn nhà cung cấp và đưa ra phương án kiểm soát rủi ro tạm ứng.',
     context: 'Hồ sơ có báo giá 2 nhà cung cấp, tạm ứng 40% không có bảo lãnh ngân hàng.',
     status: 'working', objective: 'Xác định điều kiện phê duyệt hợp đồng mua sắm thiết bị.',
@@ -2770,6 +3208,8 @@ function renderActiveRoom() {
   const badge = document.getElementById('roomStatusBadge');
   badge.textContent = room.status.toUpperCase();
   badge.className = `px-2 py-0.5 text-xs font-bold uppercase rounded ${STATUS_BADGE[room.status] || 'bg-stone-200 text-stone-800'}`;
+  document.getElementById('roomModeBadge').textContent = 'Chế độ: ' + (MODES[room.mode]?.label || room.mode);
+  document.getElementById('roomModeBadge').title = MODES[room.mode]?.note || '';
   const dcb = document.getElementById('roomDataClassBadge');
   dcb.textContent = 'Dữ liệu: ' + (DATA_CLASSES[room.dataClass]?.label || room.dataClass);
   dcb.className = `px-2 py-0.5 text-[10px] font-bold uppercase rounded ${DATA_CLASSES[room.dataClass]?.badge || ''}`;
@@ -2811,16 +3251,20 @@ function renderActiveRoom() {
   }
 
   // Stepper
-  const steps = [
-    { key: 'planning', label: '1. Kế hoạch' }, { key: 'working', label: '2. Worker' },
-    { key: 'leader_review', label: '3. Leader' }, { key: 'director_review', label: '4. Director' },
-    { key: 'approved', label: '5. QA Độc lập' }, { key: 'completed', label: room.status === 'closed_rejected' ? '6. Đóng — Không đạt' : '6. Completed' }
+  const stepDefs = [
+    { key: 'planning', label: 'Kế hoạch' }, { key: 'working', label: 'Worker' },
+    ...(roomHasLeader(room) ? [{ key: 'leader_review', label: 'Leader' }] : []),
+    { key: 'director_review', label: 'Director' },
+    { key: 'approved', label: roomRequiresQA(room) ? 'QA Độc lập' : 'Chủ dự án chốt' },
+    { key: 'completed', label: room.status === 'closed_rejected' ? 'Đóng — Không đạt' : 'Completed' }
   ];
+  const steps = stepDefs.map((s, i) => ({ ...s, label: `${i + 1}. ${s.label}` }));
   const curKey = room.status === 'rework' ? 'working' : room.status === 'escalated' ? 'director_review' : room.status === 'closed_rejected' ? 'completed' : room.status;
   const activeIdx = steps.findIndex(s => s.key === curKey);
+  document.getElementById('workflowStepper').className = `grid grid-cols-2 ${steps.length === 6 ? 'sm:grid-cols-6' : steps.length === 5 ? 'sm:grid-cols-5' : 'sm:grid-cols-4'} gap-2 pt-3`;
   document.getElementById('workflowStepper').innerHTML = steps.map((s, idx) => {
     const isNow = idx === activeIdx && !isCompleted, isDone = idx < activeIdx || isCompleted;
-    const cls = room.status === 'closed_rejected' && idx === 5 ? 'bg-stone-700 text-white font-bold' : room.status === 'escalated' && idx === activeIdx ? 'bg-red-700 text-white font-bold' : isNow ? 'bg-amber-700 text-white font-bold' : (isDone ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'bg-stone-100 text-stone-500');
+    const cls = room.status === 'closed_rejected' && idx === steps.length - 1 ? 'bg-stone-700 text-white font-bold' : room.status === 'escalated' && idx === activeIdx ? 'bg-red-700 text-white font-bold' : isNow ? 'bg-amber-700 text-white font-bold' : (isDone ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'bg-stone-100 text-stone-500');
     return `<div class="text-[11px] px-2 py-1.5 rounded border text-center ${cls}" ${isNow ? 'aria-current="step"' : ''}>${escapeHtml(s.label)}</div>`;
   }).join('');
 
@@ -2830,6 +3274,9 @@ function renderActiveRoom() {
     if (el) el.classList.toggle('ring-4', (STAGE_PANEL[room.status] || []).includes(id));
     if (el) el.classList.toggle('ring-amber-500', (STAGE_PANEL[room.status] || []).includes(id));
   });
+
+  document.getElementById('leaderPanel').classList.toggle('hidden', !roomHasLeader(room));
+  renderOrchestrator(room);
 
   // Plan summary
   const planCard = document.getElementById('planSummaryCard');
@@ -2942,17 +3389,20 @@ function renderActiveRoom() {
 
   // Final Submit & Decision Note Controls
   document.getElementById('finalResultPreview').textContent = room.finalResult || 'Chưa có Final Result.';
-  const dn = room.decisionNote;
+  const dn = room.decisionNote || (room.directorDecisionNoteDraft && room.directorDecisionNoteDraft.round === room.round ? room.directorDecisionNoteDraft : null);
   document.getElementById('dnRationale').value = getDraft('dn_rationale') || (dn?.rationale || '');
   document.getElementById('dnRejected').value = getDraft('dn_rejected') || (dn?.rejectedAlternatives || '');
   document.getElementById('dnMinority').value = getDraft('dn_minority') || (dn?.minorityView || '');
   document.getElementById('dnEdits').value = getDraft('dn_edits') || (dn?.keyEdits || '');
   document.getElementById('dnUncertainties').value = getDraft('dn_uncertainties') || (dn?.uncertainties || '');
+  document.getElementById('dnPrefillNote').className = (!room.decisionNote && room.directorDecisionNoteDraft && room.status === 'approved') ? 'text-[11px] bg-emerald-50 border border-emerald-300 text-emerald-900 rounded p-2' : 'hidden';
   ['dnRationale', 'dnRejected', 'dnMinority', 'dnEdits', 'dnUncertainties'].forEach(id => {
     document.getElementById(id).disabled = isCompleted || room.status !== 'approved';
   });
 
-  const canFinalSubmit = room.status === 'approved' && !room.isDemo && latestQA && latestQA.verdict === 'pass' && !hasFail && !holds.length && !isCompleted;
+  const qaOk = roomRequiresQA(room) ? (latestQA && latestQA.verdict === 'pass') : (!latestQA || latestQA.verdict === 'pass');
+  const canFinalSubmit = room.status === 'approved' && !room.isDemo && qaOk && !hasFail && !holds.length && !isCompleted;
+  document.getElementById('qaModeNote').textContent = roomRequiresQA(room) ? '' : 'Chế độ Nhanh: QA độc lập không bắt buộc (có thể ghi nhận nếu muốn).';
   document.getElementById('btnFinalSubmit').disabled = !canFinalSubmit;
   document.getElementById('btnReopenAlt').className = room.status === 'approved' ? 'px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition' : 'hidden';
   document.getElementById('btnCloseRejected').className = (!isCompleted && room.status !== 'planning') ? 'w-full py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded border border-stone-400' : 'hidden';
@@ -2973,6 +3423,30 @@ function renderActiveRoom() {
   `).join('');
 }
 
+function renderOrchestrator(room) {
+  const actions = computeNextActions(room);
+  const sendIdx = actions.map((a, i) => a.kind === 'send' ? i : -1).filter(i => i >= 0);
+  const head = actions[0];
+  const stepper = {
+    planning: 'Bước: Lập kế hoạch', working: 'Bước: Worker thực hiện', rework: `Bước: Worker làm lại (Round ${room.round})`,
+    leader_review: 'Bước: Leader tổng hợp', director_review: 'Bước: Director duyệt cuối', approved: roomRequiresQA(room) ? 'Bước: QA độc lập & chốt hồ sơ' : 'Bước: Chủ dự án chốt hồ sơ',
+    escalated: 'Bước: Chờ quyết định', completed: 'Đã khóa', closed_rejected: 'Đã đóng'
+  };
+  document.getElementById('orchestratorStep').textContent = `${stepper[room.status] || room.status} • Chế độ ${MODES[room.mode]?.label}`;
+  document.getElementById('nextActionText').textContent = sendIdx.length > 1
+    ? `Có ${sendIdx.length} nhóm task gửi song song — mỗi nút gửi một prompt gộp cho từng AI:`
+    : (head?.kind === 'send' ? `${head.label}, rồi dán ${head.expect} vào Hộp nhận kết quả.` : (head?.label || ''));
+  document.getElementById('nextActionButtons').innerHTML = [
+    ...sendIdx.map(i => `<button onclick="sendNextAction(${i})" class="px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded">▶ ${escapeHtml(actions[i].label)} (copy + mở trang)</button>
+      <button onclick="sendNextAction(${i}, false)" class="px-2.5 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded">Chỉ copy</button>`),
+    ...(head?.kind === 'submit' && !room.isDemo ? [`<button onclick="document.getElementById('submitGatePanel').scrollIntoView({behavior:'smooth'}); document.getElementById('dnRationale').focus()" class="px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded">Đến khung Chốt hồ sơ</button>`] : [])
+  ].join('');
+  const accepting = ['planning', 'working', 'rework', 'leader_review', 'director_review', 'approved'].includes(room.status);
+  document.getElementById('ingestBox').classList.toggle('hidden', !accepting);
+  const inp = document.getElementById('ingestInput');
+  if (inp && document.activeElement !== inp) inp.value = getDraft('ingest');
+}
+
 function renderAll() {
   renderDashboard();
   renderProviderCatalog();
@@ -2981,7 +3455,7 @@ function renderAll() {
 }
 
 // ============================================================================
-// 13. BUILT-IN AUTOMATED TESTS (AT-01..AT-20 gốc + AT-21..AT-44 cho v1.4)
+// 13. BUILT-IN AUTOMATED TESTS (AT-01..AT-20 gốc + AT-21..AT-44 v1.4 + AT-45..AT-60 v1.5)
 // ============================================================================
 function runAutomatedTestSuite() {
   const results = [];
@@ -3446,6 +3920,151 @@ function runAutomatedTestSuite() {
     return 'SHA-256 khớp vector kiểm thử chuẩn.';
   }, 'AT-44', 'SHA-256 niêm phong đúng chuẩn');
 
+  // ===================== v1.5 — Chế độ xử lý & Bảng điều phối =====================
+  const makeModeRoom = (mode, dataClass = 'internal', tasks) => {
+    const r = normalizeRoomRecord({ id: 'room-mode-' + mode, version: 1, round: 1, maxRounds: 3, status: 'planning', isDemo: false, mode, dataClass, leader: 'gemini', title: 'Room ' + mode, instruction: 'Chỉ đạo kiểm thử hợp lệ tối thiểu 5 ký tự.' });
+    const ts = tasks || [
+      { title: 'T1', instructions: 'I1', acceptance: 'A1', providerId: 'chatgpt', dependencies: [] },
+      { title: 'T2', instructions: 'I2', acceptance: 'A2', providerId: 'gemini', dependencies: [1] },
+      { title: 'T3', instructions: 'I3', acceptance: 'A3', providerId: 'chatgpt', dependencies: [] }
+    ];
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: 1, round: 1, stage: 'plan', decision: { objective: 'Mục tiêu', criteria: ['Tiêu chí 1'], leaderId: 'gemini', leaderReason: 'R', tasks: ts } }));
+    return r;
+  };
+  const finishWorkers = (r) => { r.assignments.forEach(t => { if (taskIsOpen(t)) engineSubmitWorkerResponse(r, t.id, 'Đầu ra ' + t.title); }); };
+  const dnPayload = { rationale: 'Đáp ứng đủ tiêu chí, có căn cứ trong nguồn cung cấp', rejectedAlternatives: 'Không có', minorityView: '', keyEdits: '', uncertainties: 'Không có' };
+
+  assertPass(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    if (r.status !== 'director_review') throw new Error('Chế độ Chuẩn phải bỏ qua Leader, đang: ' + r.status);
+    if (generateDirectorReviewPrompt(r).includes('NHẬN XÉT & BẢN TỔNG HỢP CỦA LEADER')) throw new Error('Prompt Director còn khối Leader.');
+    return 'Worker xong → DIRECTOR_REVIEW, prompt Director tự tổng hợp.';
+  }, 'AT-45', 'Chế độ Chuẩn: bỏ lớp Leader');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'rework', content: 'Làm lại', targetIds: [], finalResult: '' } }));
+  }, 'AT-46', 'Chế độ Chuẩn: rework phải chỉ định task', 'không có Leader');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    engineSubmitLeaderReview(r, 'Leader ngoài luồng', '');
+  }, 'AT-47', 'Chế độ Chuẩn: chặn nộp Leader Review', 'không có lớp Leader');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'pass', content: 'Đạt', targetIds: [], finalResult: 'Bản chốt', decisionNote: dnPayload } }));
+    engineFinalSubmitRoom(r, dnPayload);
+  }, 'AT-48', 'Chế độ Chuẩn: vẫn bắt buộc QA độc lập', 'Independent QA Guard Reject');
+
+  assertPass(() => {
+    const r = makeModeRoom('fast');
+    finishWorkers(r);
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'pass', content: 'Đạt', targetIds: [], finalResult: 'Bản chốt', decisionNote: dnPayload } }));
+    if (r.directorDecisionNoteDraft?.rationale !== dnPayload.rationale) throw new Error('Không lưu Decision Note do Director soạn.');
+    engineFinalSubmitRoom(r, r.directorDecisionNoteDraft);
+    if (r.status !== 'completed' || !r.sealHash || evaluateIntegrity(r) !== '') throw new Error('Chế độ Nhanh không Completed/niêm phong đúng.');
+    return 'Chế độ Nhanh: Director PASS + Decision Note soạn sẵn → Completed, niêm phong hợp lệ.';
+  }, 'AT-49', 'Chế độ Nhanh: hoàn tất không cần QA, dùng Decision Note của Director');
+
+  assertPass(() => {
+    const r = normalizeRoomRecord({ id: 'room-conf-mode', version: 1, round: 1, maxRounds: 3, status: 'planning', mode: 'fast', dataClass: 'confidential', title: 'Mật', instruction: 'Chỉ đạo hợp lệ 12345' });
+    if (r.mode !== 'full') throw new Error('Hồ sơ Mật không bị ép về Đầy đủ: ' + r.mode);
+    const legacy = normalizeRoomRecord({ id: 'room-legacy-01', title: 'Cũ', instruction: 'Chỉ đạo hợp lệ 12345' });
+    if (legacy.mode !== 'full') throw new Error('Room cũ (không có mode) phải giữ luồng Đầy đủ.');
+    return 'Mật → Đầy đủ; Room trước v1.5 giữ nguyên luồng Đầy đủ.';
+  }, 'AT-50', 'Hồ sơ Mật luôn Đầy đủ; dữ liệu cũ giữ luồng cũ');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: 1, stage: 'review', decision: { verdict: 'rework', content: 'Làm lại', targetIds: [r.assignments[0].id], finalResult: '', decisionNote: dnPayload } }));
+  }, 'AT-51', 'Rework kèm decisionNote bị từ chối', 'không gửi decisionNote');
+
+  assertPass(() => {
+    const r = makeModeRoom('standard');
+    const groups = readyTaskGroups(r);
+    if (groups.length !== 1 || groups[0].providerId !== 'chatgpt' || groups[0].tasks.length !== 2) throw new Error('Gom nhóm sai: ' + JSON.stringify(groups.map(g => [g.providerId, g.tasks.length])));
+    const act = computeNextActions(r)[0];
+    const p = buildPromptForAction(r, act);
+    const ids = act.taskIds.map(id => taskMarkerId(r.assignments.find(a => a.id === id)));
+    if (!ids.every(id => p.includes(`<<<TASK:${id}>>>`) && p.includes(`<<<END TASK:${id}>>>`))) throw new Error('Prompt gộp thiếu dòng đánh dấu.');
+    if (p.split('Chỉ đạo kiểm thử hợp lệ').length !== 2) throw new Error('Bối cảnh bị lặp trong prompt gộp.');
+    return 'T1+T3 (ChatGPT, độc lập) gộp 1 prompt; T2 chờ tiền nhiệm; bối cảnh xuất hiện 1 lần.';
+  }, 'AT-52', 'Gộp task sẵn sàng theo AI thành 1 prompt');
+
+  assertPass(() => {
+    const r = makeModeRoom('standard');
+    const act = computeNextActions(r)[0];
+    engineMarkActionSent(r, act);
+    const [t1, , t3] = r.assignments;
+    const pasted = `Đây là kết quả:\n<<<TASK:${taskMarkerId(t1)}>>>\nKết quả task 1\n<<<END TASK:${taskMarkerId(t1)}>>>\n\n<<<TASK:${taskMarkerId(t3)}>>>\nKết quả task 3\n<<<END TASK:${taskMarkerId(t3)}>>>`;
+    const c = classifyIngest(r, pasted);
+    engineApplyIngest(r, c);
+    if (t1.output !== 'Kết quả task 1' || t3.output !== 'Kết quả task 3') throw new Error('Tách sai đầu ra.');
+    const next = computeNextActions(r)[0];
+    if (next.providerId !== 'gemini' || next.taskIds[0] !== r.assignments[1].id) throw new Error('Bước kế tiếp phải là T2 cho Gemini.');
+    return 'Dán 1 lần → ghi đúng 2 task; bước kế tiếp tự chuyển sang T2 (Gemini).';
+  }, 'AT-53', 'Hộp nhận kết quả: tách nhiều task theo dòng đánh dấu');
+
+  assertPass(() => {
+    const r = makeModeRoom('standard', 'internal', [{ title: 'Solo', instructions: 'I', acceptance: 'A', providerId: 'gemini', dependencies: [] }]);
+    engineMarkActionSent(r, computeNextActions(r)[0]);
+    engineApplyIngest(r, classifyIngest(r, 'Câu trả lời không có dòng đánh dấu'));
+    if (r.assignments[0].output !== 'Câu trả lời không có dòng đánh dấu' || r.status !== 'director_review') throw new Error('Không gán được cho task duy nhất đang chờ.');
+    return 'Thiếu dòng đánh dấu nhưng chỉ 1 task đang chờ → gán đúng task.';
+  }, 'AT-54', 'Hộp nhận kết quả: 1 task đang chờ không cần dòng đánh dấu');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    engineMarkActionSent(r, computeNextActions(r)[0]);
+    classifyIngest(r, 'Kết quả không đánh dấu khi có 2 task đang chờ');
+  }, 'AT-55', 'Hộp nhận kết quả: không đoán bừa khi nhiều task đang chờ', 'không xác định được');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    classifyIngest(r, '<<<TASK:deadbeef>>>\nnội dung\n<<<END TASK:deadbeef>>>');
+  }, 'AT-56', 'Hộp nhận kết quả: mã task lạ (dán nhầm hồ sơ) bị từ chối', 'Không tìm thấy task');
+
+  assertPass(() => {
+    const qa = parseQAResponse('## BẰNG CHỨNG ĐÃ ĐỐI CHIẾU\nĐã đối chiếu số liệu tạm ứng với bối cảnh\n## PHÁT HIỆN\nKhông có sai lệch trọng yếu\n## KẾT LUẬN: **PASS** — đạt yêu cầu');
+    if (!qa || qa.verdict !== 'pass' || !/tạm ứng/.test(qa.evidence) || !/sai lệch/.test(qa.findings)) throw new Error('Tách QA sai: ' + JSON.stringify(qa));
+    const r = makeModeRoom('standard');
+    finishWorkers(r);
+    if (classifyIngest(r, '{"protocolVersion":1}').kind !== 'director') throw new Error('Không nhận diện JSON Director.');
+    return 'Tách đúng Bằng chứng/Phát hiện/Kết luận; nhận diện JSON Director theo trạng thái.';
+  }, 'AT-57', 'Nhận diện phản hồi QA và Director');
+
+  assertThrows(() => {
+    const r = makeModeRoom('standard');
+    classifyIngest(r, 'Kế hoạch {"protocolVersion":1,"stage":"plan"}');
+  }, 'AT-58', 'JSON Director dán sai bước bị từ chối', 'không áp dụng được ở bước này');
+
+  assertPass(() => {
+    const r = makeModeRoom('full');
+    finishWorkers(r);
+    if (r.status !== 'leader_review' || computeNextActions(r)[0].step !== 'leader') throw new Error('Chế độ Đầy đủ phải qua Leader.');
+    engineApplyIngest(r, classifyIngest(r, '## NHẬN XÉT LEADER\nĐạt\n## DELIVERABLE\nBản tổng hợp'));
+    if (r.status !== 'director_review') throw new Error('Leader ingest không chuyển DIRECTOR_REVIEW.');
+    return 'Đầy đủ: Worker → Leader (dán 1 lần, tự tách) → Director.';
+  }, 'AT-59', 'Chế độ Đầy đủ vẫn giữ lớp Leader');
+
+  assertPass(() => {
+    const r = makeModeRoom('standard');
+    const t1 = r.assignments[0], t3 = r.assignments[2];
+    engineSubmitWorkerResponse(r, t1.id, `<<<TASK:${taskMarkerId(t1)}>>>\nNội dung sạch\n<<<END TASK:${taskMarkerId(t1)}>>>`);
+    if (t1.output !== 'Nội dung sạch') throw new Error('Không bỏ dòng đánh dấu khi nộp thủ công: ' + t1.output);
+    let blocked = false;
+    try { engineSubmitWorkerResponse(r, t3.id, `<<<TASK:${taskMarkerId(t1)}>>>\nCủa task khác\n<<<END TASK:${taskMarkerId(t1)}>>>`); } catch (e) { blocked = /thuộc task khác/.test(e.message); }
+    if (!blocked) throw new Error('Không chặn dán nhầm kết quả của task khác vào ô thủ công.');
+    if (!/Chế độ xử lý của hồ sơ: Chuẩn/.test(generateDirectorPlanPrompt(normalizeRoomRecord({ id: 'room-pp-01', mode: 'standard', title: 'x', instruction: 'Chỉ đạo hợp lệ' })))) throw new Error('Prompt kế hoạch không nêu chế độ.');
+    return 'Nộp thủ công bỏ dòng đánh dấu; chặn dán nhầm task; prompt kế hoạch nêu chế độ.';
+  }, 'AT-60', 'Nộp thủ công an toàn với dòng đánh dấu');
+
   return results;
 }
 
@@ -3468,6 +4087,12 @@ function runBuiltInSelfTestsModal() {
 // ============================================================================
 migrateAndLoadStorage();
 renderAll();
+(function initIngestBox() {
+  const inp = document.getElementById('ingestInput');
+  if (!inp) return;
+  inp.addEventListener('paste', onIngestPaste);
+  inp.addEventListener('input', () => saveDraft('ingest', inp.value));
+})();
 </script>
 </body>
 </html>
