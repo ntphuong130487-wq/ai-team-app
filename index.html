@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Team — Phòng Điều Phối AI (Release Candidate v1.3 — QA Remediated)</title>
+  <title>AI Team — Phòng Điều Phối AI v1.4</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -16,20 +16,20 @@
 </head>
 <body class="min-h-screen flex flex-col">
   <!-- TOP HEADER -->
-  <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 sticky top-0 z-30">
+  <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 lg:sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.3 RC</span>
+        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v1.4</span>
         <div>
-          <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI — Hardened & QA Remediated</h1>
-          <p class="text-xs text-stone-400">Strict Schema v1.1 Restored • Independent QA Gate • Demo Isolation • v1.1→v1.3 Auto-Migration</p>
+          <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI</h1>
+          <p class="text-xs text-stone-400">Director → Leader → Worker • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
         </div>
       </div>
       <div class="flex flex-wrap items-center gap-2">
         <button onclick="openNewRoomModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold rounded transition">+ Tạo Room thật</button>
         <button onclick="triggerImportBackup()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-stone-600 text-stone-200 text-xs font-semibold rounded transition">Nhập Backup (1 hoặc Tất cả)</button>
         <button onclick="loadDemoRoom()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 border border-amber-500/60 text-amber-300 text-xs font-semibold rounded transition">+ Nạp Room Demo (Thử nghiệm)</button>
-        <button onclick="runBuiltInSelfTestsModal()" class="px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-800 border border-emerald-600 text-emerald-200 text-xs font-semibold rounded transition">Chạy 20 Auto-Tests</button>
+        <button onclick="runBuiltInSelfTestsModal()" id="btnSelfTest" class="px-2.5 py-1.5 bg-emerald-900 hover:bg-emerald-800 border border-emerald-600 text-emerald-200 text-xs font-semibold rounded transition">Chạy Auto-Tests</button>
         <input type="file" id="importFileInput" accept=".json" class="hidden" onchange="handleImportBackupFile(event)" />
       </div>
     </div>
@@ -38,13 +38,13 @@
   <!-- STORAGE NOTICE BANNER -->
   <div class="bg-stone-200 border-b border-stone-300 px-4 py-1.5 text-[11px] text-stone-700 flex flex-wrap items-center justify-between gap-2">
     <div>
-      <strong>Lưu ý vận hành:</strong> Dữ liệu hiện lưu cục bộ trên trình duyệt/thiết bị này (<code>localStorage</code>), chưa tự động đồng bộ đa thiết bị. Hãy xuất JSON Backup định kỳ.
+      <strong>Lưu ý vận hành:</strong> Dữ liệu lưu cục bộ trên trình duyệt/thiết bị này (<code>localStorage</code>), dùng chung dung lượng với các ứng dụng khác cùng tên miền <code>ntphuong130487-wq.github.io</code>, chưa đồng bộ đa thiết bị. Hãy xuất JSON Backup định kỳ.
     </div>
-    <div id="storageQuotaInfo" class="mono text-[10px] text-stone-600">Dung lượng: Đang tính...</div>
+    <div id="storageQuotaInfo" class="mono text-[11px] text-stone-600">Dung lượng: Đang tính...</div>
   </div>
 
-  <!-- ALERT BANNER -->
-  <div id="globalAlert" class="hidden px-4 py-2.5 text-xs font-semibold text-center sticky top-[57px] z-20 shadow"></div>
+  <!-- TOAST THÔNG BÁO (cố định góc dưới, không bị header che) -->
+  <div id="globalAlert" role="status" aria-live="polite" class="hidden"></div>
 
   <!-- MAIN WORKSPACE -->
   <div class="max-w-7xl w-full mx-auto flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4">
@@ -59,23 +59,27 @@
         <div id="execDashboardStats" class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đang thực hiện</span><strong id="statActive" class="text-sm font-bold text-amber-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Chờ Leader/Dir</span><strong id="statReview" class="text-sm font-bold text-blue-800">0</strong></div>
-          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Task bị chặn</span><strong id="statBlocked" class="text-sm font-bold text-orange-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Task chờ tiền nhiệm</span><strong id="statBlocked" class="text-sm font-bold text-orange-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đang Rework</span><strong id="statRework" class="text-sm font-bold text-red-800">0</strong></div>
           <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Chờ QA Độc lập</span><strong id="statWaitQA" class="text-sm font-bold text-purple-800">0</strong></div>
-          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Completed</span><strong id="statCompleted" class="text-sm font-bold text-emerald-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Escalated (chờ quyết định)</span><strong id="statEscalated" class="text-sm font-bold text-red-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Quá hạn</span><strong id="statOverdue" class="text-sm font-bold text-red-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Đóng — Không đạt</span><strong id="statClosed" class="text-sm font-bold text-stone-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Completed (đã niêm phong)</span><strong id="statCompleted" class="text-sm font-bold text-emerald-800">0</strong></div>
+          <div class="bg-white p-2 rounded border border-stone-200"><span class="block text-stone-500 text-[10px]">Completed chưa xác thực</span><strong id="statUnverified" class="text-sm font-bold text-red-800">0</strong></div>
         </div>
       </div>
 
       <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
         <div class="flex items-center justify-between mb-2">
           <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600">Danh sách Room (<span id="roomCount">0</span>/100)</h2>
-          <button onclick="exportAllRooms()" class="text-[11px] text-amber-800 hover:underline font-semibold">Sao lưu tất cả</button>
+          <button onclick="exportAllRooms()" class="px-2 py-1 text-[11px] text-amber-800 hover:underline font-semibold">Sao lưu tất cả</button>
         </div>
         <div id="roomList" class="space-y-2 max-h-[340px] overflow-y-auto pr-1"></div>
       </div>
 
       <!-- PROVIDER CATALOG -->
-      <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
+      <div class="hidden lg:block bg-[#fbf9f5] border border-stone-300 rounded-lg p-3.5 shadow-sm">
         <h2 class="text-xs font-bold uppercase tracking-wider text-stone-600 mb-2">Danh mục AI Consumer (Zero-API)</h2>
         <p class="text-[11px] text-stone-500 mb-2">Sao chép Prompt & dán phản hồi thủ công. Hệ thống không tự xác thực model thật từ văn bản dán.</p>
         <div id="providerCatalogList" class="space-y-2 text-xs"></div>
@@ -112,15 +116,35 @@
               <div class="flex flex-wrap items-center gap-2 mb-1">
                 <span id="roomStatusBadge" class="px-2 py-0.5 text-xs font-bold uppercase rounded bg-amber-100 text-amber-900">PLANNING</span>
                 <span id="roomDemoBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-600 text-white">DEMO MODE</span>
+                <span id="roomDataClassBadge" class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-stone-200 text-stone-800"></span>
+                <span id="roomIntegrityBadge" class="hidden px-2 py-0.5 text-[10px] font-bold uppercase rounded"></span>
                 <span class="mono text-xs text-stone-500" id="roomMetaInfo"></span>
               </div>
               <h2 id="roomTitle" class="text-lg font-bold text-stone-900"></h2>
+              <div id="roomAccountability" class="text-[11px] text-stone-600 mt-0.5"></div>
             </div>
             <div class="flex flex-wrap items-center gap-1.5">
+              <button onclick="openEditRoomModal()" id="btnEditRoom" class="hidden px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded">Sửa thông tin Room</button>
               <button onclick="exportCurrentRoomMarkdown()" class="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded">Xuất Markdown (Đầy đủ)</button>
               <button onclick="exportCurrentRoomJSON()" class="px-2.5 py-1.5 bg-stone-800 hover:bg-stone-700 text-white text-xs font-semibold rounded">Xuất JSON Room</button>
-              <button onclick="deleteCurrentRoom()" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-semibold rounded">Xóa Room</button>
+              <button onclick="deleteCurrentRoom()" id="btnDeleteRoom" class="px-2.5 py-1.5 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-semibold rounded">Xóa Room</button>
             </div>
+          </div>
+
+          <!-- ESCALATION PANEL (v1.4) -->
+          <div id="escalationPanel" class="hidden mt-3 bg-red-50 border-2 border-red-400 rounded-lg p-3 text-xs space-y-2">
+            <div class="font-bold text-red-900 uppercase">Escalated — Chờ chủ dự án quyết định</div>
+            <div id="escalationDetail" class="text-red-900 whitespace-pre-wrap"></div>
+            <div class="flex flex-wrap gap-2">
+              <button onclick="handleEscalationExtend()" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tăng số vòng & áp dụng yêu cầu Rework</button>
+              <button onclick="handleCloseRejected()" class="px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-white font-bold rounded">Đóng hồ sơ — Không đạt</button>
+            </div>
+          </div>
+
+          <!-- IMMUTABLE RECORD PANEL (v1.4) -->
+          <div id="immutablePanel" class="hidden mt-3 bg-stone-100 border border-stone-300 rounded-lg p-3 text-xs space-y-2">
+            <div id="immutableDetail" class="text-stone-800 whitespace-pre-wrap"></div>
+            <button onclick="handleCreateSuccessorRoom()" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tạo Room kế thừa để xem xét lại</button>
           </div>
 
           <!-- 6-Step Progress Stepper -->
@@ -145,9 +169,9 @@
             <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Kế hoạch & Tiêu chí nghiệm thu (Claude Director)</h3>
             <div class="flex items-center gap-2 text-xs">
               <span class="font-semibold text-stone-600">Leader AI:</span>
-              <select id="leaderSelect" onchange="handleChangeLeader(this.value)" class="border border-stone-300 rounded px-2 py-0.5 text-xs bg-white font-semibold"></select>
+              <select id="leaderSelect" aria-label="Leader AI" onchange="handleChangeLeader(this.value)" class="border border-stone-300 rounded px-2 py-0.5 text-xs bg-white font-semibold"></select>
               <span class="text-stone-500">Giới hạn vòng (1–10):</span>
-              <input type="number" id="maxRoundsInput" min="1" max="10" onchange="handleChangeMaxRounds(this.value)" class="w-14 border border-stone-300 rounded px-1.5 py-0.5 text-xs bg-white font-semibold" />
+              <input type="number" id="maxRoundsInput" aria-label="Giới hạn số vòng" min="1" max="10" onchange="handleChangeMaxRounds(this.value)" class="w-14 border border-stone-300 rounded px-1.5 py-0.5 text-xs bg-white font-semibold" />
             </div>
           </div>
           <p id="planObjective" class="text-sm font-medium text-stone-900 bg-amber-50/70 border border-amber-200 rounded p-2.5 mb-2.5"></p>
@@ -168,7 +192,7 @@
           <!-- LEFT: TASKS & LEADER (7 cols) -->
           <div class="lg:col-span-7 space-y-4">
             <!-- TASKS PANEL -->
-            <div class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
+            <div id="tasksPanel" class="bg-[#fbf9f5] border border-stone-300 rounded-lg p-4 shadow-sm">
               <div class="flex items-center justify-between mb-3">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-stone-700">Danh sách Task Worker (1–8 Tasks • Kiểm soát DAG)</h3>
                 <span id="taskProgressSummary" class="text-xs font-semibold text-stone-600"></span>
@@ -184,18 +208,22 @@
                   <h3 class="text-sm font-bold text-stone-900 mt-1">Tổng hợp & Rà soát đầu ra Worker</h3>
                 </div>
                 <div class="flex gap-1.5">
-                  <button onclick="copyLeaderPrompt()" class="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-700 text-white text-xs font-semibold rounded">1. Copy Prompt Leader</button>
+                  <button onclick="copyLeaderPrompt()" id="btnCopyLeaderPrompt" class="px-2.5 py-1.5 bg-blue-800 hover:bg-blue-700 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-semibold rounded">1. Copy Prompt Leader</button>
                   <button onclick="openProviderSite(getCurrentRoom()?.leader)" class="px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded">2. Mở Leader AI ↗</button>
                 </div>
               </div>
               <p class="text-xs text-stone-600 mb-2">Chỉ cho phép nộp khi Room ở trạng thái <code>leader_review</code> (100% Worker đã <code>submitted</code>). Ý kiến Leader chỉ là bước chuyển giao (<code>verdict=submitted</code>).</p>
               <div class="space-y-2.5 text-xs">
+                <div class="flex flex-wrap items-center justify-between gap-2 bg-blue-50 border border-blue-200 rounded p-2">
+                  <span class="text-[11px] text-blue-900">Dán nguyên văn phản hồi Leader vào ô Nhận xét, rồi bấm để tách 2 phần <code>## NHẬN XÉT LEADER</code> / <code>## DELIVERABLE</code>.</span>
+                  <button onclick="splitLeaderResponseUI()" id="btnSplitLeader" class="px-2.5 py-1 bg-blue-700 hover:bg-blue-600 disabled:bg-stone-300 text-white text-[11px] font-semibold rounded">Tách tự động</button>
+                </div>
                 <div>
-                  <label class="font-semibold text-stone-700 block mb-1">Nhận xét & Đánh giá của Leader (Bắt buộc, ≤18.000 ký tự):</label>
+                  <label for="leaderReviewInput" class="font-semibold text-stone-700 block mb-1">Nhận xét & Đánh giá của Leader (Bắt buộc, ≤18.000 ký tự):</label>
                   <textarea id="leaderReviewInput" rows="4" oninput="saveDraft('leader_review', this.value)" placeholder="Dán nguyên văn phần rà soát của Leader AI tại đây..." class="w-full border border-stone-300 rounded p-2 text-xs bg-white"></textarea>
                 </div>
                 <div>
-                  <label class="font-semibold text-stone-700 block mb-1">Bản tổng hợp (Deliverable) chuyển Director (≤30.000 ký tự):</label>
+                  <label for="leaderDeliverableInput" class="font-semibold text-stone-700 block mb-1">Bản tổng hợp (Deliverable) chuyển Director (≤30.000 ký tự):</label>
                   <textarea id="leaderDeliverableInput" rows="4" oninput="saveDraft('leader_deliverable', this.value)" placeholder="Dán dự thảo sản phẩm tổng hợp (Deliverable) để Director rà soát..." class="w-full border border-stone-300 rounded p-2 text-xs bg-white"></textarea>
                 </div>
                 <button onclick="submitLeaderReview()" id="btnSubmitLeader" class="w-full py-2 bg-blue-800 hover:bg-blue-700 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-bold rounded transition">3. Lưu Leader Review & Chuyển sang Director Review</button>
@@ -206,7 +234,7 @@
           <!-- RIGHT: CLAUDE DIRECTOR, INDEPENDENT QA & SUBMIT GATE (5 cols) -->
           <div class="lg:col-span-5 space-y-4">
             <!-- CLAUDE DIRECTOR PROTOCOL PANEL -->
-            <div class="bg-[#262320] text-stone-100 border border-stone-700 rounded-lg p-4 shadow-md">
+            <div id="directorPanel" class="bg-[#262320] text-stone-100 border border-stone-700 rounded-lg p-4 shadow-md">
               <div class="flex items-center justify-between border-b border-stone-700 pb-2.5 mb-3">
                 <div>
                   <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-600 text-white rounded">Claude Pro — Director</span>
@@ -218,13 +246,13 @@
               <div id="directorStageHint" class="text-xs bg-stone-800 border border-stone-600 rounded p-2.5 mb-3 text-amber-200"></div>
 
               <div class="flex flex-wrap gap-2 mb-3">
-                <button onclick="copyDirectorPrompt('plan')" id="btnCopyPlanPrompt" class="flex-1 py-1.5 px-2.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded">Copy Prompt Kế Hoạch</button>
-                <button onclick="copyDirectorPrompt('review')" id="btnCopyReviewPrompt" class="flex-1 py-1.5 px-2.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold rounded">Copy Prompt Duyệt Cuối</button>
+                <button onclick="copyDirectorPrompt('plan')" id="btnCopyPlanPrompt" class="flex-1 py-1.5 px-2.5 bg-amber-600 hover:bg-amber-500 disabled:bg-stone-700 disabled:text-stone-500 text-white text-xs font-bold rounded">Copy Prompt Kế Hoạch</button>
+                <button onclick="copyDirectorPrompt('review')" id="btnCopyReviewPrompt" class="flex-1 py-1.5 px-2.5 bg-emerald-700 hover:bg-emerald-600 disabled:bg-stone-700 disabled:text-stone-500 text-white text-xs font-bold rounded">Copy Prompt Duyệt Cuối</button>
               </div>
 
               <div class="space-y-2 text-xs">
                 <div class="flex items-center justify-between">
-                  <label class="font-semibold text-stone-300">Dán phản hồi từ Claude Pro (Strict Schema):</label>
+                  <label for="directorRawInput" class="font-semibold text-stone-300">Dán phản hồi từ Claude Pro (Strict Schema):</label>
                   <button id="btnFillSampleEnvelope" onclick="fillSampleClaudeEnvelope()" class="hidden text-[11px] text-amber-400 hover:underline">[Demo Mode] Điền JSON mẫu</button>
                 </div>
                 <textarea id="directorRawInput" rows="7" oninput="saveDraft('director_json', this.value)" placeholder='Dán nguyên văn phản hồi chứa ĐÚNG 1 khối JSON {"protocolVersion":1, "roomId":"...", "roomVersion":..., "round":..., "stage":"plan|review", "decision":{...}}' class="w-full mono text-[11px] bg-stone-900 border border-stone-700 text-emerald-300 rounded p-2.5"></textarea>
@@ -242,22 +270,23 @@
                 </div>
                 <span id="qaStatusBadge" class="text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-stone-200 text-stone-700">PENDING</span>
               </div>
-              <p class="text-[11px] text-stone-600">Director PASS không đồng nghĩa với Independent QA PASS. Cần ghi nhận kết quả kiểm tra độc lập (nguồn, bằng chứng, phát hiện) trước khi khóa hồ sơ.</p>
+              <p class="text-[11px] text-stone-600">Director PASS không đồng nghĩa với Independent QA PASS. QA <strong>FAIL</strong> chặn vĩnh viễn vòng hiện tại (phải mở vòng mới hoặc đóng hồ sơ). QA <strong>HOLD</strong> chỉ được giải tỏa bằng một bản PASS có ghi chú xử lý.</p>
+              <button onclick="copyQAPrompt()" id="btnCopyQAPrompt" class="w-full py-1.5 bg-purple-100 hover:bg-purple-200 disabled:opacity-40 text-purple-900 text-xs font-bold rounded border border-purple-300">Copy Prompt QA độc lập (gửi Gemini/ChatGPT)</button>
 
               <div class="space-y-2 text-xs">
                 <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label class="font-bold text-stone-700 block mb-1">Nguồn thực hiện QA *</label>
-                    <select id="qaSourceInput" oninput="saveDraft('qa_source', this.value)" class="w-full border border-stone-300 rounded p-1.5 bg-white text-xs">
+                    <label for="qaSourceInput" class="font-bold text-stone-700 block mb-1">Nguồn thực hiện QA *</label>
+                    <select id="qaSourceInput" onchange="saveDraft('qa_source', this.value)" class="w-full border border-stone-300 rounded p-1.5 bg-white text-xs">
                       <option value="Owner / Business QA">Chủ dự án / Business QA</option>
                       <option value="Cross-AI QA (Gemini Pro)">Cross-AI QA (Gemini Pro)</option>
                       <option value="Cross-AI QA (ChatGPT Plus)">Cross-AI QA (ChatGPT Plus)</option>
-                      <option value="Cross-AI QA (Claude Pro)">Cross-AI QA (Claude Pro)</option>
                     </select>
                   </div>
                   <div>
-                    <label class="font-bold text-stone-700 block mb-1">Kết luận QA (Verdict) *</label>
-                    <select id="qaVerdictInput" oninput="saveDraft('qa_verdict', this.value)" class="w-full border border-stone-300 rounded p-1.5 bg-white text-xs font-bold">
+                    <label for="qaVerdictInput" class="font-bold text-stone-700 block mb-1">Kết luận QA (Verdict) *</label>
+                    <select id="qaVerdictInput" onchange="saveDraft('qa_verdict', this.value); renderQAHoldFields()" class="w-full border border-stone-300 rounded p-1.5 bg-white text-xs font-bold">
+                      <option value="">-- Chọn kết luận --</option>
                       <option value="pass">PASS — Đạt yêu cầu nghiệm thu</option>
                       <option value="fail">FAIL — Không đạt (Chặn Completed)</option>
                       <option value="needs_verification">HOLD — Chờ xác nhận thêm</option>
@@ -265,12 +294,16 @@
                   </div>
                 </div>
                 <div>
-                  <label class="font-bold text-stone-700 block mb-1">Bằng chứng đối chiếu (Evidence Checked) *</label>
+                  <label for="qaEvidenceInput" class="font-bold text-stone-700 block mb-1">Bằng chứng đối chiếu (Evidence Checked, ≥30 ký tự) *</label>
                   <textarea id="qaEvidenceInput" rows="2" oninput="saveDraft('qa_evidence', this.value)" placeholder="Nêu rõ tài liệu nguồn, bảng số liệu, tiêu chí đã đối chiếu..." class="w-full border border-stone-300 rounded p-2 bg-white text-xs"></textarea>
                 </div>
                 <div>
-                  <label class="font-bold text-stone-700 block mb-1">Phát hiện QA & Điểm cần lưu ý (Findings) *</label>
+                  <label for="qaFindingsInput" class="font-bold text-stone-700 block mb-1">Phát hiện QA & Điểm cần lưu ý (Findings, ≥30 ký tự) *</label>
                   <textarea id="qaFindingsInput" rows="2" oninput="saveDraft('qa_findings', this.value)" placeholder="Ghi nhận các điểm đạt, sai lệch phát hiện hoặc rủi ro còn tồn đọng..." class="w-full border border-stone-300 rounded p-2 bg-white text-xs"></textarea>
+                </div>
+                <div id="qaHoldResolutionBox" class="hidden bg-amber-50 border border-amber-300 rounded p-2">
+                  <label for="qaResolutionInput" class="font-bold text-amber-900 block mb-1">Giải tỏa HOLD — Ghi chú xử lý (≥30 ký tự) *</label>
+                  <textarea id="qaResolutionInput" rows="2" oninput="saveDraft('qa_resolution', this.value)" placeholder="Điểm chờ xác nhận đã được xử lý thế nào, căn cứ nào..." class="w-full border border-stone-300 rounded p-2 bg-white text-xs"></textarea>
                 </div>
                 <button id="btnRecordQA" onclick="submitIndependentQARecord()" class="w-full py-1.5 bg-purple-800 hover:bg-purple-700 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Ghi nhận Hồ sơ Independent QA</button>
               </div>
@@ -286,33 +319,34 @@
               <!-- Structured Decision Note -->
               <div class="space-y-2 text-xs pt-1 border-t border-stone-200">
                 <div>
-                  <label class="font-bold text-stone-700 block mb-0.5">1. Lý do lựa chọn phương án cuối (Rationale) *</label>
+                  <label for="dnRationale" class="font-bold text-stone-700 block mb-0.5">1. Lý do lựa chọn phương án cuối (Rationale) *</label>
                   <textarea id="dnRationale" rows="2" oninput="saveDraft('dn_rationale', this.value)" placeholder="Vì sao chọn phương án này?" class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
                 <div>
-                  <label class="font-bold text-stone-700 block mb-0.5">2. Các phương án bị loại đáng kể (Rejected Alternatives) *</label>
+                  <label for="dnRejected" class="font-bold text-stone-700 block mb-0.5">2. Các phương án bị loại đáng kể (Rejected Alternatives) *</label>
                   <textarea id="dnRejected" rows="2" oninput="saveDraft('dn_rejected', this.value)" placeholder="Các phương án đã xem xét nhưng loại bỏ (ghi rõ để có thể mở lại khi cần)..." class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                   <div>
-                    <label class="font-bold text-stone-700 block mb-0.5">3. Ý kiến thiểu số (Minority View)</label>
+                    <label for="dnMinority" class="font-bold text-stone-700 block mb-0.5">3. Ý kiến thiểu số (Minority View)</label>
                     <input id="dnMinority" type="text" oninput="saveDraft('dn_minority', this.value)" placeholder="Ý kiến khác biệt (nếu có)..." class="w-full border border-stone-300 rounded p-1.5 bg-white" />
                   </div>
                   <div>
-                    <label class="font-bold text-stone-700 block mb-0.5">4. Chỉnh sửa trọng yếu (Key Edits)</label>
+                    <label for="dnEdits" class="font-bold text-stone-700 block mb-0.5">4. Chỉnh sửa trọng yếu (Key Edits)</label>
                     <input id="dnEdits" type="text" oninput="saveDraft('dn_edits', this.value)" placeholder="Các điều chỉnh lớn qua các vòng..." class="w-full border border-stone-300 rounded p-1.5 bg-white" />
                   </div>
                 </div>
                 <div>
-                  <label class="font-bold text-stone-700 block mb-0.5">5. Điểm chưa chắc chắn / Cần xác nhận thêm (Uncertainties) *</label>
+                  <label for="dnUncertainties" class="font-bold text-stone-700 block mb-0.5">5. Điểm chưa chắc chắn / Cần xác nhận thêm (Uncertainties) *</label>
                   <textarea id="dnUncertainties" rows="2" oninput="saveDraft('dn_uncertainties', this.value)" placeholder="Những giả định hoặc dữ liệu chưa có trong nguồn cung cấp..." class="w-full border border-stone-300 rounded p-1.5 bg-white"></textarea>
                 </div>
               </div>
 
               <div class="flex flex-wrap gap-2 pt-2">
                 <button onclick="handleFinalSubmitRoom()" id="btnFinalSubmit" class="flex-1 py-2 bg-emerald-700 hover:bg-emerald-600 disabled:bg-stone-300 disabled:text-stone-500 text-white text-xs font-bold rounded transition">Xác nhận Submit — Khóa Hồ sơ (Completed)</button>
-                <button onclick="reopenRejectedAlternativeModal()" id="btnReopenAlt" class="hidden px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition">Mở lại Phương án bị bác bỏ</button>
+                <button onclick="reopenRejectedAlternativeModal()" id="btnReopenAlt" class="hidden px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition">Mở vòng rà soát mới</button>
               </div>
+              <button onclick="handleCloseRejected()" id="btnCloseRejected" class="hidden w-full py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded border border-stone-400">Đóng hồ sơ — Không đạt (kết thúc, khóa hồ sơ)</button>
             </div>
 
             <!-- AUDIT LOG & REVIEW HISTORY -->
@@ -327,24 +361,24 @@
   </div>
 
   <!-- MODAL: CREATE NEW ROOM -->
-  <div id="newRoomModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-    <div class="bg-[#fbf9f5] border border-stone-400 rounded-lg max-w-xl w-full p-5 shadow-xl">
+  <div id="newRoomModal" role="dialog" aria-modal="true" aria-labelledby="newRoomModalTitle" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+    <div class="bg-[#fbf9f5] border border-stone-400 rounded-lg max-w-xl w-full p-5 shadow-xl max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-stone-200 pb-2.5 mb-3">
-        <h3 class="text-base font-bold text-stone-900">Khởi tạo Room Nghiệp Vụ Mới (FR-ROOM-01)</h3>
-        <button onclick="closeNewRoomModal()" class="text-stone-500 hover:text-stone-800 text-sm font-bold">✕</button>
+        <h3 id="newRoomModalTitle" class="text-base font-bold text-stone-900">Khởi tạo Room Nghiệp Vụ Mới</h3>
+        <button onclick="closeNewRoomModal()" aria-label="Đóng" class="px-2 py-1 text-stone-500 hover:text-stone-800 text-sm font-bold">✕</button>
       </div>
       <div class="space-y-3 text-xs">
         <div>
-          <label class="font-bold text-stone-700 block mb-1">Tiêu đề Room (1–160 ký tự) *</label>
+          <label for="newRoomTitle" class="font-bold text-stone-700 block mb-1">Tiêu đề Room (1–160 ký tự) *</label>
           <input id="newRoomTitle" type="text" maxlength="160" placeholder="VD: Thẩm định rủi ro hợp đồng cung ứng thiết bị nhà máy..." class="w-full border border-stone-300 rounded p-2 bg-white" />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="font-bold text-stone-700 block mb-1">Phân loại (Category ≤100)</label>
+            <label for="newRoomCategory" class="font-bold text-stone-700 block mb-1">Phân loại (Category ≤100)</label>
             <input id="newRoomCategory" type="text" maxlength="100" value="Tham vấn Quản trị & Rủi ro" class="w-full border border-stone-300 rounded p-2 bg-white" />
           </div>
           <div>
-            <label class="font-bold text-stone-700 block mb-1">Leader AI ưu tiên</label>
+            <label for="newRoomLeader" class="font-bold text-stone-700 block mb-1">Leader AI ưu tiên</label>
             <select id="newRoomLeader" class="w-full border border-stone-300 rounded p-2 bg-white">
               <option value="gemini">Gemini Pro</option>
               <option value="chatgpt">ChatGPT Plus</option>
@@ -354,25 +388,47 @@
             </select>
           </div>
         </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="newRoomDataClass" class="font-bold text-stone-700 block mb-1">Phân loại dữ liệu *</label>
+            <select id="newRoomDataClass" class="w-full border border-stone-300 rounded p-2 bg-white">
+              <option value="internal">Nội bộ (Internal)</option>
+              <option value="confidential">Mật (Confidential) — chặn AI bản Free</option>
+              <option value="public">Công khai (Public)</option>
+            </select>
+          </div>
+          <div>
+            <label for="newRoomOwner" class="font-bold text-stone-700 block mb-1">Owner chịu trách nhiệm</label>
+            <input id="newRoomOwner" type="text" maxlength="100" placeholder="VD: Phòng Mua hàng" class="w-full border border-stone-300 rounded p-2 bg-white" />
+          </div>
+          <div>
+            <label for="newRoomDueDate" class="font-bold text-stone-700 block mb-1">Hạn hoàn tất</label>
+            <input id="newRoomDueDate" type="date" class="w-full border border-stone-300 rounded p-2 bg-white" />
+          </div>
+          <div>
+            <label for="newRoomDecisionMaker" class="font-bold text-stone-700 block mb-1">Cấp quyết định cuối</label>
+            <input id="newRoomDecisionMaker" type="text" maxlength="100" placeholder="VD: CEO / HĐQT" class="w-full border border-stone-300 rounded p-2 bg-white" />
+          </div>
+        </div>
         <div>
-          <label class="font-bold text-stone-700 block mb-1">Chỉ đạo nghiệp vụ (Instruction: 5–12.000 ký tự) *</label>
+          <label for="newRoomInstruction" class="font-bold text-stone-700 block mb-1">Chỉ đạo nghiệp vụ (Instruction: 5–12.000 ký tự) *</label>
           <textarea id="newRoomInstruction" rows="4" maxlength="12000" placeholder="Nêu rõ yêu cầu đầu ra, vấn đề cần quyết định..." class="w-full border border-stone-300 rounded p-2 bg-white"></textarea>
         </div>
         <div>
-          <label class="font-bold text-stone-700 block mb-1">Bối cảnh & Dữ liệu nguồn (Context: ≤24.000 ký tự)</label>
+          <label for="newRoomContext" class="font-bold text-stone-700 block mb-1">Bối cảnh & Dữ liệu nguồn (Context: ≤24.000 ký tự)</label>
           <textarea id="newRoomContext" rows="4" maxlength="24000" placeholder="Dán trích đoạn tài liệu, số liệu nguồn..." class="w-full border border-stone-300 rounded p-2 bg-white"></textarea>
         </div>
         <div id="dlpWarningBox" class="hidden bg-amber-100 border border-amber-400 text-amber-900 p-2 rounded text-[11px]"></div>
         <div class="flex justify-end gap-2 pt-2">
           <button onclick="closeNewRoomModal()" class="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold rounded">Hủy</button>
-          <button onclick="createRoomSubmit()" class="px-4 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tạo Room & Sinh Prompt Plan</button>
+          <button onclick="createRoomSubmit()" id="btnCreateRoomSubmit" class="px-4 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded">Tạo Room & Sinh Prompt Plan</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- MODAL: IMPORT PREVIEW (QA-02 & QA-04) -->
-  <div id="importPreviewModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+  <div id="importPreviewModal" role="dialog" aria-modal="true" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-[#fbf9f5] border border-stone-400 rounded-lg max-w-xl w-full p-5 shadow-xl space-y-3 text-xs">
       <div class="flex items-center justify-between border-b border-stone-200 pb-2">
         <h3 class="text-base font-bold text-stone-900">Xem trước & Kiểm thực Dữ liệu Import Backup</h3>
@@ -380,7 +436,7 @@
       </div>
       <div id="importPreviewSummary" class="bg-stone-100 border border-stone-300 rounded p-3 space-y-1.5 max-h-64 overflow-y-auto"></div>
       <div class="bg-amber-50 border border-amber-300 text-amber-900 p-2.5 rounded text-[11px]">
-        <strong>Chính sách bảo vệ dữ liệu:</strong> Không ghi đè âm thầm Room hiện hữu. Nếu trùng UUID, hệ thống sẽ cấp UUID mới cho bản import và giữ nguyên hồ sơ gốc. Các Room ở trạng thái <code>approved</code> khi import sẽ chuyển về <code>director_review</code> để thẩm định lại.
+        <strong>Chính sách bảo vệ dữ liệu:</strong> Không ghi đè âm thầm Room hiện hữu. Nếu trùng UUID, hệ thống cấp UUID mới cho bản import và giữ nguyên hồ sơ gốc. Room <code>approved</code> khi import chuyển về <code>director_review</code>. Hồ sơ đã khóa được kiểm tra niêm phong/điều kiện nghiệm thu; không đạt sẽ bị gắn cờ <strong>chưa xác thực</strong>. Room có dấu hiệu Demo luôn giữ chế độ Demo.
       </div>
       <div class="flex justify-end gap-2 pt-2">
         <button onclick="closeImportPreviewModal()" class="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 font-semibold rounded">Hủy bỏ</button>
@@ -390,11 +446,11 @@
   </div>
 
   <!-- MODAL: AUTOMATED TEST SUITE RUNNER -->
-  <div id="selfTestModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+  <div id="selfTestModal" role="dialog" aria-modal="true" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
     <div class="bg-[#1c1917] text-stone-100 border border-stone-700 rounded-lg max-w-3xl w-full p-5 shadow-xl space-y-3 text-xs">
       <div class="flex items-center justify-between border-b border-stone-700 pb-2">
-        <h3 class="text-base font-bold text-emerald-400">Bộ Kiểm Thử Tự Động 20 Ca Bắt Buộc (QA Round 3 Verification)</h3>
-        <button onclick="document.getElementById('selfTestModal').classList.add('hidden')" class="text-stone-400 hover:text-white font-bold">✕</button>
+        <h3 class="text-base font-bold text-emerald-400">Bộ Kiểm Thử Tự Động (Engine)</h3>
+        <button onclick="document.getElementById('selfTestModal').classList.add('hidden')" aria-label="Đóng" class="px-2 py-1 text-stone-400 hover:text-white font-bold">✕</button>
       </div>
       <div id="selfTestSummary" class="font-bold text-sm"></div>
       <div id="selfTestResults" class="mono text-[11px] bg-stone-900 border border-stone-700 rounded p-3 max-h-96 overflow-y-auto space-y-1.5"></div>
@@ -414,8 +470,29 @@ const PROVIDERS = {
 };
 
 const VALID_PROVIDERS = Object.keys(PROVIDERS);
-const VALID_ROOM_STATUSES = ['planning', 'working', 'leader_review', 'director_review', 'rework', 'approved', 'completed'];
+const VALID_ROOM_STATUSES = ['planning', 'working', 'leader_review', 'director_review', 'rework', 'approved', 'escalated', 'completed', 'closed_rejected'];
+const IMMUTABLE_STATUSES = ['completed', 'closed_rejected'];
 const VALID_TASK_STATUSES = ['waiting', 'doing', 'submitted', 'rework', 'skipped'];
+
+// v1.4 — Phân loại dữ liệu & danh sách provider bị chặn theo phân loại (D4). Chỉnh tại đây nếu chính sách thay đổi.
+const DATA_CLASSES = {
+  public: { label: 'Công khai', badge: 'bg-stone-200 text-stone-800' },
+  internal: { label: 'Nội bộ', badge: 'bg-blue-100 text-blue-900' },
+  confidential: { label: 'MẬT', badge: 'bg-red-700 text-white' }
+};
+const RESTRICTED_PROVIDERS_BY_CLASS = { public: [], internal: [], confidential: ['grok', 'copilot'] };
+const NON_INDEPENDENT_QA_SOURCES = [/claude/i]; // Director là Claude → QA bằng Claude không độc lập
+const MIN_QA_TEXT = 30, MIN_RATIONALE = 30, MIN_DN_SHORT = 10, MIN_CLOSE_REASON = 30;
+const DELETED_LOG_KEY = 'AITEAM_DELETED_ROOMS_LOG_V1.4';
+const APP_VERSION = '1.4';
+
+function isImmutable(room) { return IMMUTABLE_STATUSES.includes(room?.status); }
+function restrictedProvidersFor(room) { return RESTRICTED_PROVIDERS_BY_CLASS[room?.dataClass] || []; }
+function assertProviderAllowed(room, providerId, label) {
+  if (restrictedProvidersFor(room).includes(providerId)) {
+    throw new Error(`Data Class Guard: Room phân loại "${DATA_CLASSES[room.dataClass]?.label || room.dataClass}" không được giao ${label} cho "${PROVIDERS[providerId]?.name || providerId}".`);
+  }
+}
 
 const STORAGE_KEY_V11 = 'AITEAM_STANDALONE_ROOMS_V1';
 const STORAGE_KEY_V12 = 'AITEAM_STANDALONE_ROOMS_V1.2';
@@ -466,19 +543,110 @@ function uuidv4() {
 
 function nowISO() { return new Date().toISOString(); }
 
+let bannerTimer = null;
 function showBanner(msg, isError = false) {
   const el = document.getElementById('globalAlert');
   if (!el) return;
-  el.textContent = msg;
-  el.className = `${isError ? 'bg-red-800' : 'bg-emerald-800'} text-white px-4 py-2.5 text-xs font-semibold text-center sticky top-[57px] z-20 shadow block`;
-  setTimeout(() => { el.classList.add('hidden'); }, 5000);
+  if (bannerTimer) clearTimeout(bannerTimer);
+  el.setAttribute('role', isError ? 'alert' : 'status');
+  el.innerHTML = `<span>${escapeHtml(msg)}</span><button onclick="hideBanner()" aria-label="Đóng thông báo" class="ml-3 px-1.5 font-bold opacity-80 hover:opacity-100">✕</button>`;
+  el.className = `${isError ? 'bg-red-800' : 'bg-emerald-800'} text-white fixed bottom-4 left-4 right-4 lg:left-auto lg:max-w-xl z-[60] px-4 py-3 text-xs font-semibold rounded-lg shadow-2xl flex items-start justify-between whitespace-pre-wrap`;
+  bannerTimer = setTimeout(hideBanner, isError ? 10000 : 5000);
+}
+function hideBanner() { const el = document.getElementById('globalAlert'); if (el) el.className = 'hidden'; }
+
+// Thời gian hiển thị theo giờ Việt Nam (dữ liệu lưu ISO UTC)
+function fmtTime(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour12: false }); } catch (e) { return String(iso); }
 }
 
+// v1.4 DLP mở rộng — trả về danh sách loại phát hiện (không trả nội dung nhạy cảm)
 function scanSensitiveData(text) {
+  const t = String(text || '');
   const findings = [];
-  if (/(sk-[a-zA-Z0-9]{20,}|AIza[0-9A-Za-z-_]{35}|ghp_[a-zA-Z0-9]{30,})/.test(text)) findings.push('Phát hiện chuỗi giống API Key / Secret Token.');
-  if (/(password|mật khẩu|secret|private_key)\s*[:=]\s*\S+/i.test(text)) findings.push('Phát hiện từ khóa Mật khẩu / Secret.');
+  if (/(sk-[a-zA-Z0-9]{20,}|AIza[0-9A-Za-z\-_]{35}|ghp_[a-zA-Z0-9]{30,})/.test(t)) findings.push('Chuỗi giống API Key / Secret Token');
+  if (/(password|mật khẩu|secret|private_key)\s*[:=]\s*\S+/i.test(t)) findings.push('Từ khóa Mật khẩu / Secret');
+  if (/(?<!\d)0\d{11}(?!\d)/.test(t) || /(CCCD|CMND|căn cước)\D{0,15}\d{9,12}/i.test(t)) findings.push('Số CCCD/CMND');
+  if (/(STK|số tài khoản|tài khoản số|account\s*(no|number)?)\D{0,15}\d{6,16}/i.test(t)) findings.push('Số tài khoản ngân hàng');
+  if (/(?<![\d+])(\+84|0)(3|5|7|8|9)\d{8}(?!\d)/.test(t)) findings.push('Số điện thoại di động VN');
+  if (/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(t)) findings.push('Địa chỉ email');
+  if (/(TUYỆT MẬT|TỐI MẬT|\bMẬT\b|CONFIDENTIAL|STRICTLY CONFIDENTIAL)/.test(t)) findings.push('Dấu phân loại MẬT/CONFIDENTIAL');
   return findings;
+}
+
+// SHA-256 đồng bộ (dùng để niêm phong hồ sơ; chạy được cả khi mở file:// không có crypto.subtle)
+function sha256Hex(str) {
+  const utf8 = unescape(encodeURIComponent(String(str)));
+  const K = [0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const H = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const bytes = []; for (let i = 0; i < utf8.length; i++) bytes.push(utf8.charCodeAt(i));
+  const bitLen = bytes.length * 8;
+  bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+  for (let i = 7; i >= 0; i--) bytes.push(i >= 4 ? 0 : (bitLen >>> (i * 8)) & 0xff);
+  const rotr = (x, n) => (x >>> n) | (x << (32 - n));
+  const W = new Array(64);
+  for (let off = 0; off < bytes.length; off += 64) {
+    for (let i = 0; i < 16; i++) W[i] = (bytes[off + i * 4] << 24) | (bytes[off + i * 4 + 1] << 16) | (bytes[off + i * 4 + 2] << 8) | bytes[off + i * 4 + 3];
+    for (let i = 16; i < 64; i++) {
+      const s0 = rotr(W[i - 15], 7) ^ rotr(W[i - 15], 18) ^ (W[i - 15] >>> 3);
+      const s1 = rotr(W[i - 2], 17) ^ rotr(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+      W[i] = (W[i - 16] + s0 + W[i - 7] + s1) | 0;
+    }
+    let [a, b, c, d, e, f, g, h] = H;
+    for (let i = 0; i < 64; i++) {
+      const S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
+      const t1 = (h + S1 + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+      const S0 = rotr(a, 2) ^ rotr(a, 13) ^ rotr(a, 22);
+      const t2 = (S0 + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+      h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+    }
+    H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+    H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+  }
+  return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+}
+
+// Nội dung được niêm phong (không gồm supersededByRoomId, integrityFlag)
+function computeSealHash(room) {
+  const snapshot = {
+    id: room.id, status: room.status, finalResult: room.finalResult || '', closeReason: room.closeReason || '',
+    reviews: room.reviews || [], qaRecords: room.qaRecords || [], decisionNote: room.decisionNote || null,
+    outputs: (room.assignments || []).map(a => [a.id, a.providerId, a.status, a.output]),
+    submittedAt: room.submittedAt || null
+  };
+  return sha256Hex(JSON.stringify(snapshot));
+}
+function sealRoom(room) {
+  room.sealHash = computeSealHash(room);
+  room.sealedAt = nowISO();
+  room.integrityFlag = '';
+}
+
+// Kiểm tra điều kiện nghiệm thu của hồ sơ đã khóa (dùng khi nạp/import dữ liệu không có niêm phong)
+function checkImmutableInvariants(room) {
+  if (room.status === 'closed_rejected') return String(room.closeReason || '').trim().length >= 5;
+  if (room.status !== 'completed') return true;
+  const dir = [...(room.reviews || [])].reverse().find(r => r.level === 'director' && r.round === room.round);
+  const qa = [...(room.qaRecords || [])].reverse().find(q => q.round === room.round);
+  return !!(dir && dir.verdict === 'pass' && dir.source === 'manual-claude' && String(room.finalResult || '').trim()
+    && qa && qa.verdict === 'pass' && room.decisionNote && room.decisionNote.qaRecordId === qa.id);
+}
+
+// Trả về cờ toàn vẹn: '' (hợp lệ) | 'seal_mismatch' | 'unverified_import'
+function evaluateIntegrity(room) {
+  if (!isImmutable(room)) return '';
+  if (room.sealHash) return computeSealHash(room) === room.sealHash ? '' : 'seal_mismatch';
+  return checkImmutableInvariants(room) ? 'needs_seal' : 'unverified_import';
+}
+
+function detectDemoSignals(r) {
+  if (!r) return false;
+  if (r.isDemo === true || /^\s*\[DEMO/i.test(r.title || '')) return true;
+  const msgs = Array.isArray(r.messages) ? r.messages : [];
+  if (msgs.some(m => /System Demo/i.test(m?.sender || ''))) return true;
+  const blob = JSON.stringify(r.reviews || []) + String(r.finalResult || '');
+  return /\[DEMO_SAMPLE_PASS\]|CHẾ ĐỘ DEMO/i.test(blob);
 }
 
 function saveDraft(key, val) {
@@ -493,6 +661,12 @@ function clearDraft(key) {
   if (!currentRoomId) return;
   try { localStorage.removeItem(`draft_${currentRoomId}_${key}`); } catch (e) {}
 }
+function clearAllDraftsForRoom(roomId) {
+  try {
+    const prefix = `draft_${roomId}_`;
+    Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
+}
 
 // ============================================================================
 // 3. STORAGE MIGRATION (v1.1 -> v1.2 -> v1.3) & QUOTA MONITOR (Nhóm C)
@@ -506,7 +680,20 @@ function normalizeRoomRecord(r) {
     instruction: String(r.instruction || ''),
     context: String(r.context || ''),
     status: VALID_ROOM_STATUSES.includes(r.status) ? r.status : 'planning',
-    isDemo: Boolean(r.isDemo || /^\[DEMO/i.test(r.title || '')),
+    isDemo: detectDemoSignals(r),
+    dataClass: Object.keys(DATA_CLASSES).includes(r.dataClass) ? r.dataClass : 'internal',
+    owner: String(r.owner || '').slice(0, 100),
+    dueDate: /^\d{4}-\d{2}-\d{2}$/.test(r.dueDate || '') ? r.dueDate : '',
+    decisionMaker: String(r.decisionMaker || '').slice(0, 100),
+    sealHash: typeof r.sealHash === 'string' ? r.sealHash : '',
+    sealedAt: r.sealedAt || null,
+    integrityFlag: typeof r.integrityFlag === 'string' ? r.integrityFlag : '',
+    supersedesRoomId: r.supersedesRoomId || null,
+    supersededByRoomId: r.supersededByRoomId || null,
+    finalResultHistory: Array.isArray(r.finalResultHistory) ? r.finalResultHistory : [],
+    pendingDirectorDecision: r.pendingDirectorDecision && typeof r.pendingDirectorDecision === 'object' ? r.pendingDirectorDecision : null,
+    closeReason: String(r.closeReason || ''),
+    qaPromptCopiedAt: r.qaPromptCopiedAt || null,
     objective: String(r.objective || ''),
     criteria: Array.isArray(r.criteria) ? r.criteria.map(String) : [],
     leader: VALID_PROVIDERS.includes(r.leader) ? r.leader : 'gemini',
@@ -561,8 +748,12 @@ function migrateAndLoadStorage() {
       } catch (e) { return []; }
     };
 
-    // Thứ tự ưu tiên: nạp v1.1 -> v1.2 -> v1.3 (giữ bản mới hơn nếu trùng ID, không mất room nào)
-    for (const r of [...parseSafe(rawV11), ...parseSafe(rawV12), ...parseSafe(rawV13)]) {
+    // Thứ tự ưu tiên: nạp v1.1 -> v1.2 -> v1.3 (giữ bản mới hơn nếu trùng ID, không mất room nào).
+    // v1.4: khi đã có kho v1.3 thì kho cũ đã được gộp từ trước → chỉ dùng kho v1.3 (tránh Room đã xóa "sống lại").
+    const v13List = parseSafe(rawV13);
+    const v13Healthy = rawV13 !== null && (v13List.length > 0 || rawV13.trim() === '[]');
+    const sources = v13Healthy ? v13List : [...parseSafe(rawV11), ...parseSafe(rawV12), ...v13List];
+    for (const r of sources) {
       if (r && typeof r === 'object' && r.id) {
         const norm = normalizeRoomRecord(r);
         const existing = mergedMap.get(norm.id);
@@ -573,7 +764,10 @@ function migrateAndLoadStorage() {
     }
 
     rooms = Array.from(mergedMap.values());
-    currentRoomId = localStorage.getItem(ACTIVE_ROOM_KEY) || (rooms[0]?.id || null);
+    applyIntegrityChecks(rooms, 'Nâng cấp/nạp dữ liệu v1.4');
+    const storedActive = localStorage.getItem(ACTIVE_ROOM_KEY);
+    currentRoomId = rooms.some(r => r.id === storedActive) ? storedActive : (rooms[0]?.id || null);
+    knownRoomIds = new Set(rooms.map(r => r.id));
     saveRoomsToStorage();
   } catch (e) {
     rooms = [];
@@ -581,15 +775,63 @@ function migrateAndLoadStorage() {
   }
 }
 
+// Niêm phong bổ sung cho hồ sơ khóa hợp lệ chưa có niêm phong; gắn cờ cho hồ sơ không đạt điều kiện/sai niêm phong
+function applyIntegrityChecks(list, contextLabel) {
+  for (const r of list) {
+    const flag = evaluateIntegrity(r);
+    if (flag === 'needs_seal') {
+      sealRoom(r);
+      r.messages.push({ id: uuidv4(), sender: 'Integrity Seal', content: `Niêm phong bổ sung (${contextLabel}): hồ sơ đạt đủ điều kiện nghiệm thu, chưa có niêm phong từ phiên bản trước.`, createdAt: nowISO() });
+    } else {
+      r.integrityFlag = flag;
+    }
+  }
+}
+
+// v1.4 — Đồng bộ nhiều tab: không ghi đè dữ liệu mới hơn do tab khác ghi
+let knownRoomIds = new Set();
+let deletedThisSession = new Set();
+function readStoredRooms() {
+  try { const p = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); return Array.isArray(p) ? p : []; } catch (e) { return []; }
+}
+function detectStorageConflict() {
+  const stored = readStoredRooms();
+  for (const s of stored) {
+    if (!s || !s.id) continue;
+    const mem = rooms.find(r => r.id === s.id);
+    if (mem && Number(s.version) > Number(mem.version)) return `Room "${s.title}" đã được cập nhật ở tab/cửa sổ khác (v${s.version} > v${mem.version}).`;
+    if (!mem && !knownRoomIds.has(s.id) && !deletedThisSession.has(s.id)) return `Có Room mới "${s.title}" được tạo ở tab/cửa sổ khác.`;
+  }
+  return '';
+}
+function reloadFromStorage(reason, isConflict = true) {
+  const keepId = currentRoomId;
+  migrateAndLoadStorage();
+  if (rooms.some(r => r.id === keepId)) currentRoomId = keepId;
+  renderAll();
+  showBanner(reason + (isConflict ? ' Đã tải lại dữ liệu mới nhất — thao tác vừa rồi CHƯA được lưu, vui lòng thực hiện lại.' : ' Đã tải lại dữ liệu mới nhất.'), isConflict);
+}
+
 function saveRoomsToStorage() {
   try {
+    const conflict = detectStorageConflict();
+    if (conflict) { reloadFromStorage(conflict); return false; }
     const serialized = JSON.stringify(rooms);
     localStorage.setItem(STORAGE_KEY, serialized);
     if (currentRoomId) localStorage.setItem(ACTIVE_ROOM_KEY, currentRoomId);
+    rooms.forEach(r => knownRoomIds.add(r.id));
     updateStorageQuotaIndicator(serialized.length);
+    return true;
   } catch (e) {
-    showBanner('Lỗi lưu trữ localStorage (Có thể đã đầy dung lượng 5MB): ' + e.message, true);
+    showBanner('Lỗi lưu trữ localStorage (có thể đã đầy dung lượng): ' + e.message, true);
+    return false;
   }
+}
+
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('storage', (ev) => {
+    if (ev.key === STORAGE_KEY) reloadFromStorage('Dữ liệu vừa thay đổi ở tab/cửa sổ khác.', false);
+  });
 }
 
 function updateStorageQuotaIndicator(currentChars = 0) {
@@ -705,6 +947,7 @@ function parseAndValidateDirectorEnvelope(rawText, room) {
         if (typeof d.leaderId !== 'string' || !VALID_PROVIDERS.includes(d.leaderId)) {
           throw new Error(`leaderId "${d.leaderId}" không thuộc danh mục Provider hợp lệ (${VALID_PROVIDERS.join(', ')}).`);
         }
+        assertProviderAllowed(room, d.leaderId, 'vai trò Leader');
         if (typeof d.leaderReason !== 'string' || d.leaderReason.trim().length < 1 || d.leaderReason.trim().length > 1500) {
           throw new Error('leaderReason phải là chuỗi từ 1–1.500 ký tự sau trim.');
         }
@@ -727,6 +970,7 @@ function parseAndValidateDirectorEnvelope(rawText, room) {
           if (typeof t.providerId !== 'string' || !VALID_PROVIDERS.includes(t.providerId)) {
             throw new Error(`Task #${taskNum}: providerId "${t.providerId}" không thuộc danh mục hợp lệ.`);
           }
+          assertProviderAllowed(room, t.providerId, `Task #${taskNum}`);
           if (!Array.isArray(t.dependencies) || t.dependencies.length > 8) {
             throw new Error(`Task #${taskNum}: dependencies phải là mảng tối đa 8 chỉ số.`);
           }
@@ -891,6 +1135,16 @@ function validateImportedRoom(src) {
 
   validateDependencyGraphNoCycle(src.assignments);
 
+  if (src.dataClass !== undefined && !Object.keys(DATA_CLASSES).includes(src.dataClass)) {
+    throw new Error(`Phân loại dữ liệu "${src.dataClass}" không hợp lệ.`);
+  }
+  const restricted = RESTRICTED_PROVIDERS_BY_CLASS[src.dataClass] || [];
+  if (restricted.length) {
+    if (restricted.includes(src.leader)) throw new Error(`Room phân loại "${src.dataClass}" có Leader thuộc danh sách bị chặn (${src.leader}).`);
+    const bad = src.assignments.find(t => restricted.includes(t.providerId));
+    if (bad) throw new Error(`Room phân loại "${src.dataClass}" có Task "${bad.title}" giao cho provider bị chặn (${bad.providerId}).`);
+  }
+
   if (!Array.isArray(src.reviews) || src.reviews.length > 30) {
     throw new Error('Room reviews phải là mảng tối đa 30 phần tử.');
   }
@@ -909,7 +1163,7 @@ function validateImportedRoom(src) {
   }
 
   // Kiểm tra điều kiện trạng thái bất biến (State Invariants)
-  if (['leader_review', 'director_review', 'approved', 'completed'].includes(src.status)) {
+  if (['leader_review', 'director_review', 'approved', 'escalated', 'completed'].includes(src.status)) {
     if (src.assignments.length === 0) {
       throw new Error(`Trạng thái "${src.status}" yêu cầu phải có ít nhất 1 task.`);
     }
@@ -939,8 +1193,29 @@ function computeDownstreamClosure(assignments, rootTargetIds) {
 }
 
 function assertNotCompleted(room, actionName) {
-  if (room.status === 'completed') {
-    throw new Error(`State Guard Reject: Hồ sơ đã khóa ở trạng thái COMPLETED. Không được phép thực hiện thao tác "${actionName}".`);
+  if (isImmutable(room)) {
+    throw new Error(`State Guard Reject: Hồ sơ đã khóa ở trạng thái ${room.status.toUpperCase()}. Không được phép thực hiện thao tác "${actionName}".`);
+  }
+}
+
+// Áp dụng yêu cầu Rework của Director (dùng chung cho luồng thường và luồng Escalate)
+function applyDirectorRework(room, targetIds, content) {
+  room.finalResult = '';
+  room.round += 1;
+  if (targetIds.length === 0) {
+    room.status = 'leader_review';
+    room.messages.push({ id: uuidv4(), sender: 'Claude Director (manual-claude)', content: `Director yêu cầu Leader tổng hợp lại (targetIds=[]). Chuyển sang Round ${room.round}.`, createdAt: nowISO() });
+  } else {
+    const closure = computeDownstreamClosure(room.assignments, targetIds);
+    room.assignments.forEach(task => {
+      if (closure.has(task.id)) {
+        task.status = 'rework';
+        task.output = '';
+        task.feedback = content;
+      }
+    });
+    room.status = 'rework';
+    room.messages.push({ id: uuidv4(), sender: 'Claude Director (manual-claude)', content: `Director yêu cầu REWORK ${closure.size} task (kèm đóng bao downstream). Chuyển sang Round ${room.round}.`, createdAt: nowISO() });
   }
 }
 
@@ -1033,37 +1308,14 @@ function engineApplyDirectorDecision(room, rawText) {
       });
       return { status: room.status, verdict: 'pass' };
     } else {
-      if (room.round >= room.maxRounds) {
-        throw new Error(`MaxRounds Guard: Đã chạm giới hạn số vòng xử lý tối đa (maxRounds = ${room.maxRounds}). Không tự động phê duyệt. Hãy tăng giới hạn vòng nếu muốn tiếp tục rework.`);
-      }
       room.reviews.push(reviewRecord);
-      room.finalResult = '';
-      room.round += 1;
-
-      if (d.targetIds.length === 0) {
-        room.status = 'leader_review';
-        room.messages.push({
-          id: uuidv4(),
-          sender: 'Claude Director (manual-claude)',
-          content: `Director yêu cầu Leader tổng hợp lại (targetIds=[]). Chuyển sang Round ${room.round}.`,
-          createdAt: nowISO()
-        });
+      if (room.round >= room.maxRounds) {
+        // v1.4: Không làm mất quyết định — chuyển ESCALATED chờ chủ dự án quyết định
+        room.status = 'escalated';
+        room.pendingDirectorDecision = { targetIds: [...d.targetIds], content: d.content.trim(), round: room.round, reviewId: reviewRecord.id, createdAt: nowISO() };
+        room.messages.push({ id: uuidv4(), sender: 'MaxRounds Guard', content: `Director yêu cầu REWORK nhưng đã đạt giới hạn ${room.maxRounds} vòng. Hồ sơ chuyển ESCALATED: chủ dự án quyết định tăng số vòng hoặc đóng hồ sơ không đạt.`, createdAt: nowISO() });
       } else {
-        const closure = computeDownstreamClosure(room.assignments, d.targetIds);
-        room.assignments.forEach(task => {
-          if (closure.has(task.id)) {
-            task.status = 'rework';
-            task.output = '';
-            task.feedback = d.content.trim();
-          }
-        });
-        room.status = 'rework';
-        room.messages.push({
-          id: uuidv4(),
-          sender: 'Claude Director (manual-claude)',
-          content: `Director yêu cầu REWORK ${closure.size} task (kèm đóng bao downstream). Chuyển sang Round ${room.round}.`,
-          createdAt: nowISO()
-        });
+        applyDirectorRework(room, d.targetIds, d.content.trim());
       }
       room.version += 1;
       room.updatedAt = nowISO();
@@ -1121,6 +1373,11 @@ function engineReassignTaskProvider(room, taskId, newProviderId, reason) {
   if (!VALID_PROVIDERS.includes(newProviderId)) throw new Error('Provider mới không hợp lệ.');
   const task = room.assignments.find(a => a.id === taskId);
   if (!task) throw new Error('Không tìm thấy Task.');
+  if (!['waiting', 'doing', 'rework'].includes(task.status)) {
+    throw new Error(`Provenance Guard: Task đã có đầu ra (${task.status}) — không được đổi Provider để tránh ghi sai nguồn gốc đầu ra.`);
+  }
+  assertProviderAllowed(room, newProviderId, 'Task');
+  if (String(reason || '').trim().length < 10) throw new Error('Phải nêu lý do đổi Provider (tối thiểu 10 ký tự).');
   const oldProvider = task.providerId;
   task.providerId = newProviderId;
   room.version += 1;
@@ -1128,7 +1385,7 @@ function engineReassignTaskProvider(room, taskId, newProviderId, reason) {
   room.messages.push({
     id: uuidv4(),
     sender: 'Owner Exception Control',
-    content: `Đổi Provider của "${task.title}" từ ${oldProvider} sang ${newProviderId}. Lý do: ${reason || 'Worker không phản hồi / thay thế tương đương'}.`,
+    content: `Đổi Provider của "${task.title}" từ ${oldProvider} sang ${newProviderId}. Lý do: ${String(reason).trim()}.`,
     createdAt: nowISO()
   });
 }
@@ -1212,7 +1469,19 @@ function engineSubmitLeaderReview(room, content, deliverable) {
   });
 }
 
-// Nhóm E — Independent QA thực chất
+// Nhóm E — Independent QA thực chất (v1.4: FAIL không bị ghi đè; HOLD phải được giải tỏa có ghi chú)
+function isIndependentQASource(source) {
+  return !NON_INDEPENDENT_QA_SOURCES.some(rx => rx.test(source));
+}
+function qaRecordsOfRound(room, round) {
+  return (room.qaRecords || []).filter(q => q.round === round);
+}
+function unresolvedHolds(room, round) {
+  const recs = qaRecordsOfRound(room, round);
+  const resolved = new Set(recs.filter(q => q.resolvesHoldId).map(q => q.resolvesHoldId));
+  return recs.filter(q => q.verdict === 'needs_verification' && !resolved.has(q.id));
+}
+
 function engineRecordIndependentQA(room, qaPayload) {
   assertNotCompleted(room, 'Record Independent QA');
   if (room.status !== 'approved') {
@@ -1222,13 +1491,30 @@ function engineRecordIndependentQA(room, qaPayload) {
   const verdict = String(qaPayload?.verdict || '').trim();
   const evidence = String(qaPayload?.evidence || '').trim();
   const findings = String(qaPayload?.findings || '').trim();
+  const resolutionNote = String(qaPayload?.resolutionNote || '').trim();
 
   if (!source) throw new Error('Thiếu nguồn thực hiện Independent QA.');
-  if (!['pass', 'fail', 'needs_verification'].includes(verdict)) {
-    throw new Error('Verdict của Independent QA chỉ nhận pass, fail hoặc needs_verification.');
+  if (!isIndependentQASource(source)) {
+    throw new Error(`QA Independence Guard: Nguồn "${source}" trùng với Director (Claude) nên không độc lập. Hãy dùng Gemini, ChatGPT hoặc Business QA.`);
   }
-  if (evidence.length < 5) throw new Error('Bằng chứng đối chiếu QA (Evidence) phải tối thiểu 5 ký tự.');
-  if (findings.length < 5) throw new Error('Phát hiện QA (Findings) phải tối thiểu 5 ký tự.');
+  if (!['pass', 'fail', 'needs_verification'].includes(verdict)) {
+    throw new Error('Verdict của Independent QA chỉ nhận pass, fail hoặc needs_verification (bắt buộc chọn).');
+  }
+  if (evidence.length < MIN_QA_TEXT) throw new Error(`Bằng chứng đối chiếu QA (Evidence) phải tối thiểu ${MIN_QA_TEXT} ký tự.`);
+  if (findings.length < MIN_QA_TEXT) throw new Error(`Phát hiện QA (Findings) phải tối thiểu ${MIN_QA_TEXT} ký tự.`);
+
+  const roundRecs = qaRecordsOfRound(room, room.round);
+  if (roundRecs.some(q => q.verdict === 'fail')) {
+    throw new Error('QA Fail Lock: Vòng này đã có QA FAIL. Không được ghi đè. Hãy "Mở vòng rà soát mới" hoặc "Đóng hồ sơ — Không đạt".');
+  }
+  let resolvesHoldId = null;
+  const holds = unresolvedHolds(room, room.round);
+  if (verdict === 'pass' && holds.length > 0) {
+    if (resolutionNote.length < MIN_QA_TEXT) {
+      throw new Error(`QA Hold Guard: Vòng này đang có HOLD chưa giải tỏa. PASS phải kèm ghi chú xử lý HOLD tối thiểu ${MIN_QA_TEXT} ký tự.`);
+    }
+    resolvesHoldId = qaPayload?.resolvesHoldId && holds.some(h => h.id === qaPayload.resolvesHoldId) ? qaPayload.resolvesHoldId : holds[holds.length - 1].id;
+  }
 
   const record = {
     id: uuidv4(),
@@ -1238,6 +1524,9 @@ function engineRecordIndependentQA(room, qaPayload) {
     verdict,
     evidence,
     findings,
+    resolvesHoldId,
+    resolutionNote: resolvesHoldId ? resolutionNote : '',
+    promptCopiedAt: room.qaPromptCopiedAt || null,
     createdAt: nowISO()
   };
   if (!Array.isArray(room.qaRecords)) room.qaRecords = [];
@@ -1247,10 +1536,17 @@ function engineRecordIndependentQA(room, qaPayload) {
   room.messages.push({
     id: uuidv4(),
     sender: `Independent QA (${source})`,
-    content: `Kết luận thẩm định độc lập: ${verdict.toUpperCase()} — Bằng chứng: ${evidence} | Phát hiện: ${findings}`,
+    content: `Kết luận thẩm định độc lập: ${verdict.toUpperCase()}${resolvesHoldId ? ' (giải tỏa HOLD)' : ''} — Bằng chứng: ${evidence} | Phát hiện: ${findings}${resolvesHoldId ? ' | Xử lý HOLD: ' + resolutionNote : ''}`,
     createdAt: nowISO()
   });
   return record;
+}
+
+function validateDecisionNoteField(value, min, label, allowNone) {
+  const v = String(value || '').trim();
+  if (allowNone && /^không có\.?$/i.test(v)) return v;
+  if (v.length < min) throw new Error(`Decision Note: "${label}" tối thiểu ${min} ký tự${allowNone ? ' (hoặc ghi đúng "Không có")' : ''}.`);
+  return v;
 }
 
 // Nhóm B, D, E — Final Submit Guard
@@ -1267,24 +1563,29 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
     throw new Error('Director Guard Reject: Cần quyết định PASS hợp lệ từ manual-claude ở vòng hiện tại và finalResult không rỗng.');
   }
 
-  // Kiểm tra Independent QA độc lập ở vòng hiện tại
-  const latestQA = [...(room.qaRecords || [])].reverse().find(q => q.round === room.round);
+  const roundRecs = qaRecordsOfRound(room, room.round);
+  const latestQA = roundRecs[roundRecs.length - 1];
   if (!latestQA) {
     throw new Error('Independent QA Guard Reject: Chưa có hồ sơ thẩm định Independent QA cho vòng hiện tại. Director PASS không thay thế được Independent QA.');
+  }
+  if (roundRecs.some(q => q.verdict === 'fail')) {
+    throw new Error('Independent QA Guard Reject: Vòng hiện tại có QA FAIL. Hồ sơ bị chặn chuyển sang Completed.');
+  }
+  if (unresolvedHolds(room, room.round).length > 0) {
+    throw new Error('Independent QA Guard Reject: Còn QA HOLD chưa được giải tỏa ở vòng hiện tại.');
   }
   if (latestQA.verdict !== 'pass') {
     throw new Error(`Independent QA Guard Reject: Kết luận QA hiện tại là "${latestQA.verdict.toUpperCase()}". Hồ sơ bị chặn chuyển sang Completed.`);
   }
+  if (!isIndependentQASource(latestQA.source)) {
+    throw new Error('Independent QA Guard Reject: Nguồn QA không độc lập với Director.');
+  }
 
-  const rationale = String(decisionNotePayload?.rationale || '').trim();
-  const rejectedAlternatives = String(decisionNotePayload?.rejectedAlternatives || '').trim();
+  const rationale = validateDecisionNoteField(decisionNotePayload?.rationale, MIN_RATIONALE, 'Lý do lựa chọn phương án cuối', false);
+  const rejectedAlternatives = validateDecisionNoteField(decisionNotePayload?.rejectedAlternatives, MIN_DN_SHORT, 'Các phương án bị loại', true);
+  const uncertainties = validateDecisionNoteField(decisionNotePayload?.uncertainties, MIN_DN_SHORT, 'Điểm chưa chắc chắn', true);
   const minorityView = String(decisionNotePayload?.minorityView || '').trim();
   const keyEdits = String(decisionNotePayload?.keyEdits || '').trim();
-  const uncertainties = String(decisionNotePayload?.uncertainties || '').trim();
-
-  if (rationale.length < 5) throw new Error('Decision Note: Bắt buộc nhập Lý do lựa chọn phương án cuối (tối thiểu 5 ký tự).');
-  if (rejectedAlternatives.length < 3) throw new Error('Decision Note: Bắt buộc ghi nhận Các phương án bị loại (hoặc ghi "Không có").');
-  if (uncertainties.length < 3) throw new Error('Decision Note: Bắt buộc ghi nhận Những điểm chưa chắc chắn còn tồn tại.');
 
   const noteObj = {
     id: uuidv4(),
@@ -1308,15 +1609,17 @@ function engineFinalSubmitRoom(room, decisionNotePayload) {
   room.messages.push({
     id: uuidv4(),
     sender: 'System Governance Gate',
-    content: `Hồ sơ đã vượt qua Director PASS + Independent QA PASS (${latestQA.source}) và lưu Decision Note đầy đủ. Chuyển sang COMPLETED.`,
+    content: `Hồ sơ đã vượt qua Director PASS + Independent QA PASS (${latestQA.source}) và lưu Decision Note đầy đủ. Chuyển sang COMPLETED và niêm phong.`,
     createdAt: nowISO()
   });
+  sealRoom(room);
   return room;
 }
 
 function engineChangeLeader(room, newLeader) {
   assertNotCompleted(room, 'Change Leader');
   if (!VALID_PROVIDERS.includes(newLeader)) throw new Error('Leader Provider không hợp lệ.');
+  assertProviderAllowed(room, newLeader, 'vai trò Leader');
   const hasStartedActivity = (room.reviews && room.reviews.length > 0) || (room.assignments && room.assignments.some(a => (a.responses && a.responses.length > 0) || a.status !== 'waiting'));
   if (hasStartedActivity) {
     throw new Error('State Guard Reject (Mục 2.2): Chỉ được đổi Leader trước khi hoạt động phản hồi/review bắt đầu.');
@@ -1328,6 +1631,7 @@ function engineChangeLeader(room, newLeader) {
 
 function engineChangeMaxRounds(room, newMax) {
   assertNotCompleted(room, 'Change maxRounds');
+  if (room.status === 'escalated') throw new Error('Hồ sơ đang ESCALATED: dùng nút "Tăng số vòng & áp dụng yêu cầu Rework" để có lý do và nhật ký.');
   const num = Number(newMax);
   if (!Number.isInteger(num) || num < 1 || num > 10 || num < room.round) {
     throw new Error(`State Guard Reject: maxRounds phải là số nguyên từ 1–10 và không thấp hơn vòng hiện tại (${room.round}).`);
@@ -1337,17 +1641,59 @@ function engineChangeMaxRounds(room, newMax) {
   room.updatedAt = nowISO();
 }
 
-// QA-08: Mở lại phương án từng bị bác bỏ mà không làm mất lịch sử quyết định trước đó
+// v1.4 — Xử lý ESCALATED: tăng số vòng và áp dụng yêu cầu Rework đang chờ
+function engineResolveEscalationExtend(room, newMax, reason) {
+  assertNotCompleted(room, 'Resolve Escalation');
+  if (room.status !== 'escalated' || !room.pendingDirectorDecision) throw new Error('Hồ sơ không ở trạng thái ESCALATED.');
+  const num = Number(newMax);
+  if (!Number.isInteger(num) || num <= room.round || num > 10) {
+    throw new Error(`Số vòng mới phải là số nguyên lớn hơn vòng hiện tại (${room.round}) và không quá 10.`);
+  }
+  const why = String(reason || '').trim();
+  if (why.length < 10) throw new Error('Phải nêu lý do tăng số vòng (tối thiểu 10 ký tự).');
+  const pending = room.pendingDirectorDecision;
+  room.maxRounds = num;
+  room.pendingDirectorDecision = null;
+  room.messages.push({ id: uuidv4(), sender: 'Owner Escalation Decision', content: `Chủ dự án tăng giới hạn lên ${num} vòng để áp dụng yêu cầu Rework của Director. Lý do: ${why}`, createdAt: nowISO() });
+  applyDirectorRework(room, pending.targetIds || [], pending.content || '');
+  room.version += 1;
+  room.updatedAt = nowISO();
+}
+
+// v1.4 — Đóng hồ sơ không đạt (kết cục bất biến)
+function engineCloseRejected(room, reason) {
+  assertNotCompleted(room, 'Close Rejected');
+  if (room.status === 'planning') throw new Error('Room đang PLANNING chưa có nội dung để đóng — hãy xóa Room nếu không dùng.');
+  const why = String(reason || '').trim();
+  if (why.length < MIN_CLOSE_REASON) throw new Error(`Phải nêu lý do đóng hồ sơ không đạt (tối thiểu ${MIN_CLOSE_REASON} ký tự).`);
+  const prev = room.status;
+  room.status = 'closed_rejected';
+  room.closeReason = why;
+  room.pendingDirectorDecision = null;
+  room.submittedAt = nowISO();
+  room.version += 1;
+  room.updatedAt = nowISO();
+  room.messages.push({ id: uuidv4(), sender: 'Owner Close Decision', content: `Đóng hồ sơ — KHÔNG ĐẠT (từ trạng thái ${prev.toUpperCase()}). Lý do: ${why}`, createdAt: nowISO() });
+  sealRoom(room);
+}
+
+// QA-08 (v1.4): Mở vòng rà soát mới — chỉ từ APPROVED (ví dụ sau QA FAIL/HOLD); hồ sơ khóa dùng Room kế thừa
 function engineReopenRejectedAlternative(room, reopenReason) {
-  if (room.status !== 'approved' && room.status !== 'completed') {
-    throw new Error('Chỉ có thể mở lại phương án bị bác bỏ khi Room ở trạng thái approved hoặc completed.');
+  if (isImmutable(room)) {
+    throw new Error('Hồ sơ đã khóa không được mở lại. Hãy dùng "Tạo Room kế thừa để xem xét lại".');
+  }
+  if (room.status !== 'approved') {
+    throw new Error('Chỉ có thể mở vòng rà soát mới khi Room ở trạng thái approved.');
   }
   if (room.round >= room.maxRounds) {
-    throw new Error('Cần tăng maxRounds trước khi mở vòng thảo luận lại phương án.');
+    throw new Error('Cần tăng maxRounds trước khi mở vòng rà soát mới.');
   }
   const reason = String(reopenReason || '').trim();
-  if (reason.length < 5) throw new Error('Vui lòng nhập lý do mở lại phương án (tối thiểu 5 ký tự).');
+  if (reason.length < MIN_QA_TEXT) throw new Error(`Vui lòng nhập lý do mở vòng mới (tối thiểu ${MIN_QA_TEXT} ký tự).`);
 
+  if (!Array.isArray(room.finalResultHistory)) room.finalResultHistory = [];
+  if (room.finalResult) room.finalResultHistory.push({ round: room.round, finalResult: room.finalResult, archivedAt: nowISO(), reason });
+  room.finalResult = '';
   room.round += 1;
   room.status = 'leader_review';
   room.submittedAt = null;
@@ -1356,22 +1702,83 @@ function engineReopenRejectedAlternative(room, reopenReason) {
   room.messages.push({
     id: uuidv4(),
     sender: 'Owner Decision Reopen',
-    content: `Chủ dự án yêu cầu mở lại phương án từng bị bác bỏ để rà soát ở Round ${room.round} (giữ nguyên lịch sử quyết định trước đó). Lý do: ${reason}`,
+    content: `Chủ dự án mở vòng rà soát mới (Round ${room.round}). Final Result vòng trước được lưu vào lịch sử. Lý do: ${reason}`,
     createdAt: nowISO()
   });
 }
 
+// v1.4 — Room kế thừa từ hồ sơ đã khóa (D1). Hồ sơ gốc chỉ được ghi thêm liên kết supersededByRoomId (ngoài phạm vi niêm phong).
+function engineCreateSuccessorRoom(source) {
+  if (!isImmutable(source)) throw new Error('Chỉ tạo Room kế thừa từ hồ sơ đã khóa (Completed / Đóng không đạt).');
+  if (source.supersededByRoomId) throw new Error('Hồ sơ này đã có Room kế thừa.');
+  const idMap = new Map(source.assignments.map(a => [a.id, uuidv4()]));
+  const allHaveOutput = source.assignments.length > 0 && source.assignments.every(a => a.output && a.output.trim());
+  const successor = normalizeRoomRecord({
+    id: uuidv4(), version: 1, title: `[Kế thừa] ${source.title}`.slice(0, 160), category: source.category,
+    instruction: source.instruction, context: source.context, dataClass: source.dataClass,
+    owner: source.owner, dueDate: '', decisionMaker: source.decisionMaker,
+    status: allHaveOutput ? 'leader_review' : 'planning', isDemo: source.isDemo,
+    objective: source.objective, criteria: [...(source.criteria || [])], leader: source.leader, leaderReason: source.leaderReason,
+    assignments: allHaveOutput ? source.assignments.map(a => ({
+      ...a, id: idMap.get(a.id), dependencies: a.dependencies.map(d => idMap.get(d)).filter(Boolean),
+      feedback: '', responses: [{ id: uuidv4(), content: a.output, providerId: a.providerId, createdAt: nowISO(), round: 1, inheritedFrom: source.id }]
+    })) : [],
+    messages: [{ id: uuidv4(), sender: 'Successor Engine', content: `Room kế thừa từ hồ sơ "${source.title}" (ID ${source.id}, trạng thái ${source.status.toUpperCase()}).`, createdAt: nowISO() }],
+    reviews: [], qaRecords: [], decisionHistory: [], decisionNote: null, round: 1, maxRounds: 3, finalResult: '',
+    supersedesRoomId: source.id, createdAt: nowISO(), updatedAt: nowISO()
+  });
+  source.supersededByRoomId = successor.id;
+  return successor;
+}
+
+// v1.4 — Sửa thông tin Room khi còn PLANNING
+function engineEditRoomInfo(room, payload) {
+  assertNotCompleted(room, 'Edit Room Info');
+  if (room.status !== 'planning') throw new Error('Chỉ được sửa thông tin Room khi đang ở PLANNING (chưa có kế hoạch).');
+  const title = String(payload.title || '').trim();
+  const instruction = String(payload.instruction || '').trim();
+  const context = String(payload.context || '').trim();
+  if (title.length < 1 || title.length > 160) throw new Error('Tiêu đề Room phải từ 1–160 ký tự.');
+  if (instruction.length < 5 || instruction.length > 12000) throw new Error('Chỉ đạo (Instruction) phải từ 5–12.000 ký tự.');
+  if (context.length > 24000) throw new Error('Bối cảnh (Context) tối đa 24.000 ký tự.');
+  const dataClass = Object.keys(DATA_CLASSES).includes(payload.dataClass) ? payload.dataClass : room.dataClass;
+  const newLeader = VALID_PROVIDERS.includes(payload.leader) ? payload.leader : room.leader;
+  if ((RESTRICTED_PROVIDERS_BY_CLASS[dataClass] || []).includes(newLeader)) {
+    throw new Error(`Data Class Guard: Leader "${PROVIDERS[newLeader]?.name || newLeader}" bị chặn với phân loại "${DATA_CLASSES[dataClass].label}" — hãy chọn Leader khác.`);
+  }
+  const changes = [];
+  const set = (key, val, label) => { if (room[key] !== val) { changes.push(`${label}: "${String(room[key]).slice(0, 200)}" → "${String(val).slice(0, 200)}"`); room[key] = val; } };
+  set('title', title, 'Tiêu đề'); set('instruction', instruction, 'Chỉ đạo'); set('context', context, 'Bối cảnh');
+  set('category', String(payload.category || room.category).trim().slice(0, 100), 'Phân loại');
+  set('dataClass', dataClass, 'Phân loại dữ liệu');
+  set('owner', String(payload.owner || '').trim().slice(0, 100), 'Owner');
+  set('dueDate', /^\d{4}-\d{2}-\d{2}$/.test(payload.dueDate || '') ? payload.dueDate : '', 'Hạn');
+  set('decisionMaker', String(payload.decisionMaker || '').trim().slice(0, 100), 'Cấp quyết định');
+  set('leader', newLeader, 'Leader');
+  if (!changes.length) return 0;
+  room.version += 1;
+  room.updatedAt = nowISO();
+  room.messages.push({ id: uuidv4(), sender: 'Owner Edit (Planning)', content: 'Sửa thông tin Room: ' + changes.join(' | '), createdAt: nowISO() });
+  return changes.length;
+}
+
 // ============================================================================
-// 7. FULL MARKDOWN EXPORT (Nhóm F — Khôi phục đầy đủ 100% lịch sử hồ sơ)
+// 7. FULL MARKDOWN EXPORT (Khôi phục đầy đủ lịch sử hồ sơ + thông tin kiểm soát v1.4)
 // ============================================================================
 function generateFullMarkdownReport(room) {
   const dn = room.decisionNote;
   const qaList = room.qaRecords || [];
+  const integrity = isImmutable(room) ? (room.integrityFlag ? `CẢNH BÁO: ${room.integrityFlag}` : `Đã niêm phong (SHA-256: \`${room.sealHash}\`, ${fmtTime(room.sealedAt)})`) : 'Chưa khóa';
   const lines = [
     `# HỒ SƠ ĐIỀU PHỐI AI TEAM: ${room.title}`,
     `- **Room ID:** \`${room.id}\` | **Version:** ${room.version} | **Trạng thái:** \`${room.status.toUpperCase()}\` | **Chế độ:** ${room.isDemo ? 'DEMO' : 'NGHIỆP VỤ THẬT'}`,
+    `- **Phân loại dữ liệu:** ${DATA_CLASSES[room.dataClass]?.label || room.dataClass} | **Owner:** ${room.owner || '(chưa gán)'} | **Hạn:** ${room.dueDate || '(chưa đặt)'} | **Cấp quyết định:** ${room.decisionMaker || '(chưa xác định)'}`,
     `- **Round:** ${room.round}/${room.maxRounds} | **Leader AI:** ${PROVIDERS[room.leader]?.name || room.leader}`,
-    `- **Tạo lúc:** ${room.createdAt} | **Cập nhật:** ${room.updatedAt} | **Hoàn tất (Submitted):** ${room.submittedAt || '(Chưa khóa)'}`,
+    `- **Tạo lúc:** ${fmtTime(room.createdAt)} | **Cập nhật:** ${fmtTime(room.updatedAt)} | **Khóa hồ sơ:** ${room.submittedAt ? fmtTime(room.submittedAt) : '(Chưa khóa)'} (giờ Việt Nam)`,
+    `- **Toàn vẹn hồ sơ:** ${integrity}`,
+    room.supersedesRoomId ? `- **Kế thừa từ hồ sơ:** \`${room.supersedesRoomId}\`` : '',
+    room.supersededByRoomId ? `- **Đã có hồ sơ kế thừa:** \`${room.supersededByRoomId}\`` : '',
+    room.closeReason ? `- **Lý do đóng — Không đạt:** ${room.closeReason}` : '',
     `- **Cảnh báo Provenance:** Các phản hồi được dán thủ công (Manual Paste), hệ thống không tự xác thực tài khoản/model thật.`,
     `\n## 1. Chỉ đạo gốc & Bối cảnh (Instruction & Context)`,
     `### 1.1. Chỉ đạo gốc (Instruction)\n${room.instruction}`,
@@ -1382,13 +1789,13 @@ function generateFullMarkdownReport(room) {
     `- **Tiêu chí nghiệm thu (Criteria):**\n${(room.criteria || []).map((c, i) => `  ${i + 1}. ${c}`).join('\n') || '  *(Chưa có)*'}`,
     `\n## 3. Kết quả thực thi của Worker & Lịch sử Phản hồi (Tasks & Response Versions)`,
     ...(room.assignments || []).map((t, i) => {
-      const respHistory = (t.responses || []).map((resp, rIdx) => `  - *[Phiên bản #${rIdx + 1} | Vòng ${resp.round} | ${resp.providerId} | ${resp.createdAt}]:*\n    ${resp.content.replace(/\n/g, '\n    ')}`).join('\n');
-      return `### Task #${i + 1}: ${t.title}\n- **UUID:** \`${t.id}\` | **Provider:** ${t.providerId} | **Trạng thái:** \`${t.status}\` | **Dependencies:** ${JSON.stringify(t.dependencies)}\n- **Hướng dẫn:** ${t.instructions}\n- **Tiêu chí Task:** ${t.acceptance}\n- **Đầu ra hiện hành (Current Output):**\n${t.output || '*(Chưa có đầu ra)*'}\n- **Lịch sử các bản phản hồi (Response History):**\n${respHistory || '  *(Chưa có lịch sử)*'}`;
+      const respHistory = (t.responses || []).map((resp, rIdx) => `  - *[Phiên bản #${rIdx + 1} | Vòng ${resp.round} | Provider thực hiện: ${resp.providerId}${resp.isException ? ' | NGOẠI LỆ do chủ dự án nhập' : ''}${resp.inheritedFrom ? ' | kế thừa từ ' + resp.inheritedFrom : ''} | ${fmtTime(resp.createdAt)}]:*\n    ${String(resp.content).replace(/\n/g, '\n    ')}`).join('\n');
+      return `### Task #${i + 1}: ${t.title}\n- **UUID:** \`${t.id}\` | **Provider hiện tại:** ${t.providerId} | **Trạng thái:** \`${t.status}\` | **Dependencies:** ${JSON.stringify(t.dependencies)}\n- **Hướng dẫn:** ${t.instructions}\n- **Tiêu chí Task:** ${t.acceptance}\n- **Đầu ra hiện hành (Current Output):**\n${t.output || '*(Chưa có đầu ra)*'}\n- **Lịch sử các bản phản hồi (Response History):**\n${respHistory || '  *(Chưa có lịch sử)*'}`;
     }),
     `\n## 4. Lịch sử Review 2 Lớp (Leader & Claude Director)`,
-    ...((room.reviews && room.reviews.length > 0) ? room.reviews.map(r => `### [${r.level.toUpperCase()}] Vòng ${r.round} — Verdict: \`${r.verdict}\` (${r.source || 'manual'} | ${r.createdAt})\n- **Target IDs:** ${JSON.stringify(r.targetIds || [])}\n- **Nội dung đánh giá:**\n${r.content}\n${r.deliverable ? `\n- **Bản tổng hợp / Deliverable:**\n${r.deliverable}` : ''}`) : ['*(Chưa có lịch sử Review)*']),
+    ...((room.reviews && room.reviews.length > 0) ? room.reviews.map(r => `### [${r.level.toUpperCase()}] Vòng ${r.round} — Verdict: \`${r.verdict}\` (${r.source || 'manual'} | ${fmtTime(r.createdAt)})\n- **Target IDs:** ${JSON.stringify(r.targetIds || [])}\n- **Nội dung đánh giá:**\n${r.content}\n${r.deliverable ? `\n- **Bản tổng hợp / Deliverable:**\n${r.deliverable}` : ''}`) : ['*(Chưa có lịch sử Review)*']),
     `\n## 5. Hồ sơ Thẩm định Độc lập (Independent QA Records)`,
-    ...(qaList.length > 0 ? qaList.map(q => `### [QA Vòng ${q.round}] Nguồn: ${q.source} — Kết luận: \`${q.verdict.toUpperCase()}\` (${q.createdAt})\n- **Bằng chứng đối chiếu:** ${q.evidence}\n- **Phát hiện QA:** ${q.findings}`) : ['*(Chưa có bản ghi Independent QA)*']),
+    ...(qaList.length > 0 ? qaList.map(q => `### [QA Vòng ${q.round}] Nguồn: ${q.source} — Kết luận: \`${q.verdict.toUpperCase()}\` (${fmtTime(q.createdAt)})\n- **Bằng chứng đối chiếu:** ${q.evidence}\n- **Phát hiện QA:** ${q.findings}${q.resolvesHoldId ? `\n- **Giải tỏa HOLD \`${q.resolvesHoldId}\`:** ${q.resolutionNote}` : ''}`) : ['*(Chưa có bản ghi Independent QA)*']),
     `\n## 6. Decision Note & Lịch sử Quyết định`,
     dn ? [
       `- **Lý do lựa chọn phương án cuối (Rationale):** ${dn.rationale}`,
@@ -1397,18 +1804,38 @@ function generateFullMarkdownReport(room) {
       `- **Các chỉnh sửa trọng yếu (Key Edits):** ${dn.keyEdits}`,
       `- **Những điểm chưa chắc chắn còn tồn tại (Uncertainties):** ${dn.uncertainties}`
     ].join('\n') : '*(Chưa có Decision Note)*',
-    ...(room.decisionHistory && room.decisionHistory.length > 1 ? [`\n### Lịch sử các lần chốt Decision Note trước đó (${room.decisionHistory.length} bản ghi):`, ...room.decisionHistory.map((h, idx) => `- **Lần #${idx + 1} (Vòng ${h.round} | ${h.createdAt}):** Lý do: ${h.rationale} | Phương án loại: ${h.rejectedAlternatives}`)] : []),
+    ...(room.decisionHistory && room.decisionHistory.length > 1 ? [`\n### Lịch sử các lần chốt Decision Note trước đó (${room.decisionHistory.length} bản ghi):`, ...room.decisionHistory.map((h, idx) => `- **Lần #${idx + 1} (Vòng ${h.round} | ${fmtTime(h.createdAt)}):** Lý do: ${h.rationale} | Phương án loại: ${h.rejectedAlternatives}`)] : []),
+    ...((room.finalResultHistory || []).length ? [`\n### Final Result các vòng trước (đã lưu trữ khi mở vòng mới):`, ...room.finalResultHistory.map(h => `- **Vòng ${h.round} (${fmtTime(h.archivedAt)}) — Lý do mở lại: ${h.reason}**\n${h.finalResult}`)] : []),
     `\n## 7. Sản phẩm Chốt Cuối Cùng (Final Deliverable)\n${room.finalResult || '*(Chưa chốt)*'}`,
     `\n## 8. Nhật ký Kiểm toán Toàn trình (Full Audit Trail)`,
-    ...((room.messages || []).map(m => `- **[${m.createdAt}] ${m.sender}:** ${m.content}`))
-  ];
+    ...((room.messages || []).map(m => `- **[${fmtTime(m.createdAt)}] ${m.sender}:** ${m.content}`))
+  ].filter(x => x !== '');
   return lines.join('\n\n');
 }
 
 // ============================================================================
-// 8. PROMPT GENERATORS
+// 8. PROMPT GENERATORS (v1.4 — đầy đủ bối cảnh, tiêu chí và quy tắc quyết định)
 // ============================================================================
+const PROMPT_PRINCIPLES = `NGUYÊN TẮC BẮT BUỘC:
+1. Phân biệt rõ: Dữ kiện (có trong nguồn) → Nhận định → Rủi ro → Tác động → Khuyến nghị → Hành động.
+2. Không tự tạo số liệu, sự kiện, văn bản pháp lý hoặc nguồn. Thiếu thông tin thì ghi "chưa có dữ liệu trong nguồn cung cấp" hoặc "cần xác nhận".
+3. Mỗi số liệu/khẳng định quan trọng phải chỉ ra căn cứ trong Chỉ đạo/Bối cảnh/đầu ra task trước.
+4. Viết tiếng Việt chuyên nghiệp, trực diện; không lặp lại đề bài.`;
+
+function criteriaBlock(room) {
+  return (room.criteria || []).length ? room.criteria.map((c, i) => `  C${i + 1}. ${c}`).join('\n') : '  (Chưa có tiêu chí)';
+}
+function roomSourceBlock(room) {
+  return `- Tiêu đề: ${room.title}
+- Phân loại dữ liệu: ${DATA_CLASSES[room.dataClass]?.label || room.dataClass}
+- Chỉ đạo gốc:
+${room.instruction}
+- Bối cảnh & dữ liệu nguồn:
+${room.context || '(Không có)'}`;
+}
+
 function generateDirectorPlanPrompt(room) {
+  const allowed = VALID_PROVIDERS.filter(p => !restrictedProvidersFor(room).includes(p));
   const sampleEnvelope = {
     protocolVersion: 1,
     roomId: room.id,
@@ -1416,50 +1843,33 @@ function generateDirectorPlanPrompt(room) {
     round: room.round,
     stage: 'plan',
     decision: {
-      objective: 'Mục tiêu tổng thể rõ ràng, đo lường được...',
-      criteria: [
-        'Phân biệt rõ Dữ kiện từ nguồn / Nhận định / Rủi ro / Tác động / Khuyến nghị / Hành động',
-        'Không tự tạo số liệu; ghi rõ chưa có dữ liệu trong nguồn cung cấp nếu thiếu'
-      ],
-      leaderId: room.leader || 'gemini',
-      leaderReason: 'Chọn Leader khác Claude để đảm bảo tính độc lập 2 lớp review.',
+      objective: '<Mục tiêu tổng thể, đo lường được>',
+      criteria: ['<Tiêu chí nghiệm thu 1 — kiểm chứng được>', '<Tiêu chí nghiệm thu 2>'],
+      leaderId: allowed.includes(room.leader) ? room.leader : 'gemini',
+      leaderReason: '<Lý do chọn Leader>',
       tasks: [
-        {
-          title: 'Task 1: Phân tích dữ kiện và khung quy chiếu',
-          instructions: 'Đọc kỹ chỉ đạo và bối cảnh, lập bảng dữ kiện...',
-          acceptance: 'Bảng dữ kiện đầy đủ, không suy diễn ngoài nguồn.',
-          providerId: 'chatgpt',
-          dependencies: []
-        },
-        {
-          title: 'Task 2: Đánh giá rủi ro, điểm kiểm soát và phương án xử lý',
-          instructions: 'Dựa trên đầu ra Task 1, phân tích rủi ro, KRI, owner...',
-          acceptance: 'Có thẻ rủi ro, owner và hành động 7/30/90 ngày.',
-          providerId: 'gemini',
-          dependencies: [1]
-        }
+        { title: '<Tên task 1>', instructions: '<Hướng dẫn cụ thể>', acceptance: '<Tiêu chí nghiệm thu task>', providerId: '<providerId>', dependencies: [] },
+        { title: '<Tên task 2>', instructions: '<Hướng dẫn, có thể dùng đầu ra task 1>', acceptance: '<Tiêu chí>', providerId: '<providerId>', dependencies: [1] }
       ]
     }
   };
 
-  return `Bạn là Claude Pro đảm nhận vai trò DIRECTOR trong hệ thống điều phối AI Team.
-Nguyên tắc bắt buộc:
-1. Phân biệt rõ: Dữ kiện -> Nhận định -> Rủi ro -> Tác động -> Khuyến nghị -> Hành động.
-2. Không tự tạo số liệu, sự kiện hoặc nguồn. Nếu thiếu thông tin, ghi rõ "chưa có dữ liệu trong nguồn cung cấp" hoặc "cần xác nhận".
-3. Danh sách providerId hợp lệ: chatgpt, gemini, claude, grok, copilot.
-4. Dependencies của mỗi task dùng chỉ số 1-based (1..N) và chỉ được trỏ về task đứng trước nó.
+  return `Bạn là Claude Pro đảm nhận vai trò DIRECTOR trong hệ thống điều phối AI Team. Nhiệm vụ: lập kế hoạch thực hiện cho hồ sơ dưới đây.
 
-=== THÔNG TIN HỒ SƠ ĐIỀU PHỐI (ROOM SNAPSHOT) ===
-- Room ID: ${room.id}
-- Room Version: ${room.version}
-- Round: ${room.round}
-- Tiêu đề: ${room.title}
-- Chỉ đạo gốc:
-${room.instruction}
-- Bối cảnh:
-${room.context || '(Không có)'}
+${PROMPT_PRINCIPLES}
 
-Trả về ĐÚNG MỘT khối JSON theo strict schema dưới đây (không thêm trường thừa):
+QUY TẮC LẬP KẾ HOẠCH:
+- 1–8 task, mỗi task một đầu ra rõ ràng; 1–12 tiêu chí nghiệm thu cấp Room, mỗi tiêu chí kiểm chứng được.
+- providerId hợp lệ cho Room này: ${allowed.join(', ')}${restrictedProvidersFor(room).length ? ` (KHÔNG dùng ${restrictedProvidersFor(room).join(', ')} do Room phân loại ${DATA_CLASSES[room.dataClass].label})` : ''}.
+- Ưu tiên chọn Leader khác Claude để bảo đảm tính độc lập của 2 lớp review.
+- dependencies dùng chỉ số 1-based và chỉ trỏ về task đứng trước.
+- Các giá trị trong <...> ở mẫu chỉ là chỗ trống — thay bằng nội dung thực của hồ sơ, không chép nguyên văn.
+
+=== HỒ SƠ (ROOM SNAPSHOT) ===
+- Room ID: ${room.id} | Room Version: ${room.version} | Round: ${room.round}
+${roomSourceBlock(room)}
+
+Trả về ĐÚNG MỘT khối JSON theo strict schema dưới đây (không thêm trường thừa, giữ nguyên roomId/roomVersion/round):
 \`\`\`json
 ${JSON.stringify(sampleEnvelope, null, 2)}
 \`\`\``;
@@ -1468,62 +1878,167 @@ ${JSON.stringify(sampleEnvelope, null, 2)}
 function generateWorkerPrompt(room, task, index) {
   const depOutputs = task.dependencies.map(depId => {
     const depTask = room.assignments.find(a => a.id === depId);
-    return depTask ? `--- Đầu ra từ Task tiền nhiệm [${depTask.title}] (${depTask.providerId}) ---\n${depTask.output}` : '';
+    return depTask ? `--- Đầu ra từ Task tiền nhiệm [${depTask.title}] (${depTask.providerId}${depTask.status === 'skipped' ? ', NGOẠI LỆ do chủ dự án nhập' : ''}) ---\n${depTask.output}` : '';
   }).join('\n\n');
+  const isRework = task.status === 'rework' || Boolean(task.feedback);
+  const lastResp = [...(task.responses || [])].reverse().find(r => r.content);
+  const reworkBlock = isRework ? `
+=== ĐÂY LÀ VÒNG LÀM LẠI (Round ${room.round}) ===
+- Yêu cầu sửa từ Director:
+${task.feedback || '(Không có ghi chú)'}
+- Đầu ra lần trước của task này:
+${lastResp ? lastResp.content : '(Không có)'}
+Hãy sửa đúng các điểm Director nêu, giữ phần đã đạt, và liệt kê ngắn những gì đã thay đổi.
+` : '';
 
   return `Bạn là Worker AI (${PROVIDERS[task.providerId]?.name || task.providerId}) thực hiện Task #${index + 1} trong hồ sơ "${room.title}" (Round ${room.round}).
+
+${PROMPT_PRINCIPLES}
+
+=== BỐI CẢNH HỒ SƠ ===
 - Mục tiêu Room: ${room.objective}
-- Chỉ đạo gốc: ${room.instruction}
-- Bối cảnh: ${room.context || '(Không có)'}
+- Tiêu chí nghiệm thu cấp Room (đầu ra của bạn phải góp phần đáp ứng):
+${criteriaBlock(room)}
+${roomSourceBlock(room)}
 ${depOutputs ? '\n=== ĐẦU RA TỪ TASK TIỀN NHIỆM ===\n' + depOutputs + '\n' : ''}
 === NHIỆM VỤ TASK #${index + 1}: ${task.title} ===
 - Hướng dẫn: ${task.instructions}
-- Tiêu chí nghiệm thu: ${task.acceptance}
-${task.feedback ? '- YÊU CẦU LÀM LẠI TỪ DIRECTOR: ' + task.feedback : ''}`;
+- Tiêu chí nghiệm thu task: ${task.acceptance}
+${reworkBlock}
+=== ĐỊNH DẠNG ĐẦU RA ===
+1. Kết luận chính (3–5 dòng).
+2. Nội dung chi tiết (ưu tiên bảng khi có nhiều mục).
+3. Giả định và điểm cần xác nhận (ghi rõ phần nào không có trong nguồn).`;
 }
 
 function generateLeaderPrompt(room) {
-  const workerSection = room.assignments.map((t, idx) => `[Task #${idx + 1}] UUID: ${t.id} | ${t.title} (${t.providerId})\n--- Output ---\n${t.output}`).join('\n\n====================\n\n');
-  return `Bạn là Leader AI (${PROVIDERS[room.leader]?.name}) thực hiện Lớp Review 1 cho Room "${room.title}" (Round ${room.round}).
+  const workerSection = room.assignments.map((t, idx) => `[Task #${idx + 1}] UUID: ${t.id} | ${t.title} (${t.providerId}${t.status === 'skipped' ? ' — NGOẠI LỆ, nội dung do chủ dự án nhập thay Worker' : ''})
+- Tiêu chí task: ${t.acceptance}
+--- Output ---
+${t.output}`).join('\n\n====================\n\n');
+  const prevDirector = [...room.reviews].reverse().find(r => r.level === 'director' && r.verdict === 'rework');
+  return `Bạn là Leader AI (${PROVIDERS[room.leader]?.name}) thực hiện LỚP REVIEW 1 cho hồ sơ "${room.title}" (Round ${room.round}/${room.maxRounds}). Nhiệm vụ: rà soát đầu ra các Worker và tổng hợp thành một sản phẩm hoàn chỉnh để Director duyệt.
+
+${PROMPT_PRINCIPLES}
+
+=== BỐI CẢNH HỒ SƠ ===
 - Mục tiêu: ${room.objective}
-- Tiêu chí: ${(room.criteria || []).join('; ')}
+- Tiêu chí nghiệm thu:
+${criteriaBlock(room)}
+${roomSourceBlock(room)}
+${prevDirector ? `\n=== YÊU CẦU CỦA DIRECTOR Ở VÒNG TRƯỚC (Round ${prevDirector.round}) ===\n${prevDirector.content}\n` : ''}
 === ĐẦU RA WORKERS ===
-${workerSection}`;
+${workerSection}
+
+=== YÊU CẦU ĐẦU RA (giữ nguyên 2 tiêu đề dưới đây để hệ thống tách tự động) ===
+## NHẬN XÉT LEADER
+- Đối chiếu từng tiêu chí C1..Cn: Đạt / Không đạt / Chưa đủ căn cứ + lý do ngắn.
+- Mâu thuẫn giữa các task; số liệu/khẳng định không có căn cứ trong nguồn; khoảng trống còn thiếu.
+- Task nào cần làm lại (nêu UUID) và vì sao.
+
+## DELIVERABLE
+Bản tổng hợp hoàn chỉnh, mở đầu bằng kết luận/khuyến nghị, có owner và hành động cụ thể khi phù hợp. Không đưa vào nội dung không có căn cứ.`;
 }
 
 function generateDirectorReviewPrompt(room) {
-  const latestLeader = [...room.reviews].reverse().find(r => r.level === 'leader');
-  const tasksSummary = room.assignments.map((t, i) => `- Task #${i + 1} | UUID: "${t.id}" | Title: ${t.title}\n  Output: ${t.output}`).join('\n\n');
-  const samplePass = {
-    protocolVersion: 1,
-    roomId: room.id,
-    roomVersion: room.version,
-    round: room.round,
-    stage: 'review',
-    decision: {
-      verdict: 'pass',
-      content: 'Đánh giá độc lập của Director: Các task và bản tổng hợp đã đáp ứng tiêu chí...',
-      targetIds: [],
-      finalResult: 'BÁO CÁO CHỐT CUỐI CÙNG...'
-    }
-  };
-  return `Bạn là Claude Pro — DIRECTOR thực hiện Lớp Review 2 cho Room "${room.title}".
-- roomId: "${room.id}" | roomVersion: ${room.version} | round: ${room.round}
+  const latestLeader = [...room.reviews].reverse().find(r => r.level === 'leader' && r.round === room.round) || [...room.reviews].reverse().find(r => r.level === 'leader');
+  const tasksSummary = room.assignments.map((t, i) => `- Task #${i + 1} | UUID: "${t.id}" | ${t.title} | Provider: ${t.providerId} | Trạng thái: ${t.status}${t.status === 'skipped' ? ' (NGOẠI LỆ — nội dung do chủ dự án nhập, không phải AI thực hiện)' : ''}
+  Tiêu chí task: ${t.acceptance}
+  Output:
+${t.output}`).join('\n\n');
+  const base = { protocolVersion: 1, roomId: room.id, roomVersion: room.version, round: room.round, stage: 'review' };
+  const samplePass = { ...base, decision: { verdict: 'pass', content: 'C1: Đạt — <căn cứ>. C2: Đạt — <căn cứ>. ...', targetIds: [], finalResult: '<Bản chốt cuối cùng hoàn chỉnh>' } };
+  const sampleRework = { ...base, decision: { verdict: 'rework', content: 'C1: Đạt. C2: Không đạt — <lý do và yêu cầu sửa cụ thể>.', targetIds: [room.assignments[0]?.id || '<UUID task cần làm lại>'], finalResult: '' } };
+  const lastRound = room.round >= room.maxRounds;
+  return `Bạn là Claude Pro — DIRECTOR thực hiện LỚP REVIEW 2 (duyệt cuối) cho hồ sơ "${room.title}". Đánh giá độc lập, không mặc định đồng ý với Leader.
+
+${PROMPT_PRINCIPLES}
+
+=== THÔNG TIN RÀNG BUỘC ===
+- roomId: "${room.id}" | roomVersion: ${room.version} | round: ${room.round}/${room.maxRounds}
+${lastRound ? '- LƯU Ý: Đây là vòng cuối theo giới hạn. Nếu chọn rework, hồ sơ sẽ chuyển ESCALATED để chủ dự án quyết định tăng vòng hoặc đóng không đạt.\n' : ''}
+=== BỐI CẢNH HỒ SƠ ===
+- Mục tiêu: ${room.objective}
+- Tiêu chí nghiệm thu:
+${criteriaBlock(room)}
+${roomSourceBlock(room)}
+
 === ĐẦU RA WORKER ===
 ${tasksSummary}
-=== NHẬN XÉT & BẢN TỔNG HỢP CỦA LEADER ===
-${latestLeader?.content || ''}
+
+=== NHẬN XÉT & BẢN TỔNG HỢP CỦA LEADER (Round ${latestLeader?.round ?? room.round}) ===
+${latestLeader?.content || '(Không có)'}
 Deliverable:
-${latestLeader?.deliverable || ''}
-=== MẪU JSON TRẢ VỀ ===
+${latestLeader?.deliverable || '(Leader không nộp deliverable)'}
+
+=== QUY TẮC QUYẾT ĐỊNH ===
+1. "pass" CHỈ KHI mọi tiêu chí C1..Cn đều Đạt và có căn cứ trong nguồn; khi đó targetIds = [] và finalResult là bản chốt hoàn chỉnh (có thể biên tập lại từ Deliverable của Leader).
+2. "rework" khi có bất kỳ tiêu chí Không đạt/Chưa đủ căn cứ:
+   - Lỗi nằm ở đầu ra task → targetIds = danh sách UUID task cần làm lại (lấy đúng UUID ở trên).
+   - Lỗi nằm ở bản tổng hợp của Leader → targetIds = [].
+   - finalResult phải là chuỗi rỗng "".
+3. "content" phải đánh giá lần lượt từng tiêu chí (Đạt / Không đạt / Chưa đủ căn cứ + lý do) và yêu cầu sửa cụ thể nếu rework.
+4. Trả về ĐÚNG MỘT khối JSON, không thêm trường. Hai mẫu dưới đây chỉ minh họa cấu trúc — chọn một.
+
+Mẫu PASS:
 \`\`\`json
 ${JSON.stringify(samplePass, null, 2)}
+\`\`\`
+
+Mẫu REWORK:
+\`\`\`json
+${JSON.stringify(sampleRework, null, 2)}
 \`\`\``;
+}
+
+function generateIndependentQAPrompt(room) {
+  return `Bạn là chuyên gia THẨM ĐỊNH ĐỘC LẬP (Independent QA). Bạn KHÔNG tham gia soạn thảo sản phẩm dưới đây. Nhiệm vụ: kiểm tra Final Deliverable đã được Director duyệt có đúng nguồn và đáp ứng tiêu chí không.
+
+${PROMPT_PRINCIPLES}
+
+=== NGUỒN ĐỂ ĐỐI CHIẾU ===
+- Mục tiêu: ${room.objective}
+- Tiêu chí nghiệm thu:
+${criteriaBlock(room)}
+${roomSourceBlock(room)}
+
+=== FINAL DELIVERABLE CẦN THẨM ĐỊNH (Round ${room.round}) ===
+${room.finalResult || '(Chưa có)'}
+
+=== YÊU CẦU ===
+1. Liệt kê từng số liệu/khẳng định quan trọng trong Final Deliverable và căn cứ tương ứng trong nguồn; đánh dấu rõ mục KHÔNG truy được nguồn.
+2. Đánh giá lần lượt từng tiêu chí C1..Cn: Đạt / Không đạt / Chưa đủ căn cứ.
+3. Nêu rủi ro còn tồn đọng hoặc điểm cần xác nhận với người có thẩm quyền.
+4. Kết luận một dòng: PASS (đạt) / FAIL (không đạt) / HOLD (chờ xác nhận thêm), kèm lý do.
+
+Định dạng trả về:
+## BẰNG CHỨNG ĐÃ ĐỐI CHIẾU
+## PHÁT HIỆN
+## KẾT LUẬN: PASS | FAIL | HOLD`;
+}
+
+// Tách phản hồi Leader thành 2 phần theo tiêu đề cố định
+function splitLeaderResponse(text) {
+  const t = String(text || '');
+  const m1 = t.search(/^\s*#{1,3}\s*NHẬN XÉT LEADER\s*$/im);
+  const m2 = t.search(/^\s*#{1,3}\s*DELIVERABLE\s*$/im);
+  if (m1 === -1 || m2 === -1 || m2 < m1) return null;
+  const review = t.slice(m1, m2).replace(/^\s*#{1,3}\s*NHẬN XÉT LEADER\s*$/im, '').trim();
+  const deliverable = t.slice(m2).replace(/^\s*#{1,3}\s*DELIVERABLE\s*$/im, '').trim();
+  return { review, deliverable };
 }
 
 // ============================================================================
 // 9. UI EVENT HANDLERS
 // ============================================================================
+function persistAndRender(successMsg) {
+  const ok = saveRoomsToStorage();
+  if (!ok) return false;
+  renderAll();
+  if (successMsg) showBanner(successMsg);
+  return true;
+}
+
 function applyClaudeDirectorDecision() {
   const room = getCurrentRoom();
   if (!room) return;
@@ -1534,12 +2049,14 @@ function applyClaudeDirectorDecision() {
     const res = engineApplyDirectorDecision(room, rawText);
     clearDraft('director_json');
     document.getElementById('directorRawInput').value = '';
-    saveRoomsToStorage();
-    renderAll();
-    showBanner(`Đã áp dụng quyết định Director (${res.stage || res.verdict}) thành công!`);
+    const msg = res.status === 'escalated'
+      ? 'Director yêu cầu Rework nhưng đã hết số vòng → hồ sơ chuyển ESCALATED, chờ anh/chị quyết định.'
+      : `Đã áp dụng quyết định Director (${res.stage || res.verdict}) thành công!`;
+    persistAndRender(msg);
   } catch (err) {
     errBox.textContent = err.message;
     errBox.classList.remove('hidden');
+    showBanner('Quyết định Director bị từ chối — xem chi tiết lỗi trong khung Director.', true);
   }
 }
 
@@ -1559,8 +2076,7 @@ function startWorkerTask(taskId) {
     task.status = 'doing';
     room.version += 1;
     room.updatedAt = nowISO();
-    saveRoomsToStorage();
-    renderAll();
+    persistAndRender();
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -1573,9 +2089,7 @@ function submitWorkerResponse(taskId) {
     const val = document.getElementById(`workerInput_${taskId}`)?.value || '';
     engineSubmitWorkerResponse(room, taskId, val);
     clearDraft(`task_${taskId}`);
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã lưu kết quả Worker!');
+    persistAndRender(room.status === 'leader_review' ? 'Đã lưu kết quả Worker. Tất cả task đã có đầu ra → chuyển bước Leader Review.' : 'Đã lưu kết quả Worker!');
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -1584,11 +2098,11 @@ function submitWorkerResponse(taskId) {
 function handleTaskChangeProviderUI(taskId, newProviderId) {
   const room = getCurrentRoom();
   if (!room) return;
+  const reason = prompt(`Lý do đổi Provider sang ${PROVIDERS[newProviderId]?.name || newProviderId} (tối thiểu 10 ký tự):`, '');
+  if (reason === null) { renderAll(); return; }
   try {
-    engineReassignTaskProvider(room, taskId, newProviderId, 'Chủ dự án điều chỉnh phân công Worker trên giao diện');
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã đổi Provider cho Task và ghi nhật ký kiểm toán.');
+    engineReassignTaskProvider(room, taskId, newProviderId, reason);
+    persistAndRender('Đã đổi Provider cho Task và ghi nhật ký kiểm toán.');
   } catch (e) {
     renderAll();
     showBanner(e.message, true);
@@ -1599,15 +2113,25 @@ function handleTaskExceptionBypassUI(taskId) {
   const room = getCurrentRoom();
   if (!room) return;
   const val = document.getElementById(`workerInput_${taskId}`)?.value || '';
+  if (!confirm('Đánh dấu NGOẠI LỆ: nội dung trong ô kết quả sẽ được ghi nhận là đầu ra thay thế do chủ dự án nhập (không phải AI thực hiện) và được gắn nhãn rõ trong hồ sơ. Tiếp tục?')) return;
   try {
     engineSkipBlockedOrUnresponsiveTask(room, taskId, val);
     clearDraft(`task_${taskId}`);
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã ghi nhận ngoại lệ Worker và mở chốt tiến độ!');
+    persistAndRender('Đã ghi nhận ngoại lệ Worker và mở chốt tiến độ!');
   } catch (e) {
-    showBanner('Để đánh dấu Ngoại lệ/Thay thế Worker, hãy nhập lý do & nội dung thay thế (≥10 ký tự) vào ô kết quả của Task trước: ' + e.message, true);
+    showBanner(e.message, true);
   }
+}
+
+function splitLeaderResponseUI() {
+  const raw = document.getElementById('leaderReviewInput').value;
+  const parts = splitLeaderResponse(raw);
+  if (!parts) return showBanner('Không tìm thấy đủ 2 tiêu đề "## NHẬN XÉT LEADER" và "## DELIVERABLE" trong nội dung dán.', true);
+  document.getElementById('leaderReviewInput').value = parts.review;
+  document.getElementById('leaderDeliverableInput').value = parts.deliverable;
+  saveDraft('leader_review', parts.review);
+  saveDraft('leader_deliverable', parts.deliverable);
+  showBanner('Đã tách Nhận xét và Deliverable của Leader.');
 }
 
 function submitLeaderReview() {
@@ -1621,12 +2145,19 @@ function submitLeaderReview() {
     clearDraft('leader_deliverable');
     document.getElementById('leaderReviewInput').value = '';
     document.getElementById('leaderDeliverableInput').value = '';
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã lưu Leader Review! Room chuyển sang DIRECTOR_REVIEW.');
+    persistAndRender('Đã lưu Leader Review! Room chuyển sang DIRECTOR_REVIEW.');
   } catch (e) {
     showBanner(e.message, true);
   }
+}
+
+function renderQAHoldFields() {
+  const room = getCurrentRoom();
+  const box = document.getElementById('qaHoldResolutionBox');
+  if (!room || !box) return;
+  const verdict = document.getElementById('qaVerdictInput').value;
+  const needs = room.status === 'approved' && verdict === 'pass' && unresolvedHolds(room, room.round).length > 0;
+  box.classList.toggle('hidden', !needs);
 }
 
 function submitIndependentQARecord() {
@@ -1637,12 +2168,11 @@ function submitIndependentQARecord() {
     const verdict = document.getElementById('qaVerdictInput').value;
     const evidence = document.getElementById('qaEvidenceInput').value;
     const findings = document.getElementById('qaFindingsInput').value;
-    engineRecordIndependentQA(room, { source, verdict, evidence, findings });
-    clearDraft('qa_evidence');
-    clearDraft('qa_findings');
-    saveRoomsToStorage();
-    renderAll();
-    showBanner(`Đã lưu bản ghi Thẩm định Independent QA (${verdict.toUpperCase()})!`);
+    const resolutionNote = document.getElementById('qaResolutionInput').value;
+    if (verdict === 'fail' && !confirm('Ghi nhận QA FAIL sẽ CHẶN VĨNH VIỄN vòng hiện tại (không thể ghi đè bằng PASS). Tiếp tục?')) return;
+    engineRecordIndependentQA(room, { source, verdict, evidence, findings, resolutionNote });
+    ['qa_evidence', 'qa_findings', 'qa_verdict', 'qa_resolution'].forEach(clearDraft);
+    persistAndRender(`Đã lưu bản ghi Thẩm định Independent QA (${verdict.toUpperCase()})!`);
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -1659,11 +2189,10 @@ function handleFinalSubmitRoom() {
       keyEdits: document.getElementById('dnEdits').value,
       uncertainties: document.getElementById('dnUncertainties').value
     };
+    if (!confirm('Xác nhận khóa hồ sơ ở trạng thái COMPLETED? Sau khi khóa, hồ sơ được niêm phong và không thể chỉnh sửa.')) return;
     engineFinalSubmitRoom(room, payload);
     ['dn_rationale', 'dn_rejected', 'dn_minority', 'dn_edits', 'dn_uncertainties'].forEach(clearDraft);
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Hồ sơ đã hoàn tất nghiệm thu và khóa ở trạng thái COMPLETED!');
+    persistAndRender('Hồ sơ đã hoàn tất nghiệm thu, khóa và niêm phong ở trạng thái COMPLETED!');
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -1672,13 +2201,53 @@ function handleFinalSubmitRoom() {
 function reopenRejectedAlternativeModal() {
   const room = getCurrentRoom();
   if (!room) return;
-  const reason = prompt('Nhập lý do yêu cầu mở lại phương án từng bị bác bỏ (lịch sử quyết định cũ vẫn được bảo toàn):', 'Cần đánh giá lại phương án thay thế do thay đổi điều kiện thương mại');
+  const reason = prompt(`Lý do mở vòng rà soát mới (tối thiểu ${MIN_QA_TEXT} ký tự). Final Result hiện tại sẽ được lưu vào lịch sử:`, '');
   if (reason === null) return;
   try {
     engineReopenRejectedAlternative(room, reason);
-    saveRoomsToStorage();
-    renderAll();
-    showBanner(`Đã mở lại hồ sơ sang Round ${room.round} (trạng thái LEADER_REVIEW)!`);
+    persistAndRender(`Đã mở vòng rà soát mới — Round ${room.round} (LEADER_REVIEW).`);
+  } catch (e) {
+    showBanner(e.message, true);
+  }
+}
+
+function handleEscalationExtend() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  const newMax = prompt(`Số vòng tối đa mới (lớn hơn ${room.round}, tối đa 10):`, String(Math.min(10, room.round + 1)));
+  if (newMax === null) return;
+  const reason = prompt('Lý do tăng số vòng (tối thiểu 10 ký tự):', '');
+  if (reason === null) return;
+  try {
+    engineResolveEscalationExtend(room, parseInt(newMax, 10), reason);
+    persistAndRender(`Đã tăng giới hạn lên ${room.maxRounds} vòng và áp dụng yêu cầu Rework (Round ${room.round}).`);
+  } catch (e) {
+    showBanner(e.message, true);
+  }
+}
+
+function handleCloseRejected() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  const reason = prompt(`ĐÓNG HỒ SƠ — KHÔNG ĐẠT. Hồ sơ sẽ bị khóa vĩnh viễn và niêm phong.\nNhập lý do (tối thiểu ${MIN_CLOSE_REASON} ký tự):`, '');
+  if (reason === null) return;
+  try {
+    engineCloseRejected(room, reason);
+    persistAndRender('Đã đóng hồ sơ ở trạng thái KHÔNG ĐẠT (đã niêm phong).');
+  } catch (e) {
+    showBanner(e.message, true);
+  }
+}
+
+function handleCreateSuccessorRoom() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  if (rooms.length >= 100) return showBanner('Đã đạt giới hạn tối đa 100 Room.', true);
+  try {
+    const successor = engineCreateSuccessorRoom(room);
+    rooms.unshift(successor);
+    currentRoomId = successor.id;
+    persistAndRender('Đã tạo Room kế thừa. Hồ sơ gốc giữ nguyên niêm phong.');
   } catch (e) {
     showBanner(e.message, true);
   }
@@ -1687,36 +2256,35 @@ function reopenRejectedAlternativeModal() {
 // ============================================================================
 // 10. BACKUP EXPORT / IMPORT (Hỗ trợ cả 1 Room và All Rooms + Xem trước)
 // ============================================================================
+function downloadBlob(content, mime, filename) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function exportCurrentRoomJSON() {
   const room = getCurrentRoom();
   if (!room) return;
-  const payload = { format: 'aiteam-room', formatVersion: 1, exportedAt: nowISO(), room };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `aiteam-room-${room.id.slice(0, 8)}-v${room.version}.json`;
-  a.click();
+  const payload = { format: 'aiteam-room', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), room };
+  downloadBlob(JSON.stringify(payload, null, 2), 'application/json', `aiteam-room-${room.id.slice(0, 8)}-v${room.version}.json`);
 }
 
 function exportAllRooms() {
   if (rooms.length === 0) return showBanner('Chưa có Room nào để sao lưu.', true);
-  const payload = { format: 'aiteam-backup-all', formatVersion: 1, exportedAt: nowISO(), rooms };
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `aiteam-all-rooms-${nowISO().slice(0, 10)}.json`;
-  a.click();
+  const payload = { format: 'aiteam-backup-all', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), rooms };
+  downloadBlob(JSON.stringify(payload, null, 2), 'application/json', `aiteam-all-rooms-${nowISO().slice(0, 10)}.json`);
 }
 
 function exportCurrentRoomMarkdown() {
   const room = getCurrentRoom();
   if (!room) return;
-  const md = generateFullMarkdownReport(room);
-  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `aiteam-full-report-${room.id.slice(0, 8)}.md`;
-  a.click();
+  downloadBlob(generateFullMarkdownReport(room), 'text/markdown;charset=utf-8', `aiteam-full-report-${room.id.slice(0, 8)}.md`);
 }
 
 function triggerImportBackup() { document.getElementById('importFileInput').click(); }
@@ -1750,6 +2318,32 @@ function parseAndValidateBackupPayload(rawString) {
   return listToImport;
 }
 
+// Chuẩn bị bản ghi import (dùng chung cho UI và test): chuẩn hóa, giữ cờ Demo, đánh giá toàn vẹn
+function prepareImportedRoom(src, existingIds) {
+  const norm = normalizeRoomRecord(src);
+  const hasCollision = existingIds.has(norm.id);
+  const finalId = hasCollision ? uuidv4() : norm.id;
+  const imported = {
+    ...norm,
+    id: finalId,
+    status: norm.status === 'approved' ? 'director_review' : norm.status,
+    notifyOwner: false,
+    messages: [...(norm.messages || []), {
+      id: uuidv4(), sender: 'Backup Restore Engine',
+      content: `Đã nạp từ file Backup (ID gốc: ${src.id}${hasCollision ? ' -> Cấp UUID mới do trùng ID' : ''}).`, createdAt: nowISO()
+    }]
+  };
+  if (hasCollision && imported.sealHash) {
+    // ID là một phần nội dung niêm phong: đổi ID → kiểm tra niêm phong theo ID gốc rồi niêm phong lại với ID mới
+    const original = { ...imported, id: norm.id };
+    imported.integrityFlag = computeSealHash(original) === imported.sealHash ? '' : 'seal_mismatch';
+    if (!imported.integrityFlag) sealRoom(imported);
+  } else {
+    applyIntegrityChecks([imported], 'Import backup');
+  }
+  return imported;
+}
+
 function handleImportBackupFile(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -1758,16 +2352,20 @@ function handleImportBackupFile(event) {
     try {
       const validatedList = parseAndValidateBackupPayload(e.target.result);
       if (rooms.length + validatedList.length > 100) {
-        throw new Error(` vượt quá giới hạn 100 Room (Hiện có: ${rooms.length}, Nhập thêm: ${validatedList.length}).`);
+        throw new Error(`Vượt quá giới hạn 100 Room (Hiện có: ${rooms.length}, Nhập thêm: ${validatedList.length}).`);
       }
       pendingImportRooms = validatedList;
+      const ids = new Set(rooms.map(r => r.id));
       const summaryEl = document.getElementById('importPreviewSummary');
-      summaryEl.innerHTML = validatedList.map((r, i) => `
+      summaryEl.innerHTML = validatedList.map((r, i) => {
+        const prev = prepareImportedRoom(JSON.parse(JSON.stringify(r)), ids);
+        const flag = prev.integrityFlag ? `<span class="font-bold text-red-700"> | CẢNH BÁO: ${escapeHtml(prev.integrityFlag)}</span>` : '';
+        return `
         <div class="p-2 bg-white border border-stone-200 rounded">
-          <div class="font-bold text-stone-900">${i + 1}. ${escapeHtml(r.title)}</div>
-          <div class="text-[11px] text-stone-600">ID gốc: <code>${escapeHtml(r.id)}</code> | Trạng thái gốc: <code>${escapeHtml(r.status)}</code> &rarr; Sau import: <code>${r.status === 'approved' ? 'director_review' : escapeHtml(r.status)}</code> | Tasks: ${r.assignments?.length || 0} | Reviews: ${r.reviews?.length || 0}</div>
-        </div>
-      `).join('');
+          <div class="font-bold text-stone-900">${i + 1}. ${escapeHtml(r.title)} ${prev.isDemo ? '<span class="px-1 rounded bg-amber-600 text-white text-[10px]">DEMO</span>' : ''}</div>
+          <div class="text-[11px] text-stone-600">ID gốc: <code>${escapeHtml(r.id)}</code> | Trạng thái gốc: <code>${escapeHtml(r.status)}</code> &rarr; Sau import: <code>${escapeHtml(prev.status)}</code> | Phân loại: ${escapeHtml(DATA_CLASSES[prev.dataClass]?.label)} | Tasks: ${r.assignments?.length || 0} | Reviews: ${r.reviews?.length || 0}${flag}</div>
+        </div>`;
+      }).join('');
       document.getElementById('importPreviewModal').classList.remove('hidden');
     } catch (err) {
       pendingImportRooms = [];
@@ -1787,60 +2385,82 @@ function closeImportPreviewModal() {
 function confirmImportRooms() {
   if (!pendingImportRooms.length) return;
   const existingIds = new Set(rooms.map(r => r.id));
+  let flagged = 0;
   for (const src of pendingImportRooms) {
-    const norm = normalizeRoomRecord(src);
-    const hasCollision = existingIds.has(norm.id);
-    const finalId = hasCollision ? uuidv4() : norm.id;
-    existingIds.add(finalId);
-    const newStatus = norm.status === 'approved' ? 'director_review' : norm.status;
-    const importedRoom = {
-      ...norm,
-      id: finalId,
-      status: newStatus,
-      notifyOwner: false,
-      messages: [
-        ...(norm.messages || []),
-        {
-          id: uuidv4(),
-          sender: 'Backup Restore Engine',
-          content: `Đã nạp từ file Backup (ID gốc: ${src.id}${hasCollision ? ' -> Cấp UUID mới do trùng ID' : ''}).`,
-          createdAt: nowISO()
-        }
-      ]
-    };
+    const importedRoom = prepareImportedRoom(src, existingIds);
+    existingIds.add(importedRoom.id);
+    if (importedRoom.integrityFlag) flagged++;
     rooms.unshift(importedRoom);
     currentRoomId = importedRoom.id;
   }
   pendingImportRooms = [];
   document.getElementById('importPreviewModal').classList.add('hidden');
-  saveRoomsToStorage();
-  renderAll();
-  showBanner('Đã khôi phục dữ liệu Backup an toàn!');
+  persistAndRender(flagged ? `Đã nhập dữ liệu. ${flagged} hồ sơ bị gắn cờ chưa xác thực/sai niêm phong.` : 'Đã khôi phục dữ liệu Backup an toàn!');
 }
 
 // ============================================================================
-// 11. DEMO MODE & ROOM CREATION
+// 11. DEMO MODE, PROMPT COPY (có DLP) & ROOM CREATION
 // ============================================================================
 function openProviderSite(pid) { window.open(PROVIDERS[pid]?.url || PROVIDERS.claude.url, '_blank', 'noopener,noreferrer'); }
-function copyText(txt, lbl) { navigator.clipboard.writeText(txt).then(() => showBanner(`Đã sao chép ${lbl}!`)); }
+
+function copyText(txt, lbl) {
+  if (!navigator.clipboard || !navigator.clipboard.writeText) {
+    showBanner('Trình duyệt không cho phép sao chép tự động. Hãy dùng trình duyệt khác hoặc mở trang qua https.', true);
+    return Promise.resolve(false);
+  }
+  return navigator.clipboard.writeText(txt)
+    .then(() => { showBanner(`Đã sao chép ${lbl} (${txt.length.toLocaleString('vi-VN')} ký tự)!`); return true; })
+    .catch(err => { showBanner(`Không sao chép được ${lbl}: ${err.message || err}. Hãy bấm vào trang rồi thử lại.`, true); return false; });
+}
+
+// Kiểm soát dữ liệu đi ra ngoài: chặn provider bị cấm theo phân loại, cảnh báo DLP và ghi nhật ký (chỉ ghi loại phát hiện)
+function copyPromptWithDlp(room, text, label, providerId) {
+  try {
+    if (providerId) assertProviderAllowed(room, providerId, label);
+  } catch (e) { showBanner(e.message, true); return; }
+  const findings = scanSensitiveData(text);
+  const target = PROVIDERS[providerId]?.name || 'AI bên ngoài';
+  if (findings.length) {
+    const ok = confirm(`CẢNH BÁO DLP — Prompt "${label}" gửi tới ${target} có dấu hiệu dữ liệu nhạy cảm:\n• ${findings.join('\n• ')}\n\nPhân loại Room: ${DATA_CLASSES[room.dataClass]?.label}. Hãy tự kiểm tra cài đặt dữ liệu của tài khoản AI trước khi dán.\nVẫn sao chép?`);
+    if (!ok) return;
+    room.messages.push({ id: uuidv4(), sender: 'DLP Outbound Control', content: `Chủ dự án xác nhận sao chép "${label}" tới ${target} dù có cảnh báo: ${findings.join('; ')}.`, createdAt: nowISO() });
+    room.updatedAt = nowISO();
+    saveRoomsToStorage();
+  }
+  copyText(text, label);
+}
 
 function copyDirectorPrompt(stage) {
   const room = getCurrentRoom();
   if (!room) return;
-  copyText(stage === 'plan' ? generateDirectorPlanPrompt(room) : generateDirectorReviewPrompt(room), 'Prompt Director');
+  if (stage === 'plan' && room.status !== 'planning') return showBanner('Prompt Kế hoạch chỉ dùng ở bước PLANNING.', true);
+  if (stage === 'review' && room.status !== 'director_review') return showBanner('Prompt Duyệt cuối chỉ dùng ở bước DIRECTOR_REVIEW.', true);
+  copyPromptWithDlp(room, stage === 'plan' ? generateDirectorPlanPrompt(room) : generateDirectorReviewPrompt(room), stage === 'plan' ? 'Prompt Kế hoạch (Director)' : 'Prompt Duyệt cuối (Director)', 'claude');
 }
 function copyWorkerPrompt(taskId, idx) {
   const room = getCurrentRoom();
   if (!room) return;
   const task = room.assignments.find(a => a.id === taskId);
   if (!task) return;
+  const text = generateWorkerPrompt(room, task, idx);
   if (task.status === 'waiting' || task.status === 'rework') startWorkerTask(taskId);
-  copyText(generateWorkerPrompt(room, task, idx), `Prompt Task #${idx + 1}`);
+  copyPromptWithDlp(room, text, `Prompt Task #${idx + 1}`, task.providerId);
 }
 function copyLeaderPrompt() {
   const room = getCurrentRoom();
   if (!room) return;
-  copyText(generateLeaderPrompt(room), 'Prompt Leader');
+  if (room.status !== 'leader_review') return showBanner('Prompt Leader chỉ dùng ở bước LEADER_REVIEW.', true);
+  copyPromptWithDlp(room, generateLeaderPrompt(room), 'Prompt Leader', room.leader);
+}
+function copyQAPrompt() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  if (room.status !== 'approved') return showBanner('Prompt QA độc lập chỉ dùng khi Director đã PASS (trạng thái APPROVED).', true);
+  const src = document.getElementById('qaSourceInput').value;
+  const pid = /gemini/i.test(src) ? 'gemini' : /chatgpt/i.test(src) ? 'chatgpt' : null;
+  room.qaPromptCopiedAt = nowISO();
+  saveRoomsToStorage();
+  copyPromptWithDlp(room, generateIndependentQAPrompt(room), 'Prompt QA độc lập', pid);
 }
 
 function fillSampleClaudeEnvelope() {
@@ -1880,9 +2500,7 @@ function handleChangeLeader(val) {
   if (!room) return;
   try {
     engineChangeLeader(room, val);
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã cập nhật Leader AI.');
+    persistAndRender('Đã cập nhật Leader AI.');
   } catch (e) {
     renderAll();
     showBanner(e.message, true);
@@ -1894,61 +2512,134 @@ function handleChangeMaxRounds(val) {
   if (!room) return;
   try {
     engineChangeMaxRounds(room, parseInt(val, 10));
-    saveRoomsToStorage();
-    renderAll();
-    showBanner('Đã cập nhật giới hạn vòng (maxRounds).');
+    persistAndRender('Đã cập nhật giới hạn vòng (maxRounds).');
   } catch (e) {
     renderAll();
     showBanner(e.message, true);
   }
 }
 
-function openNewRoomModal() { document.getElementById('newRoomModal').classList.remove('hidden'); }
-function closeNewRoomModal() { document.getElementById('newRoomModal').classList.add('hidden'); }
+// ---- Modal tạo / sửa Room ----
+let editingRoomId = null;
+let dlpAckSignature = '';
+let lastFocusBeforeModal = null;
+function setRoomModalFields(r) {
+  document.getElementById('newRoomTitle').value = r?.title || '';
+  document.getElementById('newRoomCategory').value = r?.category || 'Tham vấn Quản trị & Rủi ro';
+  document.getElementById('newRoomLeader').value = r?.leader || 'gemini';
+  document.getElementById('newRoomDataClass').value = r?.dataClass || 'internal';
+  document.getElementById('newRoomOwner').value = r?.owner || '';
+  document.getElementById('newRoomDueDate').value = r?.dueDate || '';
+  document.getElementById('newRoomDecisionMaker').value = r?.decisionMaker || '';
+  document.getElementById('newRoomInstruction').value = r?.instruction || '';
+  document.getElementById('newRoomContext').value = r?.context || '';
+  document.getElementById('dlpWarningBox').classList.add('hidden');
+  dlpAckSignature = '';
+}
+function showRoomModal() {
+  lastFocusBeforeModal = document.activeElement;
+  document.getElementById('newRoomModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('newRoomTitle').focus(), 0);
+}
+function openNewRoomModal() {
+  editingRoomId = null;
+  setRoomModalFields(null);
+  document.getElementById('newRoomModalTitle').textContent = 'Khởi tạo Room Nghiệp Vụ Mới';
+  document.getElementById('btnCreateRoomSubmit').textContent = 'Tạo Room & Sinh Prompt Plan';
+  showRoomModal();
+}
+function openEditRoomModal() {
+  const room = getCurrentRoom();
+  if (!room) return;
+  if (room.status !== 'planning') return showBanner('Chỉ sửa được thông tin Room ở bước PLANNING.', true);
+  editingRoomId = room.id;
+  setRoomModalFields(room);
+  document.getElementById('newRoomModalTitle').textContent = 'Sửa thông tin Room (PLANNING)';
+  document.getElementById('btnCreateRoomSubmit').textContent = 'Lưu thay đổi';
+  showRoomModal();
+}
+function closeNewRoomModal() {
+  document.getElementById('newRoomModal').classList.add('hidden');
+  editingRoomId = null;
+  if (lastFocusBeforeModal && lastFocusBeforeModal.focus) lastFocusBeforeModal.focus();
+}
 
 function createRoomSubmit() {
-  if (rooms.length >= 100) return showBanner('FR-ROOM-01: Đã đạt giới hạn tối đa 100 Room.', true);
-  const title = document.getElementById('newRoomTitle').value.trim();
-  const category = document.getElementById('newRoomCategory').value.trim();
-  const leader = document.getElementById('newRoomLeader').value;
-  const instruction = document.getElementById('newRoomInstruction').value.trim();
-  const context = document.getElementById('newRoomContext').value.trim();
+  const f = id => document.getElementById(id).value.trim();
+  const payload = {
+    title: f('newRoomTitle'), category: f('newRoomCategory'), leader: document.getElementById('newRoomLeader').value,
+    dataClass: document.getElementById('newRoomDataClass').value, owner: f('newRoomOwner'), dueDate: f('newRoomDueDate'),
+    decisionMaker: f('newRoomDecisionMaker'), instruction: f('newRoomInstruction'), context: f('newRoomContext')
+  };
+  if (!editingRoomId && rooms.length >= 100) return showBanner('FR-ROOM-01: Đã đạt giới hạn tối đa 100 Room.', true);
+  if (payload.title.length < 1 || payload.title.length > 160) return showBanner('Tiêu đề Room phải từ 1–160 ký tự.', true);
+  if (payload.instruction.length < 5 || payload.instruction.length > 12000) return showBanner('Chỉ đạo (Instruction) phải từ 5–12.000 ký tự.', true);
+  if (payload.context.length > 24000) return showBanner('Bối cảnh (Context) tối đa 24.000 ký tự.', true);
+  if ((RESTRICTED_PROVIDERS_BY_CLASS[payload.dataClass] || []).includes(payload.leader)) {
+    return showBanner(`Room phân loại "${DATA_CLASSES[payload.dataClass].label}" không được chọn Leader ${PROVIDERS[payload.leader].name}.`, true);
+  }
 
-  if (title.length < 1 || title.length > 160) return showBanner('Tiêu đề Room phải từ 1–160 ký tự.', true);
-  if (instruction.length < 5 || instruction.length > 12000) return showBanner('Chỉ đạo (Instruction) phải từ 5–12.000 ký tự.', true);
-  if (context.length > 24000) return showBanner('Bối cảnh (Context) tối đa 24.000 ký tự.', true);
-
-  const dlp = scanSensitiveData(instruction + '\n' + context);
-  if (dlp.length > 0) {
-    const box = document.getElementById('dlpWarningBox');
-    box.textContent = 'Cảnh báo DLP hỗ trợ: ' + dlp.join(' ') + ' (Lưu ý: Hãy tự rà soát kỹ trước khi đưa dữ liệu lên AI consumer).';
+  // DLP: cảnh báo lần 1, cho phép tạo khi người dùng xác nhận đã rà soát (bấm lần 2 với cùng nội dung)
+  const dlp = scanSensitiveData(payload.title + '\n' + payload.instruction + '\n' + payload.context);
+  const signature = sha256Hex(payload.instruction + '\n' + payload.context);
+  const box = document.getElementById('dlpWarningBox');
+  if (dlp.length > 0 && dlpAckSignature !== signature) {
+    box.textContent = `Cảnh báo DLP: ${dlp.join('; ')}. Nội dung này sẽ được gửi tới các AI consumer khi sao chép prompt. Hãy rà soát/ẩn bớt dữ liệu nhạy cảm, hoặc chọn phân loại MẬT. Bấm nút lưu lần nữa nếu đã rà soát và vẫn muốn tiếp tục.`;
     box.classList.remove('hidden');
+    dlpAckSignature = signature;
+    document.getElementById('btnCreateRoomSubmit').textContent = editingRoomId ? 'Vẫn lưu (đã rà soát)' : 'Vẫn tạo (đã rà soát)';
     return;
   }
 
+  if (editingRoomId) {
+    const room = rooms.find(r => r.id === editingRoomId);
+    try {
+      const n = engineEditRoomInfo(room, payload);
+      if (dlp.length) room.messages.push({ id: uuidv4(), sender: 'DLP Control', content: `Lưu thông tin Room với cảnh báo DLP đã được xác nhận: ${dlp.join('; ')}.`, createdAt: nowISO() });
+      closeNewRoomModal();
+      persistAndRender(n ? `Đã lưu ${n} thay đổi.` : 'Không có thay đổi.');
+    } catch (e) {
+      showBanner(e.message, true);
+    }
+    return;
+  }
+
+  const messages = [{ id: uuidv4(), sender: 'System', content: 'Khởi tạo Room nghiệp vụ thật ở trạng thái PLANNING.', createdAt: nowISO() }];
+  if (dlp.length) messages.push({ id: uuidv4(), sender: 'DLP Control', content: `Tạo Room với cảnh báo DLP đã được chủ dự án xác nhận: ${dlp.join('; ')}.`, createdAt: nowISO() });
   const newRoom = normalizeRoomRecord({
-    id: uuidv4(), version: 1, title, category: category || 'Điều phối chung', instruction, context,
-    status: 'planning', isDemo: false, objective: '', criteria: [], leader, leaderReason: '', assignments: [],
-    messages: [{ id: uuidv4(), sender: 'System', content: 'Khởi tạo Room nghiệp vụ thật ở trạng thái PLANNING.', createdAt: nowISO() }],
-    reviews: [], qaRecords: [], decisionHistory: [], decisionNote: null, notifications: [], round: 1, maxRounds: 3, finalResult: '',
+    id: uuidv4(), version: 1, title: payload.title, category: payload.category || 'Điều phối chung', instruction: payload.instruction, context: payload.context,
+    dataClass: payload.dataClass, owner: payload.owner, dueDate: payload.dueDate, decisionMaker: payload.decisionMaker,
+    status: 'planning', isDemo: false, objective: '', criteria: [], leader: payload.leader, leaderReason: '', assignments: [],
+    messages, reviews: [], qaRecords: [], decisionHistory: [], decisionNote: null, notifications: [], round: 1, maxRounds: 3, finalResult: '',
     createdAt: nowISO(), updatedAt: nowISO()
   });
   rooms.unshift(newRoom);
   currentRoomId = newRoom.id;
-  saveRoomsToStorage();
   closeNewRoomModal();
-  renderAll();
-  showBanner('Đã tạo Room nghiệp vụ mới!');
+  persistAndRender('Đã tạo Room nghiệp vụ mới! Bước tiếp theo: Copy Prompt Kế Hoạch gửi Claude.');
 }
 
 function deleteCurrentRoom() {
   const room = getCurrentRoom();
   if (!room) return;
+  if (isImmutable(room) && !room.isDemo) {
+    const typed = prompt(`Hồ sơ "${room.title}" đã KHÓA (${room.status.toUpperCase()}). Hệ thống sẽ tự tải file JSON backup trước khi xóa.\nGõ đúng "XÓA HỒ SƠ" để xác nhận:`, '');
+    if (typed === null) return;
+    if (typed.trim() !== 'XÓA HỒ SƠ') return showBanner('Chuỗi xác nhận không đúng — chưa xóa hồ sơ.', true);
+    exportCurrentRoomJSON();
+  } else if (!confirm(`Xóa Room "${room.title}" (${room.status.toUpperCase()})? Thao tác không thể hoàn tác. Nên "Xuất JSON Room" trước.`)) {
+    return;
+  }
+  try {
+    const log = JSON.parse(localStorage.getItem(DELETED_LOG_KEY) || '[]');
+    log.push({ id: room.id, title: room.title, status: room.status, version: room.version, sealHash: room.sealHash || '', deletedAt: nowISO() });
+    localStorage.setItem(DELETED_LOG_KEY, JSON.stringify(log.slice(-500)));
+  } catch (e) {}
+  clearAllDraftsForRoom(room.id);
+  deletedThisSession.add(room.id);
   rooms = rooms.filter(r => r.id !== room.id);
   currentRoomId = rooms[0]?.id || null;
-  saveRoomsToStorage();
-  renderAll();
-  showBanner('Đã xóa Room.');
+  persistAndRender('Đã xóa Room (đã ghi nhật ký xóa).');
 }
 
 function loadDemoRoom() {
@@ -1972,45 +2663,60 @@ function loadDemoRoom() {
   });
   rooms.unshift(demo);
   currentRoomId = demo.id;
-  saveRoomsToStorage();
-  renderAll();
-  showBanner('Đã nạp Room Demo! Lưu ý: Room Demo không thể khóa thành hồ sơ nghiệm thu thật.');
+  persistAndRender('Đã nạp Room Demo! Lưu ý: Room Demo không thể khóa thành hồ sơ nghiệm thu thật.');
+}
+
+// Phím Esc đóng modal đang mở
+if (typeof document !== 'undefined' && document.addEventListener) {
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Escape') return;
+    if (!document.getElementById('newRoomModal').classList.contains('hidden')) closeNewRoomModal();
+    else if (!document.getElementById('importPreviewModal').classList.contains('hidden')) closeImportPreviewModal();
+    else if (!document.getElementById('selfTestModal').classList.contains('hidden')) document.getElementById('selfTestModal').classList.add('hidden');
+  });
 }
 
 // ============================================================================
-// 12. RENDER UI & EXECUTIVE DASHBOARD (An toàn XSS tuyệt đối)
+// 12. RENDER UI & EXECUTIVE DASHBOARD (An toàn XSS)
 // ============================================================================
-function renderDashboard() {
-  let active = 0, review = 0, blocked = 0, rework = 0, waitQA = 0, completed = 0;
-  // Chỉ tính trên các Room nghiệp vụ thật (không tính Room Demo vào số liệu điều hành)
-  const realRooms = rooms.filter(r => !r.isDemo);
-  realRooms.forEach(r => {
-    if (r.status === 'planning' || r.status === 'working') active++;
-    else if (r.status === 'leader_review' || r.status === 'director_review') review++;
-    else if (r.status === 'rework') rework++;
-    else if (r.status === 'approved') waitQA++;
-    else if (r.status === 'completed') completed++;
+const STATUS_BADGE = {
+  planning: 'bg-amber-100 text-amber-900', working: 'bg-amber-100 text-amber-900', rework: 'bg-red-100 text-red-900',
+  leader_review: 'bg-blue-100 text-blue-900', director_review: 'bg-blue-100 text-blue-900', approved: 'bg-purple-100 text-purple-900',
+  escalated: 'bg-red-700 text-white', completed: 'bg-emerald-700 text-white', closed_rejected: 'bg-stone-700 text-white'
+};
+function todayVN() {
+  try { return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }); } catch (e) { return nowISO().slice(0, 10); }
+}
+function isOverdue(r) { return Boolean(r.dueDate) && !isImmutable(r) && r.dueDate < todayVN(); }
 
+function renderDashboard() {
+  const c = { active: 0, review: 0, blocked: 0, rework: 0, waitQA: 0, escalated: 0, overdue: 0, closed: 0, completed: 0, unverified: 0 };
+  // Chỉ tính trên các Room nghiệp vụ thật (không tính Room Demo vào số liệu điều hành)
+  rooms.filter(r => !r.isDemo).forEach(r => {
+    if (r.status === 'planning' || r.status === 'working') c.active++;
+    else if (r.status === 'leader_review' || r.status === 'director_review') c.review++;
+    else if (r.status === 'rework') c.rework++;
+    else if (r.status === 'approved') c.waitQA++;
+    else if (r.status === 'escalated') c.escalated++;
+    else if (r.status === 'closed_rejected') c.closed++;
+    else if (r.status === 'completed') { if (r.integrityFlag) c.unverified++; else c.completed++; }
+    if (isOverdue(r)) c.overdue++;
     if (r.status === 'working' || r.status === 'rework') {
       (r.assignments || []).forEach(t => {
-        if (t.status !== 'submitted' && t.status !== 'skipped' && !areDependenciesReady(r, t)) {
-          blocked++;
-        }
+        if (t.status !== 'submitted' && t.status !== 'skipped' && !areDependenciesReady(r, t)) c.blocked++;
       });
     }
   });
-  document.getElementById('statActive').textContent = active;
-  document.getElementById('statReview').textContent = review;
-  document.getElementById('statBlocked').textContent = blocked;
-  document.getElementById('statRework').textContent = rework;
-  document.getElementById('statWaitQA').textContent = waitQA;
-  document.getElementById('statCompleted').textContent = completed;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('statActive', c.active); set('statReview', c.review); set('statBlocked', c.blocked); set('statRework', c.rework);
+  set('statWaitQA', c.waitQA); set('statEscalated', c.escalated); set('statOverdue', c.overdue); set('statClosed', c.closed);
+  set('statCompleted', c.completed); set('statUnverified', c.unverified);
 }
 
 function renderProviderCatalog() {
   document.getElementById('providerCatalogList').innerHTML = Object.values(PROVIDERS).map(p => `
     <div class="flex items-center justify-between p-2 rounded bg-white border border-stone-200">
-      <div><span class="font-bold text-stone-800">${escapeHtml(p.name)}</span><span class="block text-[10px] text-stone-500">${escapeHtml(p.role)}</span></div>
+      <div><span class="font-bold text-stone-800">${escapeHtml(p.name)}</span><span class="block text-[11px] text-stone-500">${escapeHtml(p.role)}</span></div>
       <button onclick="openProviderSite('${escapeJsString(p.id)}')" class="px-2 py-1 text-[11px] font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 rounded">Mở ↗</button>
     </div>
   `).join('');
@@ -2026,13 +2732,16 @@ function renderRoomList() {
   listEl.innerHTML = rooms.map(r => {
     const safeId = escapeJsString(r.id);
     return `
-      <div onclick="selectRoom('${safeId}')" class="p-2.5 rounded border cursor-pointer transition ${r.id === currentRoomId ? 'bg-amber-50 border-amber-600 shadow-sm' : 'bg-white border-stone-200 hover:border-stone-400'}">
+      <div role="button" tabindex="0" onclick="selectRoom('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();selectRoom('${safeId}')}" class="p-2.5 rounded border cursor-pointer transition ${r.id === currentRoomId ? 'bg-amber-50 border-amber-600 shadow-sm' : 'bg-white border-stone-200 hover:border-stone-400'}">
         <div class="flex items-center justify-between gap-1 mb-1">
-          <div class="flex items-center gap-1">
-            <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-stone-200 text-stone-800">${escapeHtml(r.status)}</span>
-            ${r.isDemo ? `<span class="text-[9px] font-bold uppercase px-1 py-0.5 rounded bg-amber-600 text-white">DEMO</span>` : ''}
+          <div class="flex flex-wrap items-center gap-1">
+            <span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded ${STATUS_BADGE[r.status] || 'bg-stone-200 text-stone-800'}">${escapeHtml(r.status)}</span>
+            ${r.isDemo ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-amber-600 text-white">DEMO</span>` : ''}
+            ${r.dataClass === 'confidential' ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-red-700 text-white">MẬT</span>` : ''}
+            ${r.integrityFlag ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-red-100 text-red-800">CHƯA XÁC THỰC</span>` : ''}
+            ${isOverdue(r) ? `<span class="text-[10px] font-bold uppercase px-1 py-0.5 rounded bg-red-100 text-red-800">QUÁ HẠN</span>` : ''}
           </div>
-          <span class="mono text-[10px] text-stone-500">v${Number(r.version)} • R${Number(r.round)}/${Number(r.maxRounds)}</span>
+          <span class="mono text-[11px] text-stone-500">v${Number(r.version)} • R${Number(r.round)}/${Number(r.maxRounds)}</span>
         </div>
         <div class="text-xs font-bold text-stone-900 line-clamp-2">${escapeHtml(r.title)}</div>
       </div>
@@ -2040,7 +2749,12 @@ function renderRoomList() {
   }).join('');
 }
 
-function selectRoom(id) { currentRoomId = id; saveRoomsToStorage(); renderAll(); }
+function selectRoom(id) { currentRoomId = id; try { localStorage.setItem(ACTIVE_ROOM_KEY, id); } catch (e) {} renderAll(); }
+
+const STAGE_PANEL = {
+  planning: ['directorPanel'], working: ['tasksPanel'], rework: ['tasksPanel'], leader_review: ['leaderPanel'],
+  director_review: ['directorPanel'], approved: ['independentQAPanel', 'submitGatePanel'], escalated: [], completed: [], closed_rejected: []
+};
 
 function renderActiveRoom() {
   const room = getCurrentRoom();
@@ -2048,30 +2762,74 @@ function renderActiveRoom() {
   if (!room) { emptyEl.classList.remove('hidden'); activeEl.classList.add('hidden'); return; }
   emptyEl.classList.add('hidden'); activeEl.classList.remove('hidden');
 
-  const isCompleted = room.status === 'completed';
+  const isCompleted = isImmutable(room);
   document.getElementById('demoRoomBanner').className = room.isDemo ? 'bg-amber-100 border-2 border-amber-500 text-amber-950 rounded-lg p-3 text-xs flex items-center justify-between' : 'hidden';
   document.getElementById('roomDemoBadge').className = room.isDemo ? 'px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-amber-600 text-white' : 'hidden';
   document.getElementById('btnFillSampleEnvelope').className = room.isDemo ? 'text-[11px] text-amber-400 hover:underline' : 'hidden';
 
-  document.getElementById('roomStatusBadge').textContent = room.status.toUpperCase();
+  const badge = document.getElementById('roomStatusBadge');
+  badge.textContent = room.status.toUpperCase();
+  badge.className = `px-2 py-0.5 text-xs font-bold uppercase rounded ${STATUS_BADGE[room.status] || 'bg-stone-200 text-stone-800'}`;
+  const dcb = document.getElementById('roomDataClassBadge');
+  dcb.textContent = 'Dữ liệu: ' + (DATA_CLASSES[room.dataClass]?.label || room.dataClass);
+  dcb.className = `px-2 py-0.5 text-[10px] font-bold uppercase rounded ${DATA_CLASSES[room.dataClass]?.badge || ''}`;
+  const ib = document.getElementById('roomIntegrityBadge');
+  if (isCompleted) {
+    ib.textContent = room.integrityFlag ? (room.integrityFlag === 'seal_mismatch' ? 'SAI NIÊM PHONG' : 'CHƯA XÁC THỰC') : 'ĐÃ NIÊM PHONG';
+    ib.className = `px-2 py-0.5 text-[10px] font-bold uppercase rounded ${room.integrityFlag ? 'bg-red-700 text-white' : 'bg-emerald-100 text-emerald-900'}`;
+    ib.title = room.sealHash ? `SHA-256: ${room.sealHash}` : '';
+  } else {
+    ib.className = 'hidden';
+  }
   document.getElementById('roomMetaInfo').textContent = `ID: ${room.id} | Ver: ${room.version} | Round: ${room.round}/${room.maxRounds} | ${room.category}`;
   document.getElementById('roomTitle').textContent = room.title;
+  document.getElementById('roomAccountability').textContent = `Owner: ${room.owner || '(chưa gán)'} • Hạn: ${room.dueDate || '(chưa đặt)'}${isOverdue(room) ? ' — QUÁ HẠN' : ''} • Cấp quyết định: ${room.decisionMaker || '(chưa xác định)'}`;
   document.getElementById('roomInstruction').textContent = room.instruction;
   document.getElementById('roomContext').textContent = room.context || '(Không có)';
+  document.getElementById('btnEditRoom').className = room.status === 'planning' ? 'px-2.5 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded' : 'hidden';
+
+  // Escalation & immutable panels
+  const escPanel = document.getElementById('escalationPanel');
+  if (room.status === 'escalated' && room.pendingDirectorDecision) {
+    escPanel.classList.remove('hidden');
+    const p = room.pendingDirectorDecision;
+    document.getElementById('escalationDetail').textContent = `Director yêu cầu REWORK ở vòng ${p.round}/${room.maxRounds} (vòng cuối). Task cần làm lại: ${(p.targetIds || []).length ? p.targetIds.map(id => room.assignments.find(a => a.id === id)?.title || id).join('; ') : 'Bản tổng hợp của Leader'}.\nNội dung yêu cầu: ${p.content}`;
+  } else {
+    escPanel.classList.add('hidden');
+  }
+  const immPanel = document.getElementById('immutablePanel');
+  if (isCompleted) {
+    immPanel.classList.remove('hidden');
+    const lines = [room.status === 'completed' ? `Hồ sơ đã nghiệm thu và khóa lúc ${fmtTime(room.submittedAt)}.` : `Hồ sơ đã ĐÓNG — KHÔNG ĐẠT lúc ${fmtTime(room.submittedAt)}. Lý do: ${room.closeReason}`];
+    if (room.sealHash) lines.push(`Niêm phong SHA-256: ${room.sealHash.slice(0, 16)}… (${fmtTime(room.sealedAt)})`);
+    if (room.integrityFlag) lines.push(`CẢNH BÁO TOÀN VẸN: ${room.integrityFlag === 'seal_mismatch' ? 'nội dung không khớp niêm phong — có thể đã bị sửa ngoài ứng dụng.' : 'hồ sơ nhập vào không đủ điều kiện nghiệm thu (Director PASS + QA PASS + Decision Note).'}`);
+    if (room.supersededByRoomId) lines.push(`Đã có Room kế thừa: ${room.supersededByRoomId}`);
+    document.getElementById('immutableDetail').textContent = lines.join('\n');
+    immPanel.querySelector('button').className = room.supersededByRoomId ? 'hidden' : 'px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white font-bold rounded';
+  } else {
+    immPanel.classList.add('hidden');
+  }
 
   // Stepper
   const steps = [
     { key: 'planning', label: '1. Kế hoạch' }, { key: 'working', label: '2. Worker' },
     { key: 'leader_review', label: '3. Leader' }, { key: 'director_review', label: '4. Director' },
-    { key: 'approved', label: '5. QA Độc lập' }, { key: 'completed', label: '6. Completed' }
+    { key: 'approved', label: '5. QA Độc lập' }, { key: 'completed', label: room.status === 'closed_rejected' ? '6. Đóng — Không đạt' : '6. Completed' }
   ];
-  const curKey = room.status === 'rework' ? 'working' : room.status;
+  const curKey = room.status === 'rework' ? 'working' : room.status === 'escalated' ? 'director_review' : room.status === 'closed_rejected' ? 'completed' : room.status;
   const activeIdx = steps.findIndex(s => s.key === curKey);
   document.getElementById('workflowStepper').innerHTML = steps.map((s, idx) => {
-    const isNow = idx === activeIdx, isDone = idx < activeIdx || room.status === 'completed';
-    const cls = isNow ? 'bg-amber-700 text-white font-bold' : (isDone ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'bg-stone-100 text-stone-500');
-    return `<div class="text-[11px] px-2 py-1.5 rounded border text-center ${cls}">${escapeHtml(s.label)}</div>`;
+    const isNow = idx === activeIdx && !isCompleted, isDone = idx < activeIdx || isCompleted;
+    const cls = room.status === 'closed_rejected' && idx === 5 ? 'bg-stone-700 text-white font-bold' : room.status === 'escalated' && idx === activeIdx ? 'bg-red-700 text-white font-bold' : isNow ? 'bg-amber-700 text-white font-bold' : (isDone ? 'bg-emerald-100 text-emerald-900 font-semibold' : 'bg-stone-100 text-stone-500');
+    return `<div class="text-[11px] px-2 py-1.5 rounded border text-center ${cls}" ${isNow ? 'aria-current="step"' : ''}>${escapeHtml(s.label)}</div>`;
   }).join('');
+
+  // Làm nổi bật panel của bước hiện tại
+  ['directorPanel', 'tasksPanel', 'leaderPanel', 'independentQAPanel', 'submitGatePanel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('ring-4', (STAGE_PANEL[room.status] || []).includes(id));
+    if (el) el.classList.toggle('ring-amber-500', (STAGE_PANEL[room.status] || []).includes(id));
+  });
 
   // Plan summary
   const planCard = document.getElementById('planSummaryCard');
@@ -2081,11 +2839,12 @@ function renderActiveRoom() {
     document.getElementById('planCriteriaList').innerHTML = (room.criteria || []).map(c => `<li>${escapeHtml(c)}</li>`).join('');
     document.getElementById('planLeaderReason').textContent = room.leaderReason || '';
     const leaderSel = document.getElementById('leaderSelect');
-    leaderSel.innerHTML = VALID_PROVIDERS.map(pid => `<option value="${escapeHtml(pid)}" ${room.leader === pid ? 'selected' : ''}>${escapeHtml(PROVIDERS[pid].name)}</option>`).join('');
+    const blocked = restrictedProvidersFor(room);
+    leaderSel.innerHTML = VALID_PROVIDERS.map(pid => `<option value="${escapeHtml(pid)}" ${room.leader === pid ? 'selected' : ''} ${blocked.includes(pid) ? 'disabled' : ''}>${escapeHtml(PROVIDERS[pid].name)}${blocked.includes(pid) ? ' (bị chặn)' : ''}</option>`).join('');
     leaderSel.disabled = isCompleted;
     const maxRInput = document.getElementById('maxRoundsInput');
     maxRInput.value = room.maxRounds;
-    maxRInput.disabled = isCompleted;
+    maxRInput.disabled = isCompleted || room.status === 'escalated';
   } else {
     planCard.classList.add('hidden');
   }
@@ -2099,34 +2858,38 @@ function renderActiveRoom() {
     taskContainer.innerHTML = `<div class="text-xs text-stone-500 italic p-4 bg-stone-100 rounded text-center">Chưa có Task. Hãy copy Prompt Kế Hoạch gửi Claude Director.</div>`;
   } else {
     const canWork = (room.status === 'working' || room.status === 'rework') && !isCompleted;
+    const blocked = restrictedProvidersFor(room);
     taskContainer.innerHTML = room.assignments.map((t, idx) => {
       const depsReady = areDependenciesReady(room, t);
       const valToUse = getDraft(`task_${t.id}`) || t.output || '';
       const safeTaskId = escapeJsString(t.id);
-      const providerOptions = VALID_PROVIDERS.map(pid => `<option value="${escapeHtml(pid)}" ${t.providerId === pid ? 'selected' : ''}>${escapeHtml(PROVIDERS[pid].name)}</option>`).join('');
+      const canChangeProvider = canWork && ['waiting', 'doing', 'rework'].includes(t.status);
+      const taskDone = t.status === 'submitted' || t.status === 'skipped';
+      const providerOptions = VALID_PROVIDERS.map(pid => `<option value="${escapeHtml(pid)}" ${t.providerId === pid ? 'selected' : ''} ${blocked.includes(pid) ? 'disabled' : ''}>${escapeHtml(PROVIDERS[pid].name)}${blocked.includes(pid) ? ' (bị chặn)' : ''}</option>`).join('');
       return `
         <div class="border border-stone-300 rounded-lg p-3 bg-white space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-1.5">
-              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-stone-200">${escapeHtml(t.status)}</span>
-              <select onchange="handleTaskChangeProviderUI('${safeTaskId}', this.value)" ${!canWork ? 'disabled' : ''} class="text-[11px] font-semibold px-1.5 py-0.5 rounded border border-stone-300 bg-white">${providerOptions}</select>
-              <span class="mono text-[10px] text-stone-400">ID: ${escapeHtml(t.id.slice(0, 8))}</span>
+              <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded ${t.status === 'rework' ? 'bg-red-100 text-red-900' : taskDone ? 'bg-emerald-100 text-emerald-900' : 'bg-stone-200'}">${escapeHtml(t.status)}</span>
+              <select aria-label="Provider của Task ${idx + 1}" onchange="handleTaskChangeProviderUI('${safeTaskId}', this.value)" ${!canChangeProvider ? 'disabled' : ''} class="text-[11px] font-semibold px-1.5 py-0.5 rounded border border-stone-300 bg-white">${providerOptions}</select>
+              <span class="mono text-[11px] text-stone-400">ID: ${escapeHtml(t.id.slice(0, 8))}</span>
             </div>
             <div class="flex gap-1.5">
-              <button onclick="copyWorkerPrompt('${safeTaskId}', ${idx})" ${(!depsReady || !canWork) ? 'disabled' : ''} class="px-2 py-1 bg-stone-800 disabled:bg-stone-300 text-white text-[11px] font-semibold rounded">1. Copy Prompt</button>
+              <button onclick="copyWorkerPrompt('${safeTaskId}', ${idx})" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-2 py-1 bg-stone-800 disabled:bg-stone-300 text-white text-[11px] font-semibold rounded">1. Copy Prompt</button>
               <button onclick="openProviderSite('${escapeJsString(t.providerId)}')" class="px-2 py-1 bg-stone-200 text-stone-800 text-[11px] font-semibold rounded">2. Mở Web ↗</button>
             </div>
           </div>
-          <div class="text-xs font-bold text-stone-900">${escapeHtml(t.title)}</div>
+          <div class="text-xs font-bold text-stone-900">Task #${idx + 1}: ${escapeHtml(t.title)}</div>
           <div class="text-xs text-stone-700 bg-stone-50 p-2 rounded whitespace-pre-wrap"><strong>Hướng dẫn:</strong> ${escapeHtml(t.instructions)}\n<strong>Tiêu chí:</strong> ${escapeHtml(t.acceptance)}</div>
-          ${t.feedback ? `<div class="text-[11px] bg-red-50 border border-red-300 text-red-900 p-2 rounded"><strong>Yêu cầu Rework từ Director:</strong> ${escapeHtml(t.feedback)}</div>` : ''}
-          ${!depsReady ? `<div class="text-[11px] text-red-700 font-semibold">⚠️ Bị chặn bởi Task tiền nhiệm (Dependency chưa hoàn thành).</div>` : ''}
-          <textarea id="workerInput_${escapeHtml(t.id)}" rows="3" ${!canWork ? 'disabled' : ''} oninput="saveDraft('task_${safeTaskId}', this.value)" placeholder="Dán kết quả của Worker hoặc lý do thay thế ngoại lệ..." class="w-full border border-stone-300 rounded p-2 text-xs bg-stone-50">${escapeHtml(valToUse)}</textarea>
+          ${t.feedback ? `<div class="text-[11px] bg-red-50 border border-red-300 text-red-900 p-2 rounded whitespace-pre-wrap"><strong>Yêu cầu Rework từ Director:</strong> ${escapeHtml(t.feedback)}</div>` : ''}
+          ${!depsReady ? `<div class="text-[11px] text-red-700 font-semibold">⚠️ Chờ Task tiền nhiệm hoàn thành.</div>` : ''}
+          <label for="workerInput_${escapeHtml(t.id)}" class="sr-only">Kết quả Task ${idx + 1}</label>
+          <textarea id="workerInput_${escapeHtml(t.id)}" rows="3" ${(!canWork || taskDone) ? 'disabled' : ''} oninput="saveDraft('task_${safeTaskId}', this.value)" placeholder="Dán kết quả của Worker hoặc lý do thay thế ngoại lệ..." class="w-full border border-stone-300 rounded p-2 text-xs bg-stone-50">${escapeHtml(valToUse)}</textarea>
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <span class="text-[10px] text-stone-500">Lịch sử phản hồi: ${t.responses?.length || 0} bản</span>
+            <span class="text-[11px] text-stone-500">Lịch sử phản hồi: ${t.responses?.length || 0} bản</span>
             <div class="flex gap-1.5">
-              <button onclick="handleTaskExceptionBypassUI('${safeTaskId}')" ${(!depsReady || !canWork) ? 'disabled' : ''} class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 disabled:opacity-40 text-stone-800 text-[11px] font-semibold rounded" title="Dùng khi Worker không phản hồi và cần ghi nhận đầu ra thay thế có kiểm soát">Ngoại lệ / Thay thế</button>
-              <button onclick="submitWorkerResponse('${safeTaskId}')" ${(!depsReady || !canWork) ? 'disabled' : ''} class="px-3 py-1 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-300 text-white text-xs font-bold rounded">3. Lưu Output Worker</button>
+              <button onclick="handleTaskExceptionBypassUI('${safeTaskId}')" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 disabled:opacity-40 text-stone-800 text-[11px] font-semibold rounded" title="Dùng khi Worker không phản hồi: nội dung ô kết quả được ghi nhận là đầu ra thay thế do chủ dự án nhập">Ngoại lệ / Thay thế</button>
+              <button onclick="submitWorkerResponse('${safeTaskId}')" ${(!depsReady || !canWork || taskDone) ? 'disabled' : ''} class="px-3 py-1 bg-amber-700 hover:bg-amber-600 disabled:bg-stone-300 text-white text-xs font-bold rounded">3. Lưu Output Worker</button>
             </div>
           </div>
         </div>
@@ -2136,9 +2899,7 @@ function renderActiveRoom() {
 
   // Leader Panel Controls
   const canLeader = room.status === 'leader_review' && !isCompleted;
-  document.getElementById('leaderReviewInput').disabled = !canLeader;
-  document.getElementById('leaderDeliverableInput').disabled = !canLeader;
-  document.getElementById('btnSubmitLeader').disabled = !canLeader;
+  ['leaderReviewInput', 'leaderDeliverableInput', 'btnSubmitLeader', 'btnCopyLeaderPrompt', 'btnSplitLeader'].forEach(id => { document.getElementById(id).disabled = !canLeader; });
   document.getElementById('leaderReviewInput').value = getDraft('leader_review');
   document.getElementById('leaderDeliverableInput').value = getDraft('leader_deliverable');
 
@@ -2146,27 +2907,38 @@ function renderActiveRoom() {
   const canDirector = (room.status === 'planning' || room.status === 'director_review') && !isCompleted;
   document.getElementById('directorRawInput').disabled = !canDirector;
   document.getElementById('btnApplyDirector').disabled = !canDirector;
+  document.getElementById('btnCopyPlanPrompt').disabled = room.status !== 'planning';
+  document.getElementById('btnCopyReviewPrompt').disabled = room.status !== 'director_review';
   document.getElementById('directorRawInput').value = getDraft('director_json');
 
   const hintEl = document.getElementById('directorStageHint');
-  if (room.status === 'planning') hintEl.innerHTML = `<strong>Bước PLANNING:</strong> Copy Prompt Kế Hoạch gửi Claude Pro và dán JSON trả về (<code>roomVersion=${room.version}, round=${room.round}</code>).`;
-  else if (room.status === 'director_review') hintEl.innerHTML = `<strong>Bước DIRECTOR_REVIEW:</strong> Copy Prompt Duyệt Cuối gửi Claude Pro và dán JSON quyết định (<code>roomVersion=${room.version}, round=${room.round}</code>).`;
+  if (room.status === 'planning') hintEl.innerHTML = `<strong>Bước PLANNING:</strong> Copy Prompt Kế Hoạch gửi Claude Pro và dán JSON trả về (<code>roomVersion=${Number(room.version)}, round=${Number(room.round)}</code>).`;
+  else if (room.status === 'director_review') hintEl.innerHTML = `<strong>Bước DIRECTOR_REVIEW:</strong> Copy Prompt Duyệt Cuối gửi Claude Pro và dán JSON quyết định (<code>roomVersion=${Number(room.version)}, round=${Number(room.round)}</code>).`;
   else hintEl.innerHTML = `<strong>Trạng thái hiện tại (${escapeHtml(room.status.toUpperCase())}):</strong> Khóa nhập quyết định Director ở bước này.`;
 
   // Independent QA Panel Controls
   const canQA = room.status === 'approved' && !isCompleted;
-  document.getElementById('btnRecordQA').disabled = !canQA;
-  const latestQA = [...(room.qaRecords || [])].reverse().find(q => q.round === room.round);
+  ['btnRecordQA', 'btnCopyQAPrompt', 'qaSourceInput', 'qaVerdictInput', 'qaEvidenceInput', 'qaFindingsInput', 'qaResolutionInput'].forEach(id => { document.getElementById(id).disabled = !canQA; });
+  const roundQA = qaRecordsOfRound(room, room.round);
+  const latestQA = roundQA[roundQA.length - 1];
+  const hasFail = roundQA.some(q => q.verdict === 'fail');
+  const holds = unresolvedHolds(room, room.round);
   const qaBadge = document.getElementById('qaStatusBadge');
   if (latestQA) {
-    qaBadge.textContent = `QA: ${latestQA.verdict.toUpperCase()} (${latestQA.source})`;
-    qaBadge.className = `text-[11px] font-bold uppercase px-2 py-0.5 rounded ${latestQA.verdict === 'pass' ? 'bg-emerald-100 text-emerald-900' : 'bg-red-100 text-red-900'}`;
+    const label = hasFail ? 'QA: FAIL — vòng bị chặn' : holds.length ? 'QA: HOLD chưa giải tỏa' : `QA: ${latestQA.verdict.toUpperCase()}`;
+    qaBadge.textContent = `${label} (${latestQA.source})`;
+    qaBadge.className = `text-[11px] font-bold uppercase px-2 py-0.5 rounded ${!hasFail && !holds.length && latestQA.verdict === 'pass' ? 'bg-emerald-100 text-emerald-900' : 'bg-red-100 text-red-900'}`;
   } else {
     qaBadge.textContent = 'CHƯA THẨM ĐỊNH QA';
     qaBadge.className = 'text-[11px] font-bold uppercase px-2 py-0.5 rounded bg-stone-200 text-stone-700';
   }
-  document.getElementById('qaEvidenceInput').value = getDraft('qa_evidence') || (latestQA?.evidence || '');
-  document.getElementById('qaFindingsInput').value = getDraft('qa_findings') || (latestQA?.findings || '');
+  const srcDraft = getDraft('qa_source');
+  if (srcDraft && [...document.getElementById('qaSourceInput').options].some(o => o.value === srcDraft)) document.getElementById('qaSourceInput').value = srcDraft;
+  document.getElementById('qaVerdictInput').value = getDraft('qa_verdict') || '';
+  document.getElementById('qaEvidenceInput').value = getDraft('qa_evidence');
+  document.getElementById('qaFindingsInput').value = getDraft('qa_findings');
+  document.getElementById('qaResolutionInput').value = getDraft('qa_resolution');
+  renderQAHoldFields();
 
   // Final Submit & Decision Note Controls
   document.getElementById('finalResultPreview').textContent = room.finalResult || 'Chưa có Final Result.';
@@ -2176,20 +2948,18 @@ function renderActiveRoom() {
   document.getElementById('dnMinority').value = getDraft('dn_minority') || (dn?.minorityView || '');
   document.getElementById('dnEdits').value = getDraft('dn_edits') || (dn?.keyEdits || '');
   document.getElementById('dnUncertainties').value = getDraft('dn_uncertainties') || (dn?.uncertainties || '');
-
   ['dnRationale', 'dnRejected', 'dnMinority', 'dnEdits', 'dnUncertainties'].forEach(id => {
-    document.getElementById(id).disabled = isCompleted;
+    document.getElementById(id).disabled = isCompleted || room.status !== 'approved';
   });
 
-  const canFinalSubmit = room.status === 'approved' && !room.isDemo && latestQA && latestQA.verdict === 'pass' && !isCompleted;
+  const canFinalSubmit = room.status === 'approved' && !room.isDemo && latestQA && latestQA.verdict === 'pass' && !hasFail && !holds.length && !isCompleted;
   document.getElementById('btnFinalSubmit').disabled = !canFinalSubmit;
-
-  const btnReopen = document.getElementById('btnReopenAlt');
-  btnReopen.className = (room.status === 'approved' || room.status === 'completed') ? 'px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition' : 'hidden';
+  document.getElementById('btnReopenAlt').className = room.status === 'approved' ? 'px-3 py-2 bg-amber-700 hover:bg-amber-600 text-white text-xs font-bold rounded transition' : 'hidden';
+  document.getElementById('btnCloseRejected').className = (!isCompleted && room.status !== 'planning') ? 'w-full py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold rounded border border-stone-400' : 'hidden';
 
   // Audit Log
   const logs = [
-    ...(room.qaRecords || []).map(q => ({ time: q.createdAt, title: `Independent QA [${q.source}] • ${q.verdict.toUpperCase()}`, body: `Evidence: ${q.evidence} | Findings: ${q.findings}` })),
+    ...(room.qaRecords || []).map(q => ({ time: q.createdAt, title: `Independent QA [${q.source}] • Vòng ${q.round} • ${q.verdict.toUpperCase()}`, body: `Evidence: ${q.evidence} | Findings: ${q.findings}${q.resolutionNote ? ' | Xử lý HOLD: ' + q.resolutionNote : ''}` })),
     ...(room.reviews || []).map(rv => ({ time: rv.createdAt, title: `Review [${rv.level.toUpperCase()}] • Vòng ${rv.round} • Verdict: ${rv.verdict}`, body: rv.content })),
     ...(room.messages || []).map(m => ({ time: m.createdAt, title: m.sender, body: m.content }))
   ].sort((a, b) => (b.time || '').localeCompare(a.time || ''));
@@ -2197,7 +2967,7 @@ function renderActiveRoom() {
   document.getElementById('auditCount').textContent = logs.length;
   document.getElementById('auditLogList').innerHTML = logs.map(l => `
     <div class="p-2 bg-white border border-stone-200 rounded">
-      <div class="font-bold text-[10px] text-amber-900 mb-1">${escapeHtml(l.title)} <span class="mono text-stone-400 font-normal">(${escapeHtml((l.time || '').slice(0, 19))})</span></div>
+      <div class="font-bold text-[11px] text-amber-900 mb-1">${escapeHtml(l.title)} <span class="mono text-stone-500 font-normal">(${escapeHtml(fmtTime(l.time))})</span></div>
       <div class="text-stone-700 whitespace-pre-wrap">${escapeHtml(l.body)}</div>
     </div>
   `).join('');
@@ -2211,7 +2981,7 @@ function renderAll() {
 }
 
 // ============================================================================
-// 13. BUILT-IN 20 AUTOMATED TESTS (QA Round 3 Mandatory Verification Suite)
+// 13. BUILT-IN AUTOMATED TESTS (AT-01..AT-20 gốc + AT-21..AT-44 cho v1.4)
 // ============================================================================
 function runAutomatedTestSuite() {
   const results = [];
@@ -2395,8 +3165,8 @@ function runAutomatedTestSuite() {
       decision: { verdict: 'pass', content: 'Đạt chuẩn thực tế', targetIds: [], finalResult: 'Final Deliverable chuẩn.' }
     };
     engineApplyDirectorDecision(r, JSON.stringify(revEnv));
-    engineRecordIndependentQA(r, { source: 'Owner QA', verdict: 'pass', evidence: 'Đã đối chiếu bảng 1', findings: 'Không có sai số' });
-    engineFinalSubmitRoom(r, { rationale: 'Phương án tối ưu', rejectedAlternatives: 'Phương án B', uncertainties: 'Không còn' });
+    engineRecordIndependentQA(r, { source: 'Owner QA', verdict: 'pass', evidence: 'Đã đối chiếu bảng 1 với bối cảnh và tiêu chí C1', findings: 'Không có sai số so với nguồn cung cấp ban đầu' });
+    engineFinalSubmitRoom(r, { rationale: 'Phương án tối ưu vì đáp ứng đủ tiêu chí và có căn cứ', rejectedAlternatives: 'Phương án B', uncertainties: 'Không có' });
     // Thử sửa sau khi đã Completed
     engineChangeMaxRounds(r, 5);
   }, 'AT-12', 'Mutation after Completed -> Reject', 'COMPLETED');
@@ -2465,7 +3235,7 @@ function runAutomatedTestSuite() {
     for (const sec of requiredSections) {
       if (!md.includes(sec)) throw new Error(`Thiếu mục "${sec}" trong bản xuất Markdown.`);
     }
-    return 'Markdown xuất đầy đủ 8/8 phần cốt lõi (Instruction, Context, Plan, Tasks, Reviews, QA, Decision Note, Audit Trail).';
+    return 'Markdown xuất đầy đủ các phần cốt lõi (Instruction, Context, Plan, Tasks, Reviews, QA, Decision Note, Audit Trail).';
   }, 'AT-18', 'Export Markdown -> Preserve full case history');
 
   // TC-19: XSS through imported data -> No execution
@@ -2491,6 +3261,191 @@ function runAutomatedTestSuite() {
     engineFinalSubmitRoom(r, { rationale: 'Lý do', rejectedAlternatives: 'Không', uncertainties: 'Không' });
   }, 'AT-20', 'Director PASS without Independent QA -> Cannot Complete', 'Independent QA Guard Reject');
 
+  // ===================== v1.4 — Business QA remediation tests =====================
+  const passEnvOf = (r) => JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: r.round, stage: 'review', decision: { verdict: 'pass', content: 'C1: Đạt — có căn cứ.', targetIds: [], finalResult: 'Báo cáo chốt cuối cùng.' } });
+  const reworkEnvOf = (r, targets) => JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: r.version, round: r.round, stage: 'review', decision: { verdict: 'rework', content: 'C1: Không đạt — thiếu căn cứ.', targetIds: targets, finalResult: '' } });
+  const makeApprovedRoom = () => { const r = makeMockDirectorReviewRoom(); engineApplyDirectorDecision(r, passEnvOf(r)); return r; };
+  const qaOf = (verdict, extra = {}) => ({ source: 'Cross-AI QA (Gemini Pro)', verdict, evidence: 'Đối chiếu Final Result với bối cảnh và tiêu chí C1', findings: 'Các số liệu khớp nguồn, không phát hiện sai lệch', ...extra });
+  const goodDN = { rationale: 'Phương án đáp ứng đầy đủ tiêu chí và có căn cứ rõ ràng', rejectedAlternatives: 'Không có', uncertainties: 'Không có' };
+  const makeConfidentialPlanningRoom = () => normalizeRoomRecord({ id: 'room-conf-0001', version: 1, round: 1, maxRounds: 3, status: 'planning', isDemo: false, dataClass: 'confidential', leader: 'gemini', title: 'Room mật', instruction: 'Chỉ đạo kiểm thử hợp lệ tối thiểu 5 ký tự.' });
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('fail'));
+    engineRecordIndependentQA(r, qaOf('pass'));
+  }, 'AT-21', 'QA FAIL không bị ghi đè bằng PASS cùng vòng', 'QA Fail Lock');
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('fail'));
+    r.qaRecords.push({ ...r.qaRecords[0], id: 'forced-pass-01', verdict: 'pass' }); // cố tình chèn PASS ngoài luồng
+    engineFinalSubmitRoom(r, goodDN);
+  }, 'AT-22', 'Final Submit bị chặn khi vòng có QA FAIL', 'QA FAIL');
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('needs_verification'));
+    engineRecordIndependentQA(r, qaOf('pass'));
+  }, 'AT-23', 'HOLD → PASS không có ghi chú xử lý bị từ chối', 'QA Hold Guard');
+
+  assertPass(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('needs_verification'));
+    engineRecordIndependentQA(r, qaOf('pass', { resolutionNote: 'Đã xác nhận với phòng Tài chính số liệu tạm ứng 40% là đúng' }));
+    engineFinalSubmitRoom(r, goodDN);
+    if (r.status !== 'completed' || !r.sealHash) throw new Error('Không Completed hoặc thiếu niêm phong.');
+    return 'HOLD được giải tỏa có ghi chú → Completed và niêm phong SHA-256.';
+  }, 'AT-24', 'HOLD → PASS có ghi chú xử lý → Completed + niêm phong');
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('pass', { source: 'Cross-AI QA (Claude Pro)' }));
+  }, 'AT-25', 'QA bằng Claude (trùng Director) bị từ chối', 'QA Independence Guard');
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('pass'));
+    engineFinalSubmitRoom(r, { rationale: 'abcde', rejectedAlternatives: 'abc', uncertainties: 'abc' });
+  }, 'AT-26', 'Decision Note quá sơ sài bị từ chối', 'Decision Note');
+
+  assertPass(() => {
+    const r = makeMockDirectorReviewRoom();
+    r.criteria = ['Tiêu chí kiểm thử ABC'];
+    const p = generateDirectorReviewPrompt(r);
+    const need = ['Tiêu chí kiểm thử ABC', r.instruction, '"verdict": "pass"', '"verdict": "rework"', 'QUY TẮC QUYẾT ĐỊNH', 'Không tự tạo số liệu'];
+    const miss = need.filter(s => !p.includes(s));
+    if (miss.length) throw new Error('Prompt Director Review thiếu: ' + miss.join(' | '));
+    return 'Có chỉ đạo gốc, tiêu chí, quy tắc quyết định, mẫu PASS và REWORK.';
+  }, 'AT-27', 'Prompt Director Review đầy đủ bối cảnh + 2 mẫu');
+
+  assertPass(() => {
+    const r = makeMockDirectorReviewRoom();
+    r.criteria = ['Tiêu chí XYZ'];
+    r.finalResult = 'Kết quả chốt KQ-999';
+    const lp = generateLeaderPrompt(r), wp = generateWorkerPrompt(r, r.assignments[0], 0), qp = generateIndependentQAPrompt(r);
+    const checks = [[lp, ['## NHẬN XÉT LEADER', '## DELIVERABLE', r.instruction, 'Tiêu chí XYZ']], [wp, ['Tiêu chí XYZ', 'Không tự tạo số liệu', 'ĐỊNH DẠNG ĐẦU RA']], [qp, ['KQ-999', 'KẾT LUẬN: PASS | FAIL | HOLD', 'Tiêu chí XYZ']]];
+    const miss = checks.flatMap(([txt, arr]) => arr.filter(s => !txt.includes(s)));
+    if (miss.length) throw new Error('Thiếu khối: ' + miss.join(' | '));
+    return 'Prompt Leader/Worker/QA có đủ khối bắt buộc.';
+  }, 'AT-28', 'Prompt Leader/Worker/QA đủ khối bắt buộc');
+
+  assertThrows(() => {
+    const r = makeConfidentialPlanningRoom();
+    parseAndValidateDirectorEnvelope(JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: 1, round: 1, stage: 'plan', decision: { objective: 'O', criteria: ['C'], leaderId: 'gemini', leaderReason: 'R', tasks: [{ title: 'T', instructions: 'I', acceptance: 'A', providerId: 'grok', dependencies: [] }] } }), r);
+  }, 'AT-29', 'Room MẬT: kế hoạch giao task cho Grok Free bị từ chối', 'Data Class Guard');
+
+  assertThrows(() => {
+    const r = makeConfidentialPlanningRoom();
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: 1, round: 1, stage: 'plan', decision: { objective: 'O', criteria: ['C'], leaderId: 'gemini', leaderReason: 'R', tasks: [{ title: 'T', instructions: 'I', acceptance: 'A', providerId: 'chatgpt', dependencies: [] }] } }));
+    engineReassignTaskProvider(r, r.assignments[0].id, 'copilot', 'Đổi sang Copilot để thử');
+  }, 'AT-30', 'Room MẬT: đổi provider sang Copilot Free bị từ chối', 'Data Class Guard');
+
+  assertPass(() => {
+    const f = scanSensitiveData('Liên hệ CCCD 079123456789, STK 1234567890123, mật khẩu: abc123, ghi chú TUYỆT MẬT');
+    const need = ['Số CCCD/CMND', 'Số tài khoản ngân hàng', 'Từ khóa Mật khẩu / Secret', 'Dấu phân loại MẬT/CONFIDENTIAL'];
+    const miss = need.filter(n => !f.includes(n));
+    if (miss.length) throw new Error('DLP bỏ sót: ' + miss.join(', '));
+    if (scanSensitiveData('Tạm ứng 40% giá trị hợp đồng').length) throw new Error('DLP báo nhầm với văn bản thường.');
+    return 'Phát hiện CCCD, STK, mật khẩu, dấu MẬT; không báo nhầm văn bản thường.';
+  }, 'AT-31', 'DLP phát hiện CCCD/STK/mật khẩu/dấu MẬT');
+
+  assertPass(() => {
+    const r = makeMockDirectorReviewRoom();
+    r.maxRounds = 1;
+    engineApplyDirectorDecision(r, reworkEnvOf(r, [r.assignments[0].id]));
+    if (r.status !== 'escalated' || !r.pendingDirectorDecision) throw new Error('Không chuyển ESCALATED.');
+    if (!r.reviews.some(x => x.level === 'director' && x.verdict === 'rework')) throw new Error('Mất quyết định Rework của Director.');
+    return 'Rework tại vòng cuối → ESCALATED, quyết định Director được lưu.';
+  }, 'AT-32', 'Rework ở vòng cuối → ESCALATED, không mất quyết định');
+
+  assertPass(() => {
+    const r = makeMockDirectorReviewRoom();
+    r.maxRounds = 1;
+    engineApplyDirectorDecision(r, reworkEnvOf(r, [r.assignments[0].id]));
+    engineResolveEscalationExtend(r, 2, 'Cần thêm một vòng để bổ sung căn cứ');
+    if (r.status !== 'rework' || r.round !== 2 || r.assignments[0].status !== 'rework') throw new Error(`Sai trạng thái sau khi tăng vòng: ${r.status}/R${r.round}`);
+    return 'Tăng vòng → áp dụng Rework, Round 2.';
+  }, 'AT-33', 'Escalated → tăng vòng và áp dụng Rework');
+
+  assertThrows(() => {
+    const r = makeMockDirectorReviewRoom();
+    engineCloseRejected(r, 'Tờ trình không đủ căn cứ pháp lý, đề nghị đơn vị lập lại hồ sơ');
+    if (!r.sealHash) throw new Error('Thiếu niêm phong khi đóng.');
+    engineSubmitLeaderReview(r, 'Thử sửa sau khi đóng', '');
+  }, 'AT-34', 'Đóng — Không đạt là bất biến', 'CLOSED_REJECTED');
+
+  assertThrows(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('pass'));
+    engineFinalSubmitRoom(r, goodDN);
+    engineReopenRejectedAlternative(r, 'Mở lại để xem xét phương án thay thế khác');
+  }, 'AT-35', 'Không mở lại trực tiếp hồ sơ Completed', 'không được mở lại');
+
+  assertPass(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('pass'));
+    engineFinalSubmitRoom(r, goodDN);
+    const seal = r.sealHash;
+    const s = engineCreateSuccessorRoom(r);
+    if (s.supersedesRoomId !== r.id || r.supersededByRoomId !== s.id) throw new Error('Sai liên kết kế thừa.');
+    if (evaluateIntegrity(r) !== '' || r.sealHash !== seal) throw new Error('Hồ sơ gốc mất niêm phong.');
+    if (s.status !== 'leader_review' || s.assignments.length !== r.assignments.length) throw new Error('Room kế thừa sai trạng thái/tasks.');
+    return 'Room kế thừa liên kết 2 chiều, hồ sơ gốc giữ nguyên niêm phong.';
+  }, 'AT-36', 'Room kế thừa giữ nguyên niêm phong hồ sơ gốc');
+
+  assertThrows(() => {
+    const r = normalizeRoomRecord({ id: 'room-prov-0001', version: 1, round: 1, maxRounds: 3, status: 'planning', title: 'P', instruction: 'Chỉ đạo hợp lệ 12345' });
+    engineApplyDirectorDecision(r, JSON.stringify({ protocolVersion: 1, roomId: r.id, roomVersion: 1, round: 1, stage: 'plan', decision: { objective: 'O', criteria: ['C'], leaderId: 'gemini', leaderReason: 'R', tasks: [{ title: 'T1', instructions: 'I', acceptance: 'A', providerId: 'grok', dependencies: [] }, { title: 'T2', instructions: 'I', acceptance: 'A', providerId: 'chatgpt', dependencies: [] }] } }));
+    engineSubmitWorkerResponse(r, r.assignments[0].id, 'Đầu ra do Grok thực hiện');
+    engineReassignTaskProvider(r, r.assignments[0].id, 'claude', 'Đổi provider sau khi đã có đầu ra');
+  }, 'AT-37', 'Không đổi provider của task đã có đầu ra', 'Provenance Guard');
+
+  assertPass(() => {
+    const forged = { id: 'forged-room-01', version: 9, round: 1, maxRounds: 3, status: 'completed', isDemo: false, title: 'Hồ sơ giả', instruction: 'Chỉ đạo hợp lệ 12345', assignments: [{ id: 'task-f-01', title: 'a', instructions: '', acceptance: '', providerId: 'chatgpt', status: 'submitted', dependencies: [], output: 'x' }], reviews: [] };
+    const list = parseAndValidateBackupPayload(JSON.stringify({ format: 'aiteam-room', formatVersion: 1, room: forged }));
+    const imp = prepareImportedRoom(list[0], new Set());
+    if (imp.integrityFlag !== 'unverified_import') throw new Error('Hồ sơ giả mạo không bị gắn cờ: ' + imp.integrityFlag);
+    return 'Completed giả mạo → gắn cờ unverified_import.';
+  }, 'AT-38', 'Import Completed giả mạo bị gắn cờ chưa xác thực');
+
+  assertPass(() => {
+    const demoSrc = { id: 'demo-room-01', version: 3, round: 1, maxRounds: 3, status: 'working', isDemo: false, title: 'Đổi tên cho giống thật', instruction: 'Chỉ đạo hợp lệ 12345', assignments: [], reviews: [], messages: [{ id: 'm1', sender: 'System Demo', content: 'Demo', createdAt: nowISO() }] };
+    const imp = prepareImportedRoom(demoSrc, new Set());
+    if (!imp.isDemo) throw new Error('Room Demo bị gỡ cờ qua import.');
+    return 'Room có dấu hiệu Demo vẫn giữ isDemo=true.';
+  }, 'AT-39', 'Import không gỡ được cờ Demo');
+
+  assertPass(() => {
+    const r = makeApprovedRoom();
+    engineRecordIndependentQA(r, qaOf('pass'));
+    engineFinalSubmitRoom(r, goodDN);
+    r.finalResult = 'Nội dung bị sửa ngoài ứng dụng';
+    if (evaluateIntegrity(r) !== 'seal_mismatch') throw new Error('Không phát hiện sửa đổi sau niêm phong.');
+    return 'Sửa nội dung sau niêm phong → seal_mismatch.';
+  }, 'AT-40', 'Phát hiện sửa đổi sau niêm phong');
+
+  assertThrows(() => {
+    const src = { id: 'conf-import-01', version: 2, round: 1, maxRounds: 3, status: 'working', dataClass: 'confidential', leader: 'gemini', title: 'Mật', instruction: 'Chỉ đạo hợp lệ 12345', assignments: [{ id: 'task-c-01', title: 'a', instructions: '', acceptance: '', providerId: 'grok', status: 'waiting', dependencies: [] }], reviews: [] };
+    validateImportedRoom(src);
+  }, 'AT-41', 'Import Room MẬT có task giao Grok bị từ chối', 'bị chặn');
+
+  assertThrows(() => {
+    const r = makeMockDirectorReviewRoom();
+    engineEditRoomInfo(r, { title: 'Sửa', instruction: 'Chỉ đạo mới hợp lệ', context: '' });
+  }, 'AT-42', 'Chỉ sửa thông tin Room khi PLANNING', 'PLANNING');
+
+  assertPass(() => {
+    const parts = splitLeaderResponse('Mở đầu\n## NHẬN XÉT LEADER\nC1 đạt\n## DELIVERABLE\nBản tổng hợp');
+    if (!parts || parts.review !== 'C1 đạt' || parts.deliverable !== 'Bản tổng hợp') throw new Error('Tách sai: ' + JSON.stringify(parts));
+    return 'Tách đúng 2 phần Nhận xét / Deliverable.';
+  }, 'AT-43', 'Tách tự động phản hồi Leader');
+
+  assertPass(() => {
+    if (sha256Hex('abc') !== 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad') throw new Error('SHA-256 sai với vector chuẩn "abc".');
+    if (sha256Hex('') !== 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') throw new Error('SHA-256 sai với chuỗi rỗng.');
+    return 'SHA-256 khớp vector kiểm thử chuẩn.';
+  }, 'AT-44', 'SHA-256 niêm phong đúng chuẩn');
+
   return results;
 }
 
@@ -2498,6 +3453,7 @@ function runBuiltInSelfTestsModal() {
   const results = runAutomatedTestSuite();
   const passCount = results.filter(r => r.status === 'PASS').length;
   document.getElementById('selfTestSummary').textContent = `Kết quả thực thi thực tế: ${passCount}/${results.length} PASS`;
+  document.getElementById('btnSelfTest').textContent = `Chạy ${results.length} Auto-Tests`;
   document.getElementById('selfTestResults').innerHTML = results.map(r => `
     <div class="p-2 rounded border ${r.status === 'PASS' ? 'bg-emerald-950/50 border-emerald-700 text-emerald-200' : 'bg-red-950/60 border-red-600 text-red-200'}">
       <span class="font-bold">[${escapeHtml(r.status)}] ${escapeHtml(r.id)} — ${escapeHtml(r.name)}:</span>
