@@ -78,6 +78,10 @@ It is one static page. Fork the repo and turn on GitHub Pages, or serve `index.h
 - Check coverage: `npm --prefix tools/i18n install && node tools/i18n/check.js [lang]`. It lists the strings still missing and any placeholder errors.
 - Run the app's built-in **Auto-Tests** before you open a pull request.
 
+## License
+
+[MIT](LICENSE). You can use, modify and share the app freely, including for commercial use, as long as you keep the copyright notice. The app is provided as is, without warranty.
+
 ---
 
 ## Tiếng Việt
@@ -95,3 +99,5 @@ It is one static page. Fork the repo and turn on GitHub Pages, or serve `index.h
 - **Báo cáo:** kết luận trước, bằng chứng sau, có phụ lục và nhật ký kiểm toán. Xuất được Markdown hoặc PDF.
 
 Mở ứng dụng: https://ntphuong130487-wq.github.io/ai-team-app/. Hướng dẫn 1 trang có trong ứng dụng (nút **Hướng dẫn sử dụng**). Kết quả AI là dự thảo tham khảo; người dùng chịu trách nhiệm kiểm tra trước khi sử dụng và tuân thủ quy định bảo mật của tổ chức.
+
+Giấy phép: [MIT](LICENSE). Được tự do sử dụng, chỉnh sửa và chia sẻ, kể cả cho mục đích thương mại, miễn là giữ nguyên thông báo bản quyền. Ứng dụng được cung cấp nguyên trạng, không kèm bảo đảm.
