@@ -41,6 +41,7 @@ for (const n of ast.body) {
       for (const p of typeProp.value.properties || []) {
         const key = p.key.name || p.key.value;
         if (REPORT_TYPE_UI_PROPS.has(key) && p.value.type === 'Literal') add(p.value.value, 'rt');
+        if (key === 'dn' && p.value.type === 'ObjectExpression') p.value.properties.forEach(q => q.value && q.value.type === 'Literal' && add(q.value.value, 'rt-dn'));
         if (key === 'required' && p.value.type === 'ArrayExpression') p.value.elements.forEach(el => el.type === 'Literal' && add(el.value, 'rt'));
       }
     }
