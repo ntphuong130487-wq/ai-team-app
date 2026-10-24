@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Team — Phòng Điều Phối AI v2.0</title>
+  <title>AI Team — Phòng Điều Phối AI v2.1</title>
   <meta name="description" content="Make several AI assistants (Claude, ChatGPT, Gemini…) work on one case: a Director AI plans and reviews, Workers execute, an independent AI checks, you approve. Runs in your browser — no API key, no server." />
   <meta property="og:title" content="AI Team — Multi-Agent AI Coordination Room" />
   <meta property="og:description" content="Coordinate several AI assistants on one case with independent QA and two human approval gates. Free, open source, runs in your browser, 10 languages." />
@@ -11,7 +11,8 @@
   <meta property="og:url" content="https://ntphuong130487-wq.github.io/ai-team-app/" />
   <meta property="og:image" content="https://ntphuong130487-wq.github.io/ai-team-app/docs/screenshot-en.png" />
   <meta name="twitter:card" content="summary_large_image" />
-  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chỉ cho phép mã/tài nguyên từ chính ứng dụng (không tải script từ CDN bên ngoài) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <!-- Chỉ tải bản dịch cần dùng (ngôn ngữ giao diện + tiếng Anh dự phòng); ngôn ngữ khác tải khi chọn -->
   <script data-boot="i18n">(function(){var L=['en','zh','es','pt','fr','de','ja','ko','id'],l=null;try{l=localStorage.getItem('AITEAM_LANG_V1');if(!l&&localStorage.getItem('AITEAM_STANDALONE_ROOMS_V1.3'))l='vi';}catch(e){}if(!l){var n=(navigator.language||'en').slice(0,2).toLowerCase();l=(n==='vi'||L.indexOf(n)>=0)?n:'en';}var s=l==='vi'?[]:(l==='en'?['en']:['en',l]);for(var i=0;i<s.length;i++)document.write('<script src="locales/'+s[i]+'.js"><\/script>');})();</script>
   <style>
@@ -38,13 +39,15 @@
     ::-webkit-scrollbar-track { background: #e7e2d8; }
     ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 3px; }
   </style>
+  <link rel="stylesheet" href="assets/app.css" />
 </head>
 <body class="min-h-screen flex flex-col">
+  <div id="copyNotice" class="hidden bg-amber-100 border-b border-amber-300 text-amber-900 text-xs px-4 py-1.5 text-center"><span>Đây là bản sao không chính thức. Bản gốc:</span> <a href="https://ntphuong130487-wq.github.io/ai-team-app/" class="underline font-semibold" data-i18n-skip>ntphuong130487-wq.github.io/ai-team-app</a></div>
   <!-- TOP HEADER -->
   <header class="bg-[#1c1917] text-[#f5f5f4] border-b border-stone-700 lg:sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v2.0</span>
+        <span class="px-2.5 py-1 bg-amber-700 text-white text-xs font-bold tracking-wider uppercase rounded">AI / TEAM v2.1</span>
         <div>
           <h1 class="text-base font-bold tracking-tight">Phòng Điều Phối Đa Tác Tử AI</h1>
           <p class="text-xs text-stone-400">Bảng điều phối 1 chạm • Chế độ Nhanh/Chuẩn/Đầy đủ • QA độc lập • Phân loại dữ liệu • Niêm phong hồ sơ</p>
@@ -432,6 +435,7 @@
 
   <footer class="max-w-7xl w-full mx-auto px-4 pb-6 text-[11px] text-stone-500 flex flex-wrap items-center justify-between gap-2">
     <span id="storageQuotaFooter"></span>
+    <span id="appAttribution" data-origin="aiteam-origin-ntphuong130487-wq-2026">AI Team v2.1 · © 2026 <a href="https://github.com/ntphuong130487-wq" target="_blank" rel="noopener" class="underline hover:text-stone-800" data-i18n-skip>ntphuong130487-wq</a> · MIT · <a href="https://github.com/ntphuong130487-wq/ai-team-app" target="_blank" rel="noopener" class="underline hover:text-stone-800">Mã nguồn</a></span>
     <button onclick="runBuiltInSelfTestsModal()" id="btnSelfTest" class="px-2 py-1 underline hover:text-stone-800">Chạy Auto-Tests (kiểm tra hệ thống)</button>
   </footer>
 
@@ -450,7 +454,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label for="newRoomCategory" class="font-bold text-stone-700 block mb-1">Nhóm hồ sơ</label>
-            <input id="newRoomCategory" type="text" maxlength="100" value="Tham vấn Quản trị & Rủi ro" class="w-full border border-stone-300 rounded p-2 bg-white" />
+            <input id="newRoomCategory" type="text" maxlength="100" value="Điều phối chung" class="w-full border border-stone-300 rounded p-2 bg-white" />
           </div>
           <div id="newRoomLeaderBox">
             <label for="newRoomLeader" class="font-bold text-stone-700 block mb-1">Leader AI (chỉ ở chế độ Đầy đủ)</label>
@@ -494,7 +498,7 @@
             <select id="newRoomMode" onchange="syncModeHint()" class="w-full border border-stone-300 rounded p-2 bg-white">
               <option value="standard">Chuẩn (mặc định) — Director tự tổng hợp + QA độc lập</option>
               <option value="fast">Nhanh — nội bộ, rủi ro thấp, không QA độc lập</option>
-              <option value="full">Đầy đủ — có Leader + QA độc lập (hồ sơ Mật, trình CEO/HĐQT)</option>
+              <option value="full">Đầy đủ — có Leader + QA độc lập (hồ sơ mật, quyết định quan trọng)</option>
             </select>
             <p id="newRoomModeHint" class="text-[11px] text-stone-500 mt-1"></p>
           </div>
@@ -516,7 +520,7 @@
           </div>
           <div>
             <label for="newRoomDecisionMaker" class="font-bold text-stone-700 block mb-1">Cấp quyết định cuối</label>
-            <input id="newRoomDecisionMaker" type="text" maxlength="100" placeholder="VD: CEO / HĐQT" class="w-full border border-stone-300 rounded p-2 bg-white" />
+            <input id="newRoomDecisionMaker" type="text" maxlength="100" placeholder="VD: Ban Giám đốc" class="w-full border border-stone-300 rounded p-2 bg-white" />
           </div>
         </div>
         <div>
@@ -616,7 +620,13 @@ function qaSourceProvider(source) {
 function nonIndependentProviders(room) { return [directorOf(room)]; }
 const MIN_QA_TEXT = 30, MIN_RATIONALE = 30, MIN_DN_SHORT = 10, MIN_CLOSE_REASON = 30;
 const DELETED_LOG_KEY = 'AITEAM_DELETED_ROOMS_LOG_V1.4';
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
+// Tác giả & nguồn gốc (giấy phép MIT: bản sao/bản sửa phải giữ thông báo bản quyền)
+const APP_AUTHOR = 'ntphuong130487-wq';
+const APP_REPO_URL = 'https://github.com/ntphuong130487-wq/ai-team-app';
+const APP_OFFICIAL_HOST = 'ntphuong130487-wq.github.io';
+const APP_FINGERPRINT = 'aiteam-origin-ntphuong130487-wq-2026';
+const APP_SOURCE = { app: 'AI Team', version: APP_VERSION, author: APP_AUTHOR, source: APP_REPO_URL, license: 'MIT', fingerprint: APP_FINGERPRINT };
 
 // ============================================================================
 // v2.0 — ĐA NGÔN NGỮ (i18n)
@@ -802,7 +812,7 @@ if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
 const MODES = {
   fast: { label: 'Nhanh', hasLeader: false, requiresQA: false, note: 'Nội bộ, rủi ro thấp — Director lập kế hoạch, Worker, Director tổng hợp & duyệt' },
   standard: { label: 'Chuẩn', hasLeader: false, requiresQA: true, note: 'Mặc định — thêm QA độc lập; Director tự tổng hợp (không có Leader)' },
-  full: { label: 'Đầy đủ', hasLeader: true, requiresQA: true, note: 'Hồ sơ Mật, trình CEO/HĐQT — đủ 5 lớp gồm Leader' }
+  full: { label: 'Đầy đủ', hasLeader: true, requiresQA: true, note: 'Hồ sơ mật hoặc quyết định quan trọng — đủ 5 lớp gồm Leader' }
 };
 function resolveMode(mode, dataClass) {
   if (dataClass === 'confidential') return 'full'; // Hồ sơ Mật luôn chạy chế độ Đầy đủ
@@ -2397,6 +2407,7 @@ function generateFullMarkdownReport(room) {
   if (room.supersededByRoomId) L.push(`- **Đã có hồ sơ kế thừa:** \`${room.supersededByRoomId}\``);
   L.push('- **Nguồn gốc nội dung:** phản hồi AI được dán thủ công từ các dịch vụ AI; ứng dụng không tự xác thực tài khoản hay model đã tạo ra nội dung.');
   L.push(`- **Xuất lúc:** ${fmtTime(nowISO())} (giờ Việt Nam) — AI Team v${APP_VERSION}`);
+  L.push(`- **Tạo bằng:** AI Team (${APP_REPO_URL}) — tác giả ${APP_AUTHOR}, giấy phép MIT`);
   return L.map(line => humanizeCodes(outLang === 'vi' ? line : translateText(line, outLang), outLang)).join('\n');
 }
 
@@ -2416,7 +2427,8 @@ function generateReportHTML(room) {
   @media print { .toolbar { display: none; } body { margin: 0; max-width: none; } h2 { break-after: avoid; } tr, blockquote { break-inside: avoid; } @page { size: A4; margin: 16mm 14mm; } }
 </style></head><body>
 <div class="toolbar"><button onclick="window.print()">${escMd(translateText('In / Lưu PDF', RL))}</button><span style="color:#78716c">${escMd(translateText('Chọn "Lưu dưới dạng PDF" trong hộp thoại in để có file PDF.', RL))}</span></div>
-<article>${body}</article></body></html>`;
+<article>${body}</article>
+<footer style="margin-top:24px;padding-top:8px;border-top:1px solid #e7e5e4;color:#78716c;font-size:11px" data-origin="${APP_FINGERPRINT}">${escMd(translateText(`Tạo bằng AI Team — ${APP_REPO_URL} — © ${APP_AUTHOR} (giấy phép MIT)`, RL))}</footer></body></html>`;
 }
 
 function openPrintableReport() {
@@ -2959,7 +2971,7 @@ function requiredHeadingsFor(reportType, lang) {
 const MODES_EN = {
   fast: 'Fast — internal, low risk: Director plans, workers execute, Director synthesizes & approves',
   standard: 'Standard — independent QA added; the Director synthesizes (no Leader)',
-  full: 'Full — 5 layers including a Leader (confidential matters, board-level decisions)'
+  full: 'Full — 5 layers including a Leader (confidential or high-stakes matters)'
 };
 const DATA_CLASS_EN = { public: 'Public', internal: 'Internal', confidential: 'Confidential' };
 
@@ -3654,13 +3666,13 @@ function downloadBlob(content, mime, filename) {
 function exportCurrentRoomJSON() {
   const room = getCurrentRoom();
   if (!room) return;
-  const payload = { format: 'aiteam-room', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), room };
+  const payload = { format: 'aiteam-room', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), generator: APP_SOURCE, room };
   downloadBlob(JSON.stringify(payload, null, 2), 'application/json', `aiteam-room-${room.id.slice(0, 8)}-v${room.version}.json`);
 }
 
 function exportAllRooms() {
   if (rooms.length === 0) return showBanner('Chưa có Room nào để sao lưu.', true);
-  const payload = { format: 'aiteam-backup-all', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), rooms };
+  const payload = { format: 'aiteam-backup-all', formatVersion: 1, appVersion: APP_VERSION, exportedAt: nowISO(), generator: APP_SOURCE, rooms };
   downloadBlob(JSON.stringify(payload, null, 2), 'application/json', `aiteam-all-rooms-${nowISO().slice(0, 10)}.json`);
 }
 
@@ -3980,7 +3992,7 @@ function fillSampleClaudeEnvelope() {
       protocolVersion: 1, roomId: room.id, roomVersion: room.version, round: room.round, stage: 'plan',
       decision: {
         objective: 'Mẫu demo: Đánh giá rủi ro hợp đồng và đề xuất giải pháp kiểm soát 7/30/90 ngày.',
-        criteria: ['Phân biệt rõ Dữ kiện và Nhận định', 'Gắn KRI và Owner cho rủi ro trọng yếu'],
+        criteria: ['Phân biệt rõ Dữ kiện và Nhận định', 'Gắn người phụ trách và thời hạn cho rủi ro trọng yếu'],
         leaderId: 'gemini', leaderReason: 'Gemini đối chiếu chéo độc lập với Claude Director.',
         tasks: [
           { title: 'Task 1: Rà soát dữ kiện', instructions: 'Phân tích dữ kiện.', acceptance: 'Đủ dữ kiện.', providerId: 'chatgpt', dependencies: [] },
@@ -4030,7 +4042,7 @@ let dlpAckSignature = '';
 let lastFocusBeforeModal = null;
 function setRoomModalFields(r) {
   document.getElementById('newRoomTitle').value = r?.title || '';
-  document.getElementById('newRoomCategory').value = r?.category || translateText('Tham vấn Quản trị & Rủi ro');
+  document.getElementById('newRoomCategory').value = r?.category || translateText('Điều phối chung');
   document.getElementById('newRoomLeader').value = r?.leader || 'gemini';
   document.getElementById('newRoomDataClass').value = r?.dataClass || 'internal';
   document.getElementById('newRoomMode').value = r?.mode || 'standard';
@@ -5395,6 +5407,14 @@ function runAutomatedTestSuite() {
     return 'Tách Leader (LEADER REVIEW/DELIVERABLE), đọc QA (EVIDENCE/FINDINGS/CONCLUSION), chấp nhận "None" ở Decision Note.';
   }, 'AT-73', 'i18n: nhận diện phản hồi AI bằng tiếng Anh');
 
+  assertPass(() => {
+    const r = normalizeRoomRecord({ id: 'room-attr', version: 1, round: 1, maxRounds: 3, status: 'planning', title: 'T', instruction: 'Chỉ đạo hợp lệ 12345' });
+    const md = generateFullMarkdownReport(r);
+    if (!md.includes(APP_REPO_URL) || !md.includes(APP_AUTHOR)) throw new Error('Báo cáo thiếu dòng tác giả/nguồn.');
+    if (!/MIT/.test(md)) throw new Error('Báo cáo thiếu thông tin giấy phép.');
+    return `Báo cáo ghi nguồn ${APP_REPO_URL} và tác giả ${APP_AUTHOR} (MIT).`;
+  }, 'AT-74', 'Ghi nhận tác giả & nguồn gốc trong báo cáo');
+
   return results;
 }
 
@@ -5465,6 +5485,14 @@ document.title = translateText(_docTitleVi);
 if (document.getElementById('langSelect')) document.getElementById('langSelect').value = uiLang;
 startI18nObserver();
 preloadRoomLocales();
+// Nhận diện bản sao: chạy ngoài địa chỉ chính thức (không tính máy cục bộ) thì hiện dòng dẫn về bản gốc
+(function originNotice() {
+  try {
+    const host = location.hostname;
+    if (/^https?:$/.test(location.protocol) && host && host !== APP_OFFICIAL_HOST && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host))
+      document.getElementById('copyNotice').classList.remove('hidden');
+  } catch (e) {}
+})();
 (function firstVisitGuide() {
   let seen = null;
   try { seen = localStorage.getItem(GUIDE_SEEN_KEY); } catch (e) {}

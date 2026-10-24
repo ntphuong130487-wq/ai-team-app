@@ -62,7 +62,7 @@ A one-page guide is built into the app (**User guide** button) and can be printe
 
 ## Run it yourself
 
-It is one static page. Fork the repo and turn on GitHub Pages, or serve `index.html` and the `locales/` folder from any static web server. Automatic copy needs https or localhost.
+It is one static page. Fork the repo and turn on GitHub Pages, or serve `index.html` with the `locales/` and `assets/` folders from any static web server. Please keep the copyright notice (MIT license); copies hosted elsewhere show a small link back to the original. Automatic copy needs https or localhost.
 
 ## Contributing (translations welcome)
 
@@ -76,6 +76,7 @@ It is one static page. Fork the repo and turn on GitHub Pages, or serve `index.h
   1. Copy `locales/en.js` and translate the values.
   2. Add the language code to `LANGS` in `index.html` and to the loader list in the `<head>`.
 - Check coverage: `npm --prefix tools/i18n install && node tools/i18n/check.js [lang]`. It lists the strings still missing and any placeholder errors.
+- Changed CSS classes in `index.html`? Rebuild the stylesheet: `npx tailwindcss@3.4.19 -c tools/css/tailwind.config.js -o assets/app.css --minify` (the app loads no scripts from CDNs).
 - Run the app's built-in **Auto-Tests** before you open a pull request.
 
 ## License
